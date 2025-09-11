@@ -1,0 +1,96 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+
+class AppTextStyle extends Equatable {
+  /// Headline 1 text style
+  static TextStyle get headline1 {
+    return GoogleFonts.dmSans(
+      fontSize: 64.sp,
+      fontWeight: FontWeight.w700,
+    );
+  }
+
+  /// Headline 2 text style
+  static TextStyle get headline2 {
+    return GoogleFonts.dmSans(
+      fontSize: 48.sp,
+      fontWeight: FontWeight.w700,
+    );
+  }
+
+  /// Headline 3 text style
+  static TextStyle get headline3 {
+    return GoogleFonts.dmSans(
+      fontSize: 32.sp,
+      fontWeight: FontWeight.w700,
+      color: AppColors.black,
+    );
+  }
+
+  /// Headline 4 text style
+  static TextStyle get headline4 {
+    return GoogleFonts.dmSans(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w700,
+    );
+  }
+
+  /// Headline 5 text style
+  static TextStyle get headline5 {
+    return GoogleFonts.dmSans(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w700,
+    );
+  }
+
+  /// Headline 6 text style
+  static TextStyle get headline6 {
+    return GoogleFonts.dmSans(
+      fontSize: 18.sp,
+      fontWeight: FontWeight.w700,
+    );
+  }
+
+  /// Body 1 text style
+  static TextStyle get body1 {
+    return GoogleFonts.dmSans(
+      fontSize: 16.sp,
+    );
+  }
+
+  /// Body 2 text style
+  static TextStyle get body2 {
+    return GoogleFonts.dmSans(
+      fontSize: 14.sp,
+    );
+  }
+
+  /// Subtitle 1 text style
+  static TextStyle get subTitle1 {
+    return GoogleFonts.dmSans(
+      fontSize: 18.sp,
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  /// Subtitle 2 text style
+  static TextStyle get subTitle2 {
+    return GoogleFonts.dmSans(
+      fontSize: 14.sp,
+      fontWeight: FontWeight.w400,
+    );
+  }
+
+  static TextStyle get caption {
+    return GoogleFonts.bioRhyme(fontSize: 12.sp);
+  }
+
+  @override
+  List<Object?> get props => [];
+}
