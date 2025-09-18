@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 
 class TokenInterceptor extends Interceptor {
   TokenInterceptor({
@@ -13,5 +14,22 @@ class TokenInterceptor extends Interceptor {
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
-  ) async {}
+  ) async {
+    if (requireAuth) {
+      final token = getIt<LocalKeyStorage>().accessToken;
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      } else {
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            message: 'Provide Auth Credentials',
+          ),
+        );
+      }
+      handler.next(options);
+    } else {
+      handler.next(options);
+    }
+  }
 }

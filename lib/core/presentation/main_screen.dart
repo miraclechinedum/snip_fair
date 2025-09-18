@@ -9,6 +9,7 @@ import 'package:flutter_svg/svg.dart';
 
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 
 @RoutePage()
 class MainScreen extends StatefulWidget {
@@ -27,7 +28,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
-      routes: const [],
+      routes: const [
+        ExploreMainRoute(),
+        StylistsMainRoute(),
+        AppointementsMainRoute(),
+        AccountMainRoute(),
+      ],
       bottomNavigationBuilder: (context, tabsRouter) {
         return SafeArea(
           child: Container(

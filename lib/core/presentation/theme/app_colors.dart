@@ -8,7 +8,7 @@ class AppColors {
   const AppColors._();
 
   //Pyramid Green
-  static const primaryColor = Color(0xff0060C8);
+  static const primaryColor = Color(0xffB92FAE);
 
   //Icon lemon
   static const iconLemon = Color(0xff66b93b);

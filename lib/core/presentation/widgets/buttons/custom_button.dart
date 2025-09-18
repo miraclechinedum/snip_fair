@@ -13,11 +13,16 @@ class CustomButton extends StatelessWidget {
     this.background = AppColors.primaryColor,
     this.textColor = AppColors.white,
     this.width = double.infinity,
-    this.radius = 70,
+    this.radius = 12,
     this.icon,
     this.borderColor = AppColors.transparent,
     this.iconIsTrailing = false,
     this.isOutline = false,
+    this.gradient = const LinearGradient(
+      colors: [Color(0xff7F80DC), Color(0xffD52A81)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
   });
   final Icon? icon;
   final String title;
@@ -30,6 +35,7 @@ class CustomButton extends StatelessWidget {
   final double radius;
   final bool iconIsTrailing;
   final bool isOutline;
+  final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +85,32 @@ class CustomButton extends StatelessWidget {
           ),
           onPressed: isLoading ? null : onPressed,
           child: child,
+        ),
+      );
+    }
+
+    if (gradient != null) {
+      return AnimationButtonEffect(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(
+                radius.r), // Optional: for rounded corners
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Colors.transparent, // Make button background transparent
+              shadowColor: Colors.transparent,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius.r),
+              ),
+              minimumSize: Size(width.w, 48.h),
+            ),
+            onPressed: isLoading ? null : onPressed,
+            child: child,
+          ),
         ),
       );
     }

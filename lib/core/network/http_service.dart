@@ -6,7 +6,7 @@ import 'token_interceptor.dart';
 
 @Injectable()
 class HttpService {
-  Dio client({bool requireAuth = false, bool isFormDataRequest = false}) => Dio(
+  Dio client({bool requireAuth = true, bool isFormDataRequest = false}) => Dio(
         BaseOptions(
           baseUrl: Environment().config.apiHost,
           connectTimeout: const Duration(seconds: 60),
@@ -24,11 +24,11 @@ class HttpService {
         ),
       )
         // ..interceptors.add(CookieManager(getIt<CookieJar>()))
-        // ..interceptors.add(
-        //   TokenInterceptor(
-        //     requireAuth: requireAuth,
-        //   ),
-        // )
+        ..interceptors.add(
+          TokenInterceptor(
+            requireAuth: requireAuth,
+          ),
+        )
         ..interceptors.add(
           LogInterceptor(
             responseHeader: true,

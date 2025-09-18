@@ -37,11 +37,11 @@ class App extends StatelessWidget {
                     previous.status != current.status,
                 listener: (context, state) {
                   switch (state.status) {
-                    case AuthStatus.initial:
+                    case AuthStatus.unknown:
                       break;
                     case AuthStatus.unAuthenticated:
                       appRouter.pushAndPopUntil(
-                        LandingRoute(),
+                        const LandingRoute(),
                         predicate: (route) => false,
                       );
                     case AuthStatus.authenticated:
@@ -52,7 +52,7 @@ class App extends StatelessWidget {
                   }
                 },
                 builder: (context, state) {
-                  if (state.status == AuthStatus.initial) {
+                  if (state.status == AuthStatus.unknown) {
                     return const SplashScreen();
                   }
                   return child!;

@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:snip_fair/core/network/handlers.dart';
 import 'package:snip_fair/core/utils/base/base_event.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
-import 'package:logger/logger.dart';
 
 abstract class BaseBloc<E extends BaseEvent, S extends BaseState>
     extends Bloc<E, S> {

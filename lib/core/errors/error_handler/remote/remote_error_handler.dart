@@ -18,26 +18,21 @@ class RemoteErrorHandler
           exception,
         );
 
-        break;
-
       case RemoteExceptionKind.noInternet:
         listener.onNoInterNetConnectionError(
           context,
           'Please check your network connection',
         );
-        break;
       case RemoteExceptionKind.network:
         listener.onNetworkError(
           context,
           'An error occurred, try again (100)',
         );
-        break;
       case RemoteExceptionKind.timeout:
         listener.onTimeoutError(
           context,
           'Please check your network connection',
         );
-        break;
       case RemoteExceptionKind.cancellation:
         break;
       case RemoteExceptionKind.unexpected:
@@ -45,7 +40,6 @@ class RemoteErrorHandler
           context,
           'An unexpected error occurred',
         );
-        break;
       case RemoteExceptionKind.http:
         if (exception.isServerInternalError) {
           listener.onServerInternalError(
@@ -58,7 +52,6 @@ class RemoteErrorHandler
             'An unexpected error occurred',
           );
         }
-        break;
     }
   }
 }

@@ -9,7 +9,7 @@ class AppTheme {
   static ThemeData get lightTheme => ThemeData.light().copyWith(
         colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primaryColor, primary: AppColors.primaryColor),
-        textTheme: GoogleFonts.bioRhymeTextTheme(),
+        textTheme: GoogleFonts.interTextTheme(),
         scaffoldBackgroundColor: AppColors.grey100,
       );
   static ThemeData get darkTheme => ThemeData.dark().copyWith(
@@ -17,6 +17,6 @@ class AppTheme {
           seedColor: AppColors.primaryColor,
           brightness: Brightness.dark,
         ),
-        textTheme: GoogleFonts.bioRhymeTextTheme(),
+        textTheme: GoogleFonts.interTextTheme(),
       );
 }

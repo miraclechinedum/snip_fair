@@ -1,14 +1,14 @@
 import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/domain/entities/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snip_fair/core/domain/entities/user/user.dart';
 import 'package:snip_fair/core/errors/exception/local_exception.dart';
 import 'package:snip_fair/core/utils/preferences/config/shared_pref_key.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 @Injectable()
-class AppPreferences {
-  AppPreferences(this._sharedPreferences);
+class LocalKeyStorage {
+  LocalKeyStorage(this._sharedPreferences);
 
   final SharedPreferences _sharedPreferences;
 

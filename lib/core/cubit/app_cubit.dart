@@ -1,18 +1,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart' hide Environment;
-import 'package:snip_fair/core/data/datasources/authentication_remote_source.dart';
-import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/user.dart';
-import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
+import 'package:snip_fair/core/domain/entities/user/user.dart';
 
 part 'app_state.dart';
 
 @Injectable()
 class AppCubit extends Cubit<AppState> {
-  AppCubit(this._remoteSource) : super(const AppState.initial());
+  AppCubit(this._repository) : super(const AppState.initial());
 
-  final AuthenticationRemoteSource _remoteSource;
+  final AuthenticationRepository _repository;
 
   Future<void> onAppStarted() async {
     await Future.delayed(Duration(seconds: 2));

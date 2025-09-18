@@ -43,52 +43,46 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ]
               : null,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                if (showLeadingArrow)
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      side: const BorderSide(
-                        color: AppColors.primaryGrey,
-                      ),
-                      foregroundColor: AppColors.primaryGrey,
-                      fixedSize: const Size(46, 46),
-                      alignment: Alignment.center,
-                    ),
-                    onPressed: () {
-                      if (onBackPressed != null) {
-                        onBackPressed!();
-                      } else {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.black,
-                    ),
+        child: SafeArea(
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              if (showLeadingArrow)
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    side: BorderSide.none,
+                    foregroundColor: AppColors.primaryGrey,
+                    fixedSize: const Size(46, 46),
+                    alignment: Alignment.center,
                   ),
-                20.horizontalSpace,
-                if (title != null)
-                  Align(
-                    alignment: showLeadingArrow
-                        ? Alignment.center
-                        : Alignment.centerLeft,
-                    child: AppText(
-                      text: title!,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.black,
-                    ),
+                  onPressed: () {
+                    if (onBackPressed != null) {
+                      onBackPressed!();
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: AppColors.black,
                   ),
-              ],
-            ),
-            5.verticalSpace,
-          ],
+                ),
+              20.horizontalSpace,
+              if (title != null)
+                Align(
+                  alignment: showLeadingArrow
+                      ? Alignment.center
+                      : Alignment.centerLeft,
+                  child: AppText(
+                    text: title!,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

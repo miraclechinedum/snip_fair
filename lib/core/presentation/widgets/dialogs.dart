@@ -103,42 +103,49 @@ class OnFailDialogContent extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: Stack(
-        alignment: AlignmentDirectional.topCenter,
+        alignment: AlignmentDirectional.center,
         children: [
           // inserted widget
           Padding(
             padding: const EdgeInsets.all(24).dg,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                10.verticalSpace,
-
-                // image
                 Expanded(
-                    child: Icon(
-                  Icons.error,
-                  size: 60.sp,
-                  color: Colors.red,
-                )),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      10.verticalSpace,
 
-                10.verticalSpace,
+                      // image
+                      Icon(
+                        Icons.settings_power_sharp,
+                        size: 60.sp,
+                        color: Colors.red,
+                      ),
 
-                // success
-                const AppText(
-                  text: 'Oops',
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 24,
-                ),
+                      10.verticalSpace,
 
-                10.verticalSpace,
+                      // success
+                      const AppText(
+                        text: 'Oops!',
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 24,
+                      ),
 
-                // text
-                AppText(
-                  text: subtext,
-                  color: AppColors.grey4,
-                  fontWeight: FontWeight.w600,
-                  textAlign: TextAlign.center,
-                  fontSize: 14,
+                      10.verticalSpace,
+
+                      // text
+                      AppText(
+                        text: subtext,
+                        color: AppColors.grey4,
+                        fontWeight: FontWeight.w600,
+                        textAlign: TextAlign.center,
+                        fontSize: 14,
+                      ),
+                    ],
+                  ),
                 ),
 
                 15.verticalSpace,

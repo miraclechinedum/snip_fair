@@ -40,6 +40,7 @@ class AppHelper {
       context: context,
       barrierDismissible: barrierDismissible,
       builder: (context) => Dialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(

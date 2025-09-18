@@ -1,4 +1,5 @@
-import 'package:auto_route/auto_route.dart';
+// ignore_for_file: always_use_package_imports
+
 import 'package:flutter/material.dart';
 
 import '../../presentation/widgets/dialogs.dart';
@@ -66,6 +67,7 @@ mixin ErrorListenerMixin implements LocalErrorListener, RemoteErrorListener {
   }) {
     AppHelper.showAppDialog<void>(
       context,
+      barrierDismissible: true,
       OnFailDialogContent(
         subtext: message,
         onDoneCallback: (ctx) {

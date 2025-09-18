@@ -10,7 +10,7 @@ import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 class AppTextStyle extends Equatable {
   /// Headline 1 text style
   static TextStyle get headline1 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 64.sp,
       fontWeight: FontWeight.w700,
     );
@@ -18,7 +18,7 @@ class AppTextStyle extends Equatable {
 
   /// Headline 2 text style
   static TextStyle get headline2 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 48.sp,
       fontWeight: FontWeight.w700,
     );
@@ -26,7 +26,7 @@ class AppTextStyle extends Equatable {
 
   /// Headline 3 text style
   static TextStyle get headline3 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 32.sp,
       fontWeight: FontWeight.w700,
       color: AppColors.black,
@@ -35,7 +35,7 @@ class AppTextStyle extends Equatable {
 
   /// Headline 4 text style
   static TextStyle get headline4 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 24.sp,
       fontWeight: FontWeight.w700,
     );
@@ -43,7 +43,7 @@ class AppTextStyle extends Equatable {
 
   /// Headline 5 text style
   static TextStyle get headline5 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 20.sp,
       fontWeight: FontWeight.w700,
     );
@@ -51,7 +51,7 @@ class AppTextStyle extends Equatable {
 
   /// Headline 6 text style
   static TextStyle get headline6 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 18.sp,
       fontWeight: FontWeight.w700,
     );
@@ -59,21 +59,21 @@ class AppTextStyle extends Equatable {
 
   /// Body 1 text style
   static TextStyle get body1 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 16.sp,
     );
   }
 
   /// Body 2 text style
   static TextStyle get body2 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 14.sp,
     );
   }
 
   /// Subtitle 1 text style
   static TextStyle get subTitle1 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 18.sp,
       fontWeight: FontWeight.w600,
     );
@@ -81,14 +81,14 @@ class AppTextStyle extends Equatable {
 
   /// Subtitle 2 text style
   static TextStyle get subTitle2 {
-    return GoogleFonts.dmSans(
+    return GoogleFonts.inter(
       fontSize: 14.sp,
       fontWeight: FontWeight.w400,
     );
   }
 
   static TextStyle get caption {
-    return GoogleFonts.bioRhyme(fontSize: 12.sp);
+    return GoogleFonts.inter(fontSize: 12.sp);
   }
 
   @override
