@@ -58,6 +58,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
+                          contentPadding: EdgeInsets.zero,
                           subtitle: const AppText(
                             text:
                                 'Automatically transfer earnings to your bank account',
@@ -79,6 +80,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
+                          contentPadding: EdgeInsets.zero,
                           subtitle: const AppText(
                             text:
                                 'Choose to submit your payment request at your convenience',

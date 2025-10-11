@@ -56,7 +56,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> onLogout() async {
-    emit(AppState.initial(state.user));
+    emit(AppState.initial(state.user, state.platformSettings));
     final result = await _repository.logout();
     result.when(
       success: (user) {

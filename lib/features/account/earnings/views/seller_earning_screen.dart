@@ -188,6 +188,7 @@ class SellerEarningScreen extends StatelessWidget implements AutoRouteWrapper {
                     else ...[
                       ListTile(
                         minLeadingWidth: 10,
+                       
                         leading: const Icon(
                           Iconsax.card,
                           size: 15,

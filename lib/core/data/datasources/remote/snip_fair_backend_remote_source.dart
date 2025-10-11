@@ -424,7 +424,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
                 )
               : medias[i].completeImagePath(),
       });
-
+      print(formData.fields.map((e) => '${e.key} ${e.value}'));
       await client.post<Map<String, dynamic>>(
         AuthPath.stylistProfile,
         queryParameters: {'_method': 'PATCH'},

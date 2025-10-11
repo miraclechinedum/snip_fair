@@ -19,6 +19,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/profile_management/views/seller_profile_management_screen.dart';
@@ -136,7 +137,10 @@ class SellerProfileVerificationScreen extends StatelessWidget
                               width: 160.w,
                               child: CustomButton(
                                 title: 'Set Up Portfolio',
-                                onPressed: () {},
+                                onPressed: () {
+                                  context.router
+                                      .push(const SellerPortfolioRoute());
+                                },
                               ),
                             )
                           else
