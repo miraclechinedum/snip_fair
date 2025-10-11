@@ -19,7 +19,7 @@ sealed class User with _$User {
     String? bio,
     String? type,
     String? role,
-    dynamic avatar,
+    String? avatar,
     @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
     String? status,
     @JsonKey(name: 'created_at') DateTime? createdAt,

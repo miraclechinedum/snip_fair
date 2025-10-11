@@ -8,9 +8,9 @@ class AppTheme {
 
   static ThemeData get lightTheme => ThemeData.light().copyWith(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primaryColor, primary: AppColors.primaryColor),
+          seedColor: AppColors.primaryColor,
+        ),
         textTheme: GoogleFonts.interTextTheme(),
-        scaffoldBackgroundColor: AppColors.grey100,
       );
   static ThemeData get darkTheme => ThemeData.dark().copyWith(
         colorScheme: ColorScheme.fromSeed(

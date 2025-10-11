@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../presentation/theme/theme.dart';
@@ -67,7 +70,7 @@ class AppHelper {
       duration: const Duration(seconds: 3),
       content: Text(
         message,
-        style: AppTextStyle.body2.copyWith(color: Colors.white),
+        style: AppTextStyle.body2.copyWith(color: const Color(0xffDFBF50)),
       ),
       // action: SnackBarAction(
       //   label: 'Close',
@@ -94,7 +97,7 @@ class AppHelper {
   static void showNoConnectionSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final snackBar = SnackBar(
-      backgroundColor: Color.fromARGB(255, 99, 240, 104),
+      backgroundColor: const Color.fromARGB(255, 99, 240, 104),
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 3),
       content: Text(
@@ -117,7 +120,7 @@ class AppHelper {
     required BuildContext context,
     required Widget modal,
     required bool isDarkMode,
-    double radius = 16,
+    double radius = 12,
     bool isDrag = true,
     bool isDismissible = true,
     double paddingTop = 100,
@@ -153,7 +156,7 @@ class AppHelper {
           Radius.circular(radius),
         ),
       ),
-      contentPadding: EdgeInsets.all(20),
+      contentPadding: const EdgeInsets.all(20),
       iconPadding: EdgeInsets.zero,
       content: child,
     );
@@ -226,8 +229,14 @@ class AppHelper {
     return MediaQuery.of(context).size.height * value;
   }
 
-  static Future<AndroidDeviceInfo> getDeviceInfo() async {
-    return DeviceInfoPlugin().androidInfo;
+  static Future<BaseDeviceInfo> getDeviceInfo() async {
+    if (Platform.isAndroid) {
+      return DeviceInfoPlugin().androidInfo;
+    } else if (Platform.isIOS) {
+      return DeviceInfoPlugin().iosInfo;
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   static String getGreeting() {
@@ -239,5 +248,66 @@ class AppHelper {
     } else {
       return 'Good evening';
     }
+  }
+
+  static int profilePercentCompletion(ProfileCompleteness profileCompleteness) {
+    int percent = 0;
+    if (profileCompleteness.paymentMethod ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.statusApproved ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.locationService != null) {
+      percent += 10;
+    }
+    if (profileCompleteness.address ?? false) {
+      percent += 10;
+    }
+    // if (profileCompleteness.subscriptionStatus ?? false) {
+    //   percent += 10;
+    // }
+    if (profileCompleteness.socialLinks ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.works ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.userAvatar ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.userBio ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.portfolio ?? false) {
+      percent += 10;
+    }
+    if (profileCompleteness.userBanner ?? false) {
+      percent += 10;
+    }
+    return percent;
+  }
+
+  static bool isStylistProfileComplete(
+      ProfileCompleteness profileCompleteness) {
+    return profilePercentCompletion(profileCompleteness) == 100;
+  }
+
+  static bool isStylist(BuildContext context) {
+    final user = context.read<AppCubit>().state;
+    return user.isStylist;
+  }
+
+  static String initialsFromName(String firstName, String lastName) {
+    return (firstName.isNotEmpty ? firstName[0] : '') +
+        (lastName.isNotEmpty ? lastName[0] : '');
+  }
+
+  static void unfocus(BuildContext context) =>
+      WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+
+  static PlatformSettings appSettings(BuildContext context) {
+    return context.read<AppCubit>().state.platformSettings ??
+        PlatformSettings();
   }
 }

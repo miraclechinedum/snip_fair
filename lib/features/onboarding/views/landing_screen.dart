@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
@@ -43,6 +45,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.watch<AppCubit>();
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -91,20 +94,23 @@ class _LandingScreenState extends State<LandingScreen> {
                     20.verticalSpace,
                     CustomButton(
                       onPressed: () {
-                        context.router.push(const LoginRoute());
+                        context.router.push(LoginRoute());
                       },
                       title: 'Book an Appointment',
                     ),
                     12.verticalSpace,
-                    CustomButton(
-                      title: 'Sign Up Now',
-                      onPressed: () {
-                        context.router.push(const SignupRoute());
-                      },
-                      gradient: null,
-                      textColor: Colors.black,
-                      background: Colors.white,
-                    ),
+                    if (cubit.state.platformSettings
+                            ?.allowRegistrationStylists ??
+                        false)
+                      CustomButton(
+                        title: 'Continue as a Stylist',
+                        onPressed: () {
+                          context.router.push(LoginRoute(isStylist: true));
+                        },
+                        gradient: null,
+                        textColor: Colors.black,
+                        background: Colors.white,
+                      ),
                   ],
                 ),
               ),

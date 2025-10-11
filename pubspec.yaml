@@ -9,10 +9,15 @@ environment:
 dependencies:
   auto_route: ^10.1.2
   bloc: ^8.1.4
+  cached_network_image: ^3.4.1
   currency_text_input_formatter: ^2.3.0
   device_info_plus: ^11.5.0
   dio: ^5.9.0
+  dotted_border: ^3.1.0
+  drop_down_search_field: ^1.2.2
   equatable: ^2.0.7
+  file_picker: ^10.3.3
+  fl_chart: ^1.1.1
   flutter:
     sdk: flutter
   flutter_bloc: ^8.1.6
@@ -27,6 +32,7 @@ dependencies:
   geolocator: ^14.0.2
   get_it: ^8.2.0
   google_fonts: ^6.3.1
+  iconsax: ^0.0.8
   injectable: ^2.5.1
   intl: ^0.19.0
   # intl_phone_number_input: ^0.7.4
@@ -37,6 +43,9 @@ dependencies:
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
   video_player: ^2.10.0
+
+dependency_overrides: 
+  vector_math: ^2.2.0
 
 
 

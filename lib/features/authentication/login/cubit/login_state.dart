@@ -5,6 +5,7 @@ class LoginState extends BaseState {
     required this.email,
     required this.password,
     required this.loginResult,
+    required this.showPassword,
     super.exception,
     super.isLoading,
   });
@@ -14,10 +15,12 @@ class LoginState extends BaseState {
           email: const EmailInput.pure(),
           password: const PasswordInput.pure(),
           loginResult: const ProcessState.init(null),
+          showPassword: false,
         );
 
   final EmailInput email;
   final PasswordInput password;
+  final bool showPassword;
   final ProcessState<LoginResponse> loginResult;
 
   bool get canLogin =>
@@ -28,6 +31,7 @@ class LoginState extends BaseState {
     EmailInput? email,
     PasswordInput? password,
     ProcessState<LoginResponse>? loginResult,
+    bool? showPassword,
     Exception? exception,
     bool? isLoading,
   }) {
@@ -35,6 +39,7 @@ class LoginState extends BaseState {
       email: email ?? this.email,
       password: password ?? this.password,
       loginResult: loginResult ?? this.loginResult,
+      showPassword: showPassword ?? this.showPassword,
       exception: exception ?? this.exception,
       isLoading: isLoading ?? this.isLoading,
     );
@@ -45,6 +50,7 @@ class LoginState extends BaseState {
         email,
         password,
         loginResult,
+        showPassword,
         exception,
         isLoading,
       ];

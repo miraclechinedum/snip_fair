@@ -19,6 +19,7 @@ class TokenInterceptor extends Interceptor {
       final token = getIt<LocalKeyStorage>().accessToken;
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
+        handler.next(options);
       } else {
         handler.reject(
           DioException(
@@ -27,7 +28,6 @@ class TokenInterceptor extends Interceptor {
           ),
         );
       }
-      handler.next(options);
     } else {
       handler.next(options);
     }

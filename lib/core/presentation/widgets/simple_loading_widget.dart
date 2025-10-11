@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
 
 class SimpleLoadingWidget extends StatefulWidget {
   const SimpleLoadingWidget({
@@ -40,7 +41,7 @@ class _SimpleLoadingWidgetState extends State<SimpleLoadingWidget>
     return Center(
       child: ScaleTransition(
         scale: animation,
-        child: CircularProgressIndicator(),
+        child: Image.asset(Assets.images.logo),
       ),
     );
   }

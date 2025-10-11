@@ -12,7 +12,8 @@ class HttpService {
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           sendTimeout: const Duration(seconds: 60),
-          validateStatus: (status) => status == 200 || status == 201,
+          validateStatus: (status) =>
+              status != null && status >= 200 && status < 300,
           headers: {
             'Accept':
                 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',

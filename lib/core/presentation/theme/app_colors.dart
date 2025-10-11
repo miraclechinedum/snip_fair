@@ -8,7 +8,7 @@ class AppColors {
   const AppColors._();
 
   //Pyramid Green
-  static const primaryColor = Color(0xffB92FAE);
+  static const primaryColor = Color(0xff9134E9);
 
   //Icon lemon
   static const iconLemon = Color(0xff66b93b);
@@ -23,9 +23,9 @@ class AppColors {
   static const transparent = Color(0x00000000);
 
   //Neutral Colors
-  static const grey1 = Color(0xffe8e8e8);
+  static const grey1 = Color(0xffE4E4E7);
   static const grey2 = Color(0xffA6A6A6);
-  static const grey3 = Color(0xff85858A);
+  static const grey3 = Color(0xff505E6D);
   static const grey4 = Color(0xff535353);
   static const grey5 = Color(0xffDFD9D6);
 
@@ -35,7 +35,7 @@ class AppColors {
   static const darkGrey300 = Color(0xffC9D4EA);
 
   static const grey200 = Color(0xffE1E9F8);
-  static const grey300 = Color(0xffF4F7FE);
+  static const grey300 = Color(0xffD1D5DB);
   static const grey400 = Color(0xffB0BBD5);
   static const grey500 = Color(0xff8F9BBA);
   static const grey600 = Color(0xffB7C2D8);
@@ -48,18 +48,19 @@ class AppColors {
 
   static const darkTaupe = Color(0xff817B76);
 
-  static LinearGradient appgradient = const LinearGradient(
-      begin: FractionalOffset(0.03, 0),
-      end: FractionalOffset(0.9, 0.2),
-      tileMode: TileMode.mirror,
-      colors: [Color.fromARGB(255, 9, 93, 52), AppColors.primaryColor]);
+  static const LinearGradient appgradient = LinearGradient(
+    colors: [Color(0xff7F80DC), Color(0xffD52A81)],
+    stops: [0, 0.5],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   static List<BoxShadow> defaultBoxShadow = [
     BoxShadow(
-      color: Colors.grey.withOpacity(0.2),
+      color: Colors.grey.withOpacity(0.1),
       spreadRadius: 0,
-      blurRadius: 16,
-      offset: const Offset(0, -4),
+      blurRadius: 10,
+      offset: const Offset(1, 1),
     ),
   ];
   static List<BoxShadow> yellowBoxShadow = [
@@ -82,32 +83,21 @@ class AppColors {
   static const Color contentColorRed = Color(0xFFE80054);
   static const Color contentColorCyan = Color(0xFF50E4FF);
 
+  static const Color success = Color.fromARGB(255, 7, 172, 18);
+
   static var inputDecoration = InputDecoration(
-    prefixIconConstraints: BoxConstraints(maxHeight: 30.h, minWidth: 50.w),
-    // suffixIconConstraints:
-    //     const BoxConstraints(maxHeight: 30, maxWidth: 30),
-
-    floatingLabelBehavior: FloatingLabelBehavior.always,
-
     hintStyle: AppTextStyle.body1.copyWith(
-      fontSize: 12.sp,
-      color: AppColors.grey500,
+      color: AppColors.grey2,
     ),
-    // labelText: label,
 
-    labelStyle: AppTextStyle.body1.copyWith(
-      fontSize: 10.sp,
-      color: AppColors.grey500,
-    ),
     alignLabelWithHint: true,
 
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10).dg,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14).dg,
     // floatingLabelBehavior: FloatingLabelBehavior.always,
-    fillColor: AppColors.grey300,
-    filled: true,
+
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: AppColors.grey2),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
@@ -115,18 +105,18 @@ class AppColors {
     ),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: const BorderSide(color: AppColors.grey2),
+      borderSide: const BorderSide(color: AppColors.primaryColor),
     ),
     focusedErrorBorder: const OutlineInputBorder(
       borderSide: BorderSide(color: AppColors.grey2),
     ),
     disabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: AppColors.grey2),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: AppColors.primaryColor),
     ),
   );
 }

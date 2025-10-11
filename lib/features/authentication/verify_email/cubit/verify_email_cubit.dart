@@ -24,7 +24,7 @@ class VerifyEmailCubit extends BaseCubit<VerifyEmailState> {
     emit(state.copyWith(otp: OtpInput.dirty(value)));
   }
 
-  Future<void> forgotPassword() async {
+  Future<void> verifyEmail() async {
     await launchApiCall(
       () => _repository.verifyEmail(state.otp.value),
       doOnLoading: () =>

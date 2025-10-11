@@ -21,7 +21,7 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
       bio: json['bio'] as String?,
       type: json['type'] as String?,
       role: json['role'] as String?,
-      avatar: json['avatar'],
+      avatar: json['avatar'] as String?,
       lastLoginAt: json['last_login_at'] == null
           ? null
           : DateTime.parse(json['last_login_at'] as String),

@@ -9,14 +9,14 @@ part of 'stylist_profile.dart';
 _StylistProfile _$StylistProfileFromJson(Map<String, dynamic> json) =>
     _StylistProfile(
       id: (json['id'] as num?)?.toInt(),
-      userId: (json['user_id'] as num?)?.toInt(),
+      userId: json['user_id'] as String?,
       businessName: json['business_name'] as String?,
       yearsOfExperience: (json['years_of_experience'] as num?)?.toInt(),
       identificationId: json['identification_id'] as String?,
       identificationFile: json['identification_file'] as String?,
       visitsCount: (json['visits_count'] as num?)?.toInt(),
       status: json['status'] as String?,
-      isAvailable: (json['is_available'] as num?)?.toInt(),
+      isAvailable: json['is_available'] as bool?,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),

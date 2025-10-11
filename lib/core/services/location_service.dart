@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
+import 'package:snip_fair/core/data/models/remote/auto_complete_result.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
+import 'package:snip_fair/core/network/http_service.dart';
 
 @LazySingleton()
 class LocationService {
@@ -77,5 +81,36 @@ class LocationService {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     return Geolocator.getCurrentPosition();
+  }
+
+  Future<List<GeoPlace>> placeSearch(String query) async {
+    try {
+      final response = await Dio(
+        BaseOptions(
+          baseUrl: 'https://api.geoapify.com',
+          validateStatus: (status) => status == 200,
+        ),
+      ).get<Map<String, dynamic>>('/v1/geocode/autocomplete', queryParameters: {
+        'text': query,
+        'apiKey': '444cf10f491e417d81d839ee58801389',
+        'limit': '5',
+        'lang': 'za',
+        'filter': 'countrycode:za',
+      });
+
+      final autocomplete = AutoCompleteResult.fromJson(response.data!);
+      return autocomplete.features!
+          .map(
+            (element) => GeoPlace(
+              address: element.properties?.formatted ?? 'N/A',
+              lat: element.properties?.lat ?? 0.0,
+              lng: element.properties?.lon ?? 0.0,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      Logger().e('PLACE SEARCH ERROR: ', error: e);
+      return [];
+    }
   }
 }

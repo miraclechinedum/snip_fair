@@ -30,7 +30,7 @@ mixin _$User {
   String? get bio;
   String? get type;
   String? get role;
-  dynamic get avatar;
+  String? get avatar;
   @JsonKey(name: 'last_login_at')
   DateTime? get lastLoginAt;
   String? get status;
@@ -83,7 +83,7 @@ mixin _$User {
             (identical(other.bio, bio) || other.bio == bio) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.role, role) || other.role == role) &&
-            const DeepCollectionEquality().equals(other.avatar, avatar) &&
+            (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.lastLoginAt, lastLoginAt) ||
                 other.lastLoginAt == lastLoginAt) &&
             (identical(other.status, status) || other.status == status) &&
@@ -122,7 +122,7 @@ mixin _$User {
         bio,
         type,
         role,
-        const DeepCollectionEquality().hash(avatar),
+        avatar,
         lastLoginAt,
         status,
         createdAt,
@@ -161,7 +161,7 @@ abstract mixin class $UserCopyWith<$Res> {
       String? bio,
       String? type,
       String? role,
-      dynamic avatar,
+      String? avatar,
       @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
       String? status,
       @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -268,7 +268,7 @@ class _$UserCopyWithImpl<$Res> implements $UserCopyWith<$Res> {
       avatar: freezed == avatar
           ? _self.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as dynamic,
+              as String?,
       lastLoginAt: freezed == lastLoginAt
           ? _self.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable
@@ -439,7 +439,7 @@ extension UserPatterns on User {
             String? bio,
             String? type,
             String? role,
-            dynamic avatar,
+            String? avatar,
             @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
             String? status,
             @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -517,7 +517,7 @@ extension UserPatterns on User {
             String? bio,
             String? type,
             String? role,
-            dynamic avatar,
+            String? avatar,
             @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
             String? status,
             @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -591,7 +591,7 @@ extension UserPatterns on User {
             String? bio,
             String? type,
             String? role,
-            dynamic avatar,
+            String? avatar,
             @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
             String? status,
             @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -701,7 +701,7 @@ class _User implements User {
   @override
   final String? role;
   @override
-  final dynamic avatar;
+  final String? avatar;
   @override
   @JsonKey(name: 'last_login_at')
   final DateTime? lastLoginAt;
@@ -771,7 +771,7 @@ class _User implements User {
             (identical(other.bio, bio) || other.bio == bio) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.role, role) || other.role == role) &&
-            const DeepCollectionEquality().equals(other.avatar, avatar) &&
+            (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.lastLoginAt, lastLoginAt) ||
                 other.lastLoginAt == lastLoginAt) &&
             (identical(other.status, status) || other.status == status) &&
@@ -810,7 +810,7 @@ class _User implements User {
         bio,
         type,
         role,
-        const DeepCollectionEquality().hash(avatar),
+        avatar,
         lastLoginAt,
         status,
         createdAt,
@@ -850,7 +850,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
       String? bio,
       String? type,
       String? role,
-      dynamic avatar,
+      String? avatar,
       @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
       String? status,
       @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -958,7 +958,7 @@ class __$UserCopyWithImpl<$Res> implements _$UserCopyWith<$Res> {
       avatar: freezed == avatar
           ? _self.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as dynamic,
+              as String?,
       lastLoginAt: freezed == lastLoginAt
           ? _self.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable

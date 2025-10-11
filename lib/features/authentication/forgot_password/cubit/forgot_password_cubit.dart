@@ -18,7 +18,7 @@ class ForgotPasswordCubit extends BaseCubit<ForgotPasswordState> {
   ) : super(const ForgotPasswordState.initial());
 
   final AuthenticationRepository _repository;
-  
+
   void onEmailChanged(String value) {
     emit(state.copyWith(email: EmailInput.dirty(value)));
   }

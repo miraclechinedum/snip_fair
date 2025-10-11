@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
@@ -11,9 +12,11 @@ class OnSuccessDialogContent extends StatelessWidget {
     required this.subtext,
     this.onDoneCallback,
     this.buttonText,
+    this.mainText,
     super.key,
   });
   final String subtext;
+  final String? mainText;
   final String? buttonText;
   final void Function(BuildContext)? onDoneCallback;
 
@@ -40,16 +43,16 @@ class OnSuccessDialogContent extends StatelessWidget {
                 // image
                 Expanded(
                     child: Icon(
-                  Icons.check_circle,
-                  size: 60.sp,
+                  Iconsax.tick_square,
+                  size: 100.sp,
                   color: const Color(0xff008000),
                 )),
 
                 10.verticalSpace,
 
                 // success
-                const AppText(
-                  text: 'Success',
+                AppText(
+                  text: mainText ?? 'Success',
                   color: Colors.black,
                   fontWeight: FontWeight.w700,
                   fontSize: 24,
@@ -113,22 +116,22 @@ class OnFailDialogContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       10.verticalSpace,
 
                       // image
                       Icon(
-                        Icons.settings_power_sharp,
-                        size: 60.sp,
+                        Icons.error_outline,
+                        size: 70.sp,
                         color: Colors.red,
                       ),
 
-                      10.verticalSpace,
+                      40.verticalSpace,
 
                       // success
                       const AppText(
-                        text: 'Oops!',
+                        text: 'Error!!',
                         color: Colors.black,
                         fontWeight: FontWeight.w900,
                         fontSize: 24,
@@ -139,7 +142,7 @@ class OnFailDialogContent extends StatelessWidget {
                       // text
                       AppText(
                         text: subtext,
-                        color: AppColors.grey4,
+                        color: AppColors.contentColorRed,
                         fontWeight: FontWeight.w600,
                         textAlign: TextAlign.center,
                         fontSize: 14,

@@ -1,0 +1,2 @@
+/Users/user/Documents/Personal Projects/snip_fair/android/app/.cxx/RelWithDebInfo/57222q2z/x86/CMakeFiles/edit_cache.dir
+/Users/user/Documents/Personal Projects/snip_fair/android/app/.cxx/RelWithDebInfo/57222q2z/x86/CMakeFiles/rebuild_cache.dir

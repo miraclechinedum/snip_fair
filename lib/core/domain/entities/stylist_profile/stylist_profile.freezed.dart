@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$StylistProfile {
   int? get id;
   @JsonKey(name: 'user_id')
-  int? get userId;
+  String? get userId;
   @JsonKey(name: 'business_name')
   String? get businessName;
   @JsonKey(name: 'years_of_experience')
@@ -29,7 +29,7 @@ mixin _$StylistProfile {
   int? get visitsCount;
   String? get status;
   @JsonKey(name: 'is_available')
-  int? get isAvailable;
+  bool? get isAvailable;
   @JsonKey(name: 'created_at')
   DateTime? get createdAt;
   @JsonKey(name: 'updated_at')
@@ -111,14 +111,14 @@ abstract mixin class $StylistProfileCopyWith<$Res> {
   @useResult
   $Res call(
       {int? id,
-      @JsonKey(name: 'user_id') int? userId,
+      @JsonKey(name: 'user_id') String? userId,
       @JsonKey(name: 'business_name') String? businessName,
       @JsonKey(name: 'years_of_experience') int? yearsOfExperience,
       @JsonKey(name: 'identification_id') String? identificationId,
       @JsonKey(name: 'identification_file') String? identificationFile,
       @JsonKey(name: 'visits_count') int? visitsCount,
       String? status,
-      @JsonKey(name: 'is_available') int? isAvailable,
+      @JsonKey(name: 'is_available') bool? isAvailable,
       @JsonKey(name: 'created_at') DateTime? createdAt,
       @JsonKey(name: 'updated_at') DateTime? updatedAt,
       dynamic banner,
@@ -162,7 +162,7 @@ class _$StylistProfileCopyWithImpl<$Res>
       userId: freezed == userId
           ? _self.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as String?,
       businessName: freezed == businessName
           ? _self.businessName
           : businessName // ignore: cast_nullable_to_non_nullable
@@ -190,7 +190,7 @@ class _$StylistProfileCopyWithImpl<$Res>
       isAvailable: freezed == isAvailable
           ? _self.isAvailable
           : isAvailable // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as bool?,
       createdAt: freezed == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -308,14 +308,14 @@ extension StylistProfilePatterns on StylistProfile {
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
             int? id,
-            @JsonKey(name: 'user_id') int? userId,
+            @JsonKey(name: 'user_id') String? userId,
             @JsonKey(name: 'business_name') String? businessName,
             @JsonKey(name: 'years_of_experience') int? yearsOfExperience,
             @JsonKey(name: 'identification_id') String? identificationId,
             @JsonKey(name: 'identification_file') String? identificationFile,
             @JsonKey(name: 'visits_count') int? visitsCount,
             String? status,
-            @JsonKey(name: 'is_available') int? isAvailable,
+            @JsonKey(name: 'is_available') bool? isAvailable,
             @JsonKey(name: 'created_at') DateTime? createdAt,
             @JsonKey(name: 'updated_at') DateTime? updatedAt,
             dynamic banner,
@@ -364,14 +364,14 @@ extension StylistProfilePatterns on StylistProfile {
   TResult when<TResult extends Object?>(
     TResult Function(
             int? id,
-            @JsonKey(name: 'user_id') int? userId,
+            @JsonKey(name: 'user_id') String? userId,
             @JsonKey(name: 'business_name') String? businessName,
             @JsonKey(name: 'years_of_experience') int? yearsOfExperience,
             @JsonKey(name: 'identification_id') String? identificationId,
             @JsonKey(name: 'identification_file') String? identificationFile,
             @JsonKey(name: 'visits_count') int? visitsCount,
             String? status,
-            @JsonKey(name: 'is_available') int? isAvailable,
+            @JsonKey(name: 'is_available') bool? isAvailable,
             @JsonKey(name: 'created_at') DateTime? createdAt,
             @JsonKey(name: 'updated_at') DateTime? updatedAt,
             dynamic banner,
@@ -416,14 +416,14 @@ extension StylistProfilePatterns on StylistProfile {
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
             int? id,
-            @JsonKey(name: 'user_id') int? userId,
+            @JsonKey(name: 'user_id') String? userId,
             @JsonKey(name: 'business_name') String? businessName,
             @JsonKey(name: 'years_of_experience') int? yearsOfExperience,
             @JsonKey(name: 'identification_id') String? identificationId,
             @JsonKey(name: 'identification_file') String? identificationFile,
             @JsonKey(name: 'visits_count') int? visitsCount,
             String? status,
-            @JsonKey(name: 'is_available') int? isAvailable,
+            @JsonKey(name: 'is_available') bool? isAvailable,
             @JsonKey(name: 'created_at') DateTime? createdAt,
             @JsonKey(name: 'updated_at') DateTime? updatedAt,
             dynamic banner,
@@ -480,7 +480,7 @@ class _StylistProfile implements StylistProfile {
   final int? id;
   @override
   @JsonKey(name: 'user_id')
-  final int? userId;
+  final String? userId;
   @override
   @JsonKey(name: 'business_name')
   final String? businessName;
@@ -500,7 +500,7 @@ class _StylistProfile implements StylistProfile {
   final String? status;
   @override
   @JsonKey(name: 'is_available')
-  final int? isAvailable;
+  final bool? isAvailable;
   @override
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
@@ -593,14 +593,14 @@ abstract mixin class _$StylistProfileCopyWith<$Res>
   @useResult
   $Res call(
       {int? id,
-      @JsonKey(name: 'user_id') int? userId,
+      @JsonKey(name: 'user_id') String? userId,
       @JsonKey(name: 'business_name') String? businessName,
       @JsonKey(name: 'years_of_experience') int? yearsOfExperience,
       @JsonKey(name: 'identification_id') String? identificationId,
       @JsonKey(name: 'identification_file') String? identificationFile,
       @JsonKey(name: 'visits_count') int? visitsCount,
       String? status,
-      @JsonKey(name: 'is_available') int? isAvailable,
+      @JsonKey(name: 'is_available') bool? isAvailable,
       @JsonKey(name: 'created_at') DateTime? createdAt,
       @JsonKey(name: 'updated_at') DateTime? updatedAt,
       dynamic banner,
@@ -644,7 +644,7 @@ class __$StylistProfileCopyWithImpl<$Res>
       userId: freezed == userId
           ? _self.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as String?,
       businessName: freezed == businessName
           ? _self.businessName
           : businessName // ignore: cast_nullable_to_non_nullable
@@ -672,7 +672,7 @@ class __$StylistProfileCopyWithImpl<$Res>
       isAvailable: freezed == isAvailable
           ? _self.isAvailable
           : isAvailable // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as bool?,
       createdAt: freezed == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable

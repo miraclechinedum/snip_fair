@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/animation_button_effect.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({
@@ -18,11 +18,7 @@ class CustomButton extends StatelessWidget {
     this.borderColor = AppColors.transparent,
     this.iconIsTrailing = false,
     this.isOutline = false,
-    this.gradient = const LinearGradient(
-      colors: [Color(0xff7F80DC), Color(0xffD52A81)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
+    this.gradient = AppColors.appgradient,
   });
   final Icon? icon;
   final String title;
@@ -39,6 +35,8 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void _unfocus(BuildContext context) =>
+        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
     Widget child;
     if (isLoading) {
       child = Center(
@@ -53,14 +51,22 @@ class CustomButton extends StatelessWidget {
       child = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (!iconIsTrailing) icon ?? const SizedBox(),
+          if (!iconIsTrailing && icon != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: icon ?? const SizedBox(),
+            ),
           AppText(
             text: title,
             fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: isOutline ? background : textColor,
+            fontWeight: FontWeight.w600,
+            color: textColor,
           ),
-          if (iconIsTrailing) icon ?? const SizedBox(),
+          if (iconIsTrailing && icon != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: icon ?? const SizedBox(),
+            ),
         ],
       );
     }
@@ -77,13 +83,19 @@ class CustomButton extends StatelessWidget {
               width: 2,
             ),
             elevation: 0,
+            foregroundColor: textColor,
             shadowColor: AppColors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(radius.r),
             ),
             minimumSize: Size(width.w, 48.h),
           ),
-          onPressed: isLoading ? null : onPressed,
+          onPressed: isLoading
+              ? null
+              : () {
+                  onPressed?.call();
+                  _unfocus(context);
+                },
           child: child,
         ),
       );
@@ -93,7 +105,8 @@ class CustomButton extends StatelessWidget {
       return AnimationButtonEffect(
         child: Container(
           decoration: BoxDecoration(
-            gradient: gradient,
+            color: onPressed != null ? null : background.withValues(alpha: 0.4),
+            gradient: onPressed != null ? gradient : null,
             borderRadius: BorderRadius.circular(
                 radius.r), // Optional: for rounded corners
           ),
@@ -108,7 +121,12 @@ class CustomButton extends StatelessWidget {
               ),
               minimumSize: Size(width.w, 48.h),
             ),
-            onPressed: isLoading ? null : onPressed,
+            onPressed: isLoading
+                ? null
+                : () {
+                    onPressed?.call();
+                    _unfocus(context);
+                  },
             child: child,
           ),
         ),
@@ -127,7 +145,12 @@ class CustomButton extends StatelessWidget {
           minimumSize: Size(width.w, 48.h),
           backgroundColor: background,
         ),
-        onPressed: isLoading ? null : onPressed,
+        onPressed: isLoading
+            ? null
+            : () {
+                onPressed?.call();
+                _unfocus(context);
+              },
         child: child,
       ),
     );

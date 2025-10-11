@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
 
@@ -9,6 +12,7 @@ import 'package:snip_fair/core/utils/base/base_state.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
 import 'package:snip_fair/core/utils/input/password_input.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 
 part 'login_state.dart';
 
@@ -21,24 +25,40 @@ class LoginCubit extends BaseCubit<LoginState> {
   final AuthenticationRepository _repository;
 
   void onEmailChanged(String value) {
-    emit(state.copyWith(email: EmailInput.dirty(value)));
+    emit(state.copyWith(email: EmailInput.dirty(value.trim())));
   }
 
   void onPasswordChanged(String value) {
-    emit(state.copyWith(password: PasswordInput.dirty(value: value)));
+    emit(state.copyWith(password: PasswordInput.dirty(value: value.trim())));
+  }
+
+  void onTogglePassword() {
+    emit(state.copyWith(showPassword: !state.showPassword));
   }
 
   Future<void> login() async {
-    await launchApiCall(
-      () => _repository.login(
-        LoginParams(email: state.email.value, password: state.password.value),
-      ),
-      doOnLoading: () =>
-          emit(state.copyWith(loginResult: const ProcessState.loading())),
-      doOnError: (p0) =>
-          emit(state.copyWith(loginResult: ProcessState.error(p0))),
-      doOnSuccess: (p0) =>
-          emit(state.copyWith(loginResult: ProcessState.success(p0))),
-    );
+    try {
+      final deviceInfo = await AppHelper.getDeviceInfo();
+
+      await launchApiCall(
+        () => _repository.login(
+          LoginParams(
+            email: state.email.value,
+            password: state.password.value,
+            deviceName: Platform.isAndroid
+                ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
+                : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
+          ),
+        ),
+        doOnLoading: () =>
+            emit(state.copyWith(loginResult: const ProcessState.loading())),
+        doOnError: (p0) =>
+            emit(state.copyWith(loginResult: ProcessState.error(p0))),
+        doOnSuccess: (p0) =>
+            emit(state.copyWith(loginResult: ProcessState.success(p0))),
+      );
+    } catch (e) {
+      emit(state.copyWith(loginResult: ProcessState.error(e)));
+    }
   }
 }

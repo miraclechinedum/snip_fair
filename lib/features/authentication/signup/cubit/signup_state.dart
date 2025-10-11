@@ -10,6 +10,7 @@ class SignupState extends BaseState {
     required this.confirmPassword,
     required this.signUpResult,
     required this.acceptTerms,
+    required this.showPassword,
     super.exception,
     super.isLoading,
   });
@@ -25,6 +26,7 @@ class SignupState extends BaseState {
           lastName: const StringInput.pure(),
           phone: const PhoneInput.pure(),
           acceptTerms: false,
+          showPassword: false,
         );
 
   final StringInput firstName;
@@ -35,6 +37,7 @@ class SignupState extends BaseState {
   final ConfirmPasswordInput confirmPassword;
   final ProcessState<LoginResponse> signUpResult;
   final bool acceptTerms;
+  final bool showPassword;
 
   bool get canSignup =>
       Formz.validate([
@@ -58,6 +61,7 @@ class SignupState extends BaseState {
     ProcessState<LoginResponse>? signUpResult,
     ConfirmPasswordInput? confirmPassword,
     bool? acceptTerms,
+    bool? showPassword,
     Exception? exception,
     bool? isLoading,
   }) {
@@ -70,6 +74,7 @@ class SignupState extends BaseState {
       confirmPassword: confirmPassword ?? this.confirmPassword,
       signUpResult: signUpResult ?? this.signUpResult,
       acceptTerms: acceptTerms ?? this.acceptTerms,
+      showPassword: showPassword ?? this.showPassword,
       exception: exception ?? this.exception,
       isLoading: isLoading ?? this.isLoading,
     );
@@ -82,6 +87,7 @@ class SignupState extends BaseState {
         phone,
         email,
         password,
+        showPassword,
         confirmPassword,
         signUpResult,
         acceptTerms,

@@ -10,6 +10,7 @@ import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 abstract class AuthenticationRepository {
   Future<ApiResult<LoginResponse>> login(LoginParams data);
   Future<ApiResult<LoginResponse>> registerCustomer(RegisterParams data);
+  Future<ApiResult<LoginResponse>> registerStylist(RegisterParams data);
   Future<ApiResult<SimpleResponse>> forgotPassowrd(String email);
   Future<ApiResult<SimpleResponse>> resendVerificationEmail(String email);
   Future<ApiResult<SimpleResponse>> verifyEmail(String otp);
@@ -32,7 +33,9 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
     return result.map(
       success: (data) {
         if (data.data.user != null) {
-          _localKeyStorage.saveCurrentUser(data.data.user!);
+          _localKeyStorage
+            ..saveCurrentUser(data.data.user!)
+            ..saveAccessToken(data.data.token!);
         }
         return data;
       },
@@ -46,7 +49,9 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
     return result.map(
       success: (data) {
         if (data.data.user != null) {
-          _localKeyStorage.saveCurrentUser(data.data.user!);
+          _localKeyStorage
+            ..saveCurrentUser(data.data.user!)
+            ..saveAccessToken(data.data.token!);
         }
         return data;
       },
@@ -61,4 +66,20 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
   @override
   Future<ApiResult<SimpleResponse>> verifyEmail(String otp) =>
       _remoteSource.verifyEmail(otp);
+
+  @override
+  Future<ApiResult<LoginResponse>> registerStylist(RegisterParams data) async {
+    final result = await _remoteSource.registerStylist(data);
+    return result.map(
+      success: (data) {
+        if (data.data.user != null) {
+          _localKeyStorage
+            ..saveCurrentUser(data.data.user!)
+            ..saveAccessToken(data.data.token!);
+        }
+        return data;
+      },
+      failure: (f) => f,
+    );
+  }
 }
