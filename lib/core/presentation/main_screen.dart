@@ -43,14 +43,21 @@ class _MainScreenState extends State<MainScreen> {
         if (appState.isStylist) {
           if (tabsRouter.activeIndex == 2) {
             return PreferredSize(
-              preferredSize: Size.fromHeight(0),
+              preferredSize: const Size.fromHeight(0),
               child: Container(),
             );
           }
         } else {
           if (tabsRouter.activeIndex == 3) {
             return PreferredSize(
-              preferredSize: Size.fromHeight(0),
+              preferredSize: const Size.fromHeight(0),
+              child: Container(),
+            );
+          }
+
+          if (tabsRouter.activeIndex == 1) {
+            return PreferredSize(
+              preferredSize: const Size.fromHeight(0),
               child: Container(),
             );
           }
@@ -82,12 +89,12 @@ class _MainScreenState extends State<MainScreen> {
       routes: appState.isStylist
           ? const [
               SellerDashboardMainRoute(),
-              StylistAppointmentsMainRoute(),
+              SellerAppointmentsMainRoute(),
               AccountMainRoute(),
             ]
           : const [
               ExploreMainRoute(),
-              StylistsMainRoute(),
+              SearchMainRoute(),
               AppointementsMainRoute(),
               AccountMainRoute(),
             ],
@@ -113,16 +120,16 @@ class _MainScreenState extends State<MainScreen> {
                   label: 'Explore',
                 ),
                 const BottomNavigationBarItem(
-                  icon: Icon(Iconsax.designtools),
-                  label: 'Stylists',
+                  icon: Icon(Iconsax.search_normal),
+                  label: 'Search',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(Iconsax.calendar),
                   label: 'Appointments',
                 ),
                 const BottomNavigationBarItem(
-                  icon: Icon(Iconsax.profile_circle),
-                  label: 'Profile',
+                  icon: Icon(Iconsax.setting_44),
+                  label: 'Menu',
                 ),
               ];
         return BottomNavigationBar(

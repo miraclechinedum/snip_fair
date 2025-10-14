@@ -1,17 +1,19 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/profile_management/views/seller_profile_management_screen.dart';
-import 'package:snip_fair/features/account/profile_verification/views/seller_profile_verification_screen.dart';
+import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
 
 @RoutePage()
 class AccountMainScreen extends StatelessWidget {
@@ -28,12 +30,13 @@ class AccountMainScreen extends StatelessWidget {
           children: [
             BlocBuilder<AppCubit, AppState>(
               builder: (context, state) {
-                if (state.status != AuthStatus.authenticated)
+                if (state.status != AuthStatus.authenticated) {
                   return const SizedBox();
+                }
                 if (state.isStylist) {
                   return _buildStylistProfileHeader(context);
                 }
-                return _buildCustomerProfileHeader(state);
+                return _buildCustomerProfileHeader(context);
               },
             ),
             if (isStylist) ...[
@@ -47,13 +50,22 @@ class AccountMainScreen extends StatelessWidget {
                 onTap: () {
                   if (AppHelper.isStylist(context)) {
                     context.router.push(const SellerProfileManagementRoute());
-                  } else {
-                    context.router.push(const PersonalDetailsRoute());
-                  }
+                  } else {}
                 },
               ),
               ListTile(
                 leading: const Icon(Iconsax.bag_2),
+                title: const AppText(
+                  text: 'Work',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                onTap: () {
+                  context.router.push(SellerWorkRoute());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.eye),
                 title: const AppText(
                   text: 'Portfolio',
                   fontSize: 16,
@@ -64,20 +76,20 @@ class AccountMainScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Iconsax.gallery5),
+                leading: const Icon(Iconsax.message),
                 title: const AppText(
-                  text: 'Media',
+                  text: 'Socail Links',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
                 onTap: () {
-                  context.router.push(SellerWorkRoute());
+                  context.router.push(const SellerProfileVerificationRoute());
                 },
               ),
               ListTile(
                 leading: const Icon(Iconsax.dollar_square),
                 title: const AppText(
-                  text: 'Earning',
+                  text: 'Earnings',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -93,7 +105,7 @@ class AccountMainScreen extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
                 onTap: () {
-                  context.pushRoute(const SellerAvailabilityScheduleRoute());
+                  context.pushRoute(SellerAvailabilityScheduleRoute());
                 },
               ),
               ListTile(
@@ -126,7 +138,9 @@ class AccountMainScreen extends StatelessWidget {
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
-                onTap: () {},
+                onTap: () {
+                  context.pushRoute(const CustomerWalletRoute());
+                },
               ),
               ListTile(
                 leading: const Icon(Iconsax.heart_tick),
@@ -135,7 +149,9 @@ class AccountMainScreen extends StatelessWidget {
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
-                onTap: () {},
+                onTap: () {
+                  context.pushRoute(const CustomerFavoritesRoute());
+                },
               ),
             ],
             ListTile(
@@ -272,27 +288,73 @@ class AccountMainScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                       const Spacer(),
+                      if (state.updateAvailabilityState.isLoading)
+                        const SizedBox.square(
+                          dimension: 12,
+                          child: CircularProgressIndicator(),
+                        )
+                      else
+                        AppText(
+                            text: state.profileDetails.data?.user
+                                        ?.stylistProfile?.isAvailable ??
+                                    false
+                                ? 'ON'
+                                : 'OFF'),
                       SizedBox(
                         height: 35,
-                        child: Switch(
-                          value: state.profileDetails.data?.user?.stylistProfile
-                                  ?.isAvailable ??
-                              false,
-                          onChanged: (value) {
-                            if (state.profileDetails.data?.profileCompleteness
-                                    ?.statusApproved ??
-                                false) {
-                            } else {
-                              AppHelper.showSnackBar(context,
-                                  message:
-                                      'You need to have an active stylist profile to change your availability.');
+                        child: BlocListener<SellerProfileMgtCubit,
+                            SellerProfileMgtState>(
+                          listenWhen: (previous, current) =>
+                              previous.updateAvailabilityState !=
+                              current.updateAvailabilityState,
+                          listener: (context, state) {
+                            if (state.updateAvailabilityState.hasError) {
+                              AppHelper.showAppDialog(
+                                context,
+                                OnFailDialogContent(
+                                  subtext: (state.updateAvailabilityState.error!
+                                              as RemoteException)
+                                          .errorResponse
+                                          ?.message ??
+                                      '',
+                                  onDoneCallback: (_) {},
+                                ),
+                              );
+                            }
+
+                            if (state.updateAvailabilityState.hasSuccess) {
+                              AppHelper.showSnackBar(
+                                context,
+                                message: 'Available status updated..',
+                              );
                             }
                           },
+                          child: Switch(
+                            value: state.profileDetails.data?.user
+                                    ?.stylistProfile?.isAvailable ??
+                                false,
+                            activeColor: Colors.green,
+                            onChanged: (value) {
+                              // if (state.profileDetails.data?.profileCompleteness
+                              //         ?.statusApproved ??
+                              //     false) {
+                              context
+                                  .read<SellerProfileMgtCubit>()
+                                  .updateAvailability(isAvailable: value);
+                              // } else {
+                              //   AppHelper.showSnackBar(
+                              //     context,
+                              //     message:
+                              //         'You need to have an active stylist profile to change your availability.',
+                              //   );
+                              // }
+                            },
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -301,42 +363,59 @@ class AccountMainScreen extends StatelessWidget {
     );
   }
 
-  Container _buildCustomerProfileHeader(AppState state) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: AppColors.appgradient,
-      ),
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 30,
-            child: AppText(
-              text: state.user.name!.split(' ').first[0].toUpperCase() +
-                  state.user.name!.split(' ').last[0].toUpperCase(),
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+  Widget _buildCustomerProfileHeader(BuildContext context) {
+    return BlocBuilder<CustomerProfileMgtCubit, CustomerProfileMgtState>(
+      builder: (context, state) {
+        if (state.profileDetails.data == null) return const SizedBox();
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: AppColors.appgradient,
           ),
-          10.verticalSpace,
-          AppText(
-            text: state.user.name ?? 'N/A',
-            color: AppColors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundImage: state.profileDetails.data?.user?.avatar != null
+                    ? CachedNetworkImageProvider(
+                        state.profileDetails.data!.user!.avatar
+                            .completeImagePath(),
+                      )
+                    : null,
+                child: AppText(
+                  text: state.profileDetails.data!.user!.name!
+                          .split(' ')
+                          .first[0]
+                          .toUpperCase() +
+                      state.profileDetails.data!.user!.name!
+                          .split(' ')
+                          .last[0]
+                          .toUpperCase(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              10.verticalSpace,
+              AppText(
+                text: state.profileDetails.data?.user?.name ?? 'N/A',
+                color: AppColors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              AppText(
+                text: state.profileDetails.data?.user?.email ?? 'N/A',
+                color: AppColors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
           ),
-          AppText(
-            text: state.user.email ?? 'N/A',
-            color: AppColors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

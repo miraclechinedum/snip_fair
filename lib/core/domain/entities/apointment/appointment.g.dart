@@ -6,7 +6,8 @@ part of 'appointment.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Appointment _$AppointmentFromJson(Map<String, dynamic> json) => Appointment(
+StylistAppointment _$StylistAppointmentFromJson(Map<String, dynamic> json) =>
+    StylistAppointment(
       id: (json['id'] as num?)?.toInt(),
       stylistId: (json['stylist_id'] as num?)?.toInt(),
       customerId: (json['customer_id'] as num?)?.toInt(),
@@ -48,7 +49,7 @@ Appointment _$AppointmentFromJson(Map<String, dynamic> json) => Appointment(
       disputes: json['disputes'] as List<dynamic>?,
     );
 
-Map<String, dynamic> _$AppointmentToJson(Appointment instance) =>
+Map<String, dynamic> _$StylistAppointmentToJson(StylistAppointment instance) =>
     <String, dynamic>{
       'id': instance.id,
       'stylist_id': instance.stylistId,

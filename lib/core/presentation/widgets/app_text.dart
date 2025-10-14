@@ -34,7 +34,7 @@ class AppText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      overflow: overflow,
+      overflow: maxLines == 1 ? TextOverflow.ellipsis : overflow,
       textAlign: textAlign,
       maxLines: maxLines,
       style: GoogleFonts.aBeeZee(
@@ -43,6 +43,7 @@ class AppText extends StatelessWidget {
         fontWeight: fontWeight,
         height: height?.h,
         decoration: decoration,
+
         // letterSpacing: letterSpacing,
         textStyle: Theme.of(context).textTheme.bodyLarge,
       ),

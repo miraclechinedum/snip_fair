@@ -4,8 +4,8 @@ import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
 part 'appointment_list.g.dart';
 
 @JsonSerializable()
-class AppointmentList {
-  AppointmentList({
+class StylistAppointmentList {
+  StylistAppointmentList({
     this.data,
     this.path,
     this.perPage,
@@ -15,10 +15,10 @@ class AppointmentList {
     this.prevPageUrl,
   });
 
-  factory AppointmentList.fromJson(Map<String, dynamic> json) {
-    return _$AppointmentListFromJson(json);
+  factory StylistAppointmentList.fromJson(Map<String, dynamic> json) {
+    return _$StylistAppointmentListFromJson(json);
   }
-  List<Appointment>? data;
+  List<StylistAppointment>? data;
   String? path;
   @JsonKey(name: 'per_page')
   int? perPage;
@@ -31,5 +31,5 @@ class AppointmentList {
   @JsonKey(name: 'prev_page_url')
   dynamic prevPageUrl;
 
-  Map<String, dynamic> toJson() => _$AppointmentListToJson(this);
+  Map<String, dynamic> toJson() => _$StylistAppointmentListToJson(this);
 }

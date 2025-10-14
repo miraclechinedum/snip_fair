@@ -12,29 +12,50 @@ class AppRouter extends RootStackRouter {
           children: [
             AutoRoute(path: 'explore', page: ExploreMainRoute.page),
             AutoRoute(path: 'dashboard', page: SellerDashboardMainRoute.page),
-            AutoRoute(path: 'stylists', page: StylistsMainRoute.page),
+            AutoRoute(path: 'search', page: SearchMainRoute.page),
             AutoRoute(path: 'appointments', page: AppointementsMainRoute.page),
             AutoRoute(
               path: 'stylist-appointments',
-              page: StylistAppointmentsMainRoute.page,
+              page: SellerAppointmentsMainRoute.page,
             ),
             AutoRoute(path: 'account', page: AccountMainRoute.page),
           ],
         ),
-        AutoRoute(path: '/stylist-profile', page: StylistProfileRoute.page),
+        AutoRoute(
+            path: '/seller-profile', page: StylistSellerDetailsRoute.page),
         AutoRoute(path: '/stylist-more-info', page: StylistMoreInfoRoute.page),
 
         //Shared
-        AutoRoute(
-          path: '/personal-details',
-          page: PersonalDetailsRoute.page,
-        ),
         AutoRoute(
           path: '/change-password',
           page: ChangePasswordRoute.page,
         ),
 
+        /// Customer Specific Routes
+        ///
+        AutoRoute(
+          path: '/customer-profile-details',
+          page: CustomerProfileMgtRoute.page,
+        ),
+        AutoRoute(
+          path: '/customer-wallet',
+          page: CustomerWalletRoute.page,
+        ),
+        AutoRoute(
+          path: '/customer-favorites',
+          page: CustomerFavoritesRoute.page,
+        ),
+        AutoRoute(
+          path: '/update-create-appointment',
+          page: UpdateCreateAppointmentRoute.page,
+        ),
+
         /// Seller Specific Routes
+        ///
+        AutoRoute(
+          path: '/seller-personal-details',
+          page: SellerPersonalDetailsRoute.page,
+        ),
         AutoRoute(
           path: '/seller-profile-management',
           page: SellerProfileManagementRoute.page,

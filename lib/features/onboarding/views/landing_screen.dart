@@ -103,7 +103,7 @@ class _LandingScreenState extends State<LandingScreen> {
                             ?.allowRegistrationStylists ??
                         false)
                       CustomButton(
-                        title: 'Continue as a Stylist',
+                        title: 'Continue as Stylist',
                         onPressed: () {
                           context.router.push(LoginRoute(isStylist: true));
                         },

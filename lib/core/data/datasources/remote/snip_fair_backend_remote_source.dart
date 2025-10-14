@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/src/material/time.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/datasources/remote/base_remote_source.dart';
 import 'package:snip_fair/core/data/models/remote/login_response.dart';
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
+import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/di/injector.dart';
@@ -14,8 +16,20 @@ import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
+import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
+import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
@@ -42,9 +56,25 @@ class AuthPath {
   static const resendEmailOtp = '/user/resend-email-otp';
   static const verifyEmailOtp = '/user/verify-email-otp';
 
+  //Costumer
+  static const customerStylists = '/customer/stylist';
+  static const customerProfile = '/customer/profile';
+  static const customerStats = '/customer/stats';
+  static const portfolio = '/customer/portfolio';
+  static const toggleLike = '/like/toggle';
+  static const customerAppointment = '/customer/appointment';
+
+  //Wallet
+  static const customerWallet = '/wallet';
+  static const customerWalletTransactions = '/wallet/transactions';
+
+  //Payment
+  static const initializePayfastDeposit = '/payment/initiate/payfast';
+
   //Profile
   static const updatePassword = '/user/password'; //PATCH
   static const platformSetting = '/platform-settings';
+  static const updateUser = '/user';
 
   //Stylists
   static const updateBusinessInfo = '/stylist/basic/profile';
@@ -55,12 +85,12 @@ class AuthPath {
   static const updateAvatar = '/stylist/profile/avatar';
   static const updateBanner = '/stylist/profile/banner';
   static const createWork = '/stylist/work'; //POST
-  static const workCategories = '/stylist/work/categories'; //GET
+  static const workCategories = '/categories'; //GET
   static const workList = '/stylist/work/list'; //GET with Query Params,
   static const banks = '/banks'; //GET with Query Params,
   static const stats = '/stylist/stats'; //GET with Query Params,
   static const availability = '/stylist/appointment/availability';
-  static const appointment = '/stylist/appointment';
+  static const stylistAppointment = '/stylist/appointment';
   static const earnings = '/stylist/earnings';
 
   //Location
@@ -70,7 +100,10 @@ class AuthPath {
 
 @LazySingleton()
 class SnipFairBackendRemoteSource extends BaseRemoteSource
-    implements AuthenticationRepository, ProfileRepository {
+    implements
+        AuthenticationRepository,
+        ProfileRepository,
+        AppointmentRepository {
   @override
   Future<ApiResult<SimpleResponse>> forgotPassowrd(String email) {
     return run(() async {
@@ -671,20 +704,20 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<Appointment>> getAppointmentById(String id) {
+  Future<ApiResult<StylistAppointment>> getStylistAppointmentById(String id) {
     return run(() async {
       final client = getIt<HttpService>().client();
       final response = await client.get<Map<String, dynamic>>(
-        '${AuthPath.appointment}/$id',
+        '${AuthPath.stylistAppointment}/$id',
       );
       return ApiResult.success(
-        data: Appointment.fromJson(response.data!),
+        data: StylistAppointment.fromJson(response.data!),
       );
     });
   }
 
   @override
-  Future<ApiResult<AppointmentList>> getAppointments({
+  Future<ApiResult<CustomerAppointmentList>> getStylistAppointments({
     String? query,
     String? categoryId,
     String? page,
@@ -697,7 +730,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     return run(() async {
       final client = getIt<HttpService>().client();
       final response = await client.get<Map<String, dynamic>>(
-        '${AuthPath.appointment}/list',
+        '${AuthPath.stylistAppointment}/list',
         queryParameters: {
           if (query != null) 'query': query,
           if (categoryId != null) 'category_id': categoryId,
@@ -710,7 +743,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         },
       );
       return ApiResult.success(
-        data: AppointmentList.fromJson(response.data!),
+        data: CustomerAppointmentList.fromJson(response.data!),
       );
     });
   }
@@ -729,7 +762,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<SimpleResponse>> updateAppointment(
+  Future<ApiResult<SimpleResponse>> updateStylistAppointment(
     String id, {
     required String variant,
     required String code,
@@ -737,7 +770,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     return run(() async {
       final client = getIt<HttpService>().client();
       await client.post<Map<String, dynamic>>(
-        '${AuthPath.appointment}/$id',
+        '${AuthPath.stylistAppointment}/$id',
         data: {
           'variant': variant,
           'code': code,
@@ -779,6 +812,262 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
       return ApiResult.success(
         data: StylistEarnings.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateUser({
+    required bool useLocation,
+    required String address,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.patch<Map<String, dynamic>>(
+        AuthPath.updateUser,
+        data: {
+          'use_location': useLocation,
+          'country': address,
+        },
+      );
+      return ApiResult.success(data: SimpleResponse.fromJson({}));
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerProfileDetails>> getCustomerProfile() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.customerProfile,
+      );
+      return ApiResult.success(
+        data: CustomerProfileDetails.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerStats>> getCustomerStats() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.customerStats,
+      );
+      return ApiResult.success(
+        data: CustomerStats.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.customerStylists}/$id',
+      );
+      return ApiResult.success(
+        data: SellerDetails.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<StylistList>> customerFetchStylists({
+    String? query,
+    String? categoryId,
+    String? page,
+    String? perPage,
+    String? sort,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.customerStylists}/list',
+        queryParameters: {
+          if (query != null) 'query': query,
+          if (categoryId != null) 'category_id': categoryId,
+          if (page != null) 'page': page,
+          if (perPage != null) 'per_page': perPage,
+          if (sort != null) 'sort': sort,
+        },
+      );
+      return ApiResult.success(
+        data: StylistList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SellerPortfolioList>> customerFetchPortfolioList({
+    String? query,
+    String? categoryId,
+    String? stylistId,
+    String? page,
+    String? perPage,
+    String? sort,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.portfolio}/list',
+        queryParameters: {
+          if (query != null) 'query': query,
+          if (categoryId != null) 'category_id': categoryId,
+          if (stylistId != null) 'stylist_id': stylistId,
+          if (page != null) 'page': page,
+          if (perPage != null) 'per_page': perPage,
+          if (sort != null) 'sort': sort,
+        },
+      );
+      return ApiResult.success(
+        data: SellerPortfolioList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerWallet>> getWallet() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.customerWallet,
+      );
+      return ApiResult.success(
+        data: CustomerWallet.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerWalletTransactionList>> getWalletTransactions({
+    String? page,
+    int? perPage = 10,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.customerWalletTransactions,
+        queryParameters: {
+          if (page != null) 'page': page,
+          if (perPage != null) 'per_page': perPage,
+        },
+      );
+      return ApiResult.success(
+        data: CustomerWalletTransactionList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
+    required String type,
+    required String amount,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? portfolioId,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        AuthPath.initializePayfastDeposit,
+        data: {
+          'type': type,
+          'amount': amount,
+          if (email != null) 'email': email,
+          if (firstName != null) 'first_name': firstName,
+          if (lastName != null) 'last_name': lastName,
+          if (portfolioId != null) 'portfolio_id': portfolioId,
+        },
+      );
+      return ApiResult.success(
+        data: PayfastPaymentData.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<LikeResponse>> toggleLike({
+    required String type,
+    required String typeId,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        AuthPath.toggleLike,
+        data: {
+          'type': type,
+          'type_id': typeId,
+        },
+      );
+      return ApiResult.success(data: LikeResponse.fromJson(response.data!));
+    });
+  }
+
+  @override
+  Future<ApiResult<SellerPortfolio>> customerFetchPortfolioById({String? id}) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.portfolio}/$id',
+      );
+      return ApiResult.success(
+        data: SellerPortfolio.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> createAppointment({
+    required String portfolioId,
+    required String date,
+    required String time,
+    String? note,
+    String? address,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        AuthPath.initializePayfastDeposit,
+        data: {
+          'portfolio_id': portfolioId,
+          'selected_date': date,
+          'selected_time': time,
+          if (address != null) 'address': address,
+          if (note != null) 'extra': note,
+        },
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerAppointment>> getCustomerAppointmentById(
+      String appointmentId) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$appointmentId',
+      );
+      return ApiResult.success(
+        data: CustomerAppointment.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/list',
+      );
+      return ApiResult.success(
+        data: CustomerAppointmentList.fromJson(response.data!),
       );
     });
   }

@@ -11,8 +11,8 @@ import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/utils/app_helper.dart';
-import 'package:snip_fair/features/account/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
 
 @RoutePage()
 class SellerDashboardMainScreen extends StatelessWidget {
@@ -25,7 +25,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
         onRefresh: () async {
           context.read<SellerProfileMgtCubit>()
             ..getProfileDetails()
-            ..getStylistStats();
+            ..getStats();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

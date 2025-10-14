@@ -20,6 +20,43 @@ extension BuildContextHelper on BuildContext {
   ThemeData get theme => Theme.of(this);
 }
 
+extension DateFormatter on DateTime? {
+  String toTimeAgo() {
+    final dateTime = this;
+    if (dateTime == null) return '';
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inSeconds < 60) {
+      return '${difference.inSeconds} seconds ago';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} months ago';
+    } else {
+      return '${(difference.inDays / 365).floor()} years ago';
+    }
+  }
+
+  String toShortDateString() {
+    final dateTime = this;
+    if (dateTime == null) return '';
+    final formatter = DateFormat('dd MMM, yyyy');
+    return formatter.format(dateTime);
+  }
+
+  String toLongDateString() {
+    final dateTime = this;
+    if (dateTime == null) return '';
+    final formatter = DateFormat('EEEE, dd MMMM yyyy, hh:mm a');
+    return formatter.format(dateTime);
+  }
+}
+
 extension ImageUrlCompleter on String? {
   String completeImagePath() {
     final config = Environment().config;
@@ -74,5 +111,36 @@ extension MagicString on String? {
     if (text.length <= 4) return text;
 
     return text.substring(text.length - 4).padLeft(text.length, '*');
+  }
+
+  String capitalizeFirstLetter() {
+    if (this == null || this!.isEmpty) {
+      return ''; // Handle empty string case
+    }
+    return "${this![0].toUpperCase()}${this!.substring(1)}";
+  }
+
+  String toTimeAgo() {
+    final text = this;
+    if (text == null) return '';
+    final dateTime = DateTime.tryParse(text);
+    if (dateTime == null) return '';
+
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inSeconds < 60) {
+      return '${difference.inSeconds} seconds ago';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} months ago';
+    } else {
+      return '${(difference.inDays / 365).floor()} years ago';
+    }
   }
 }

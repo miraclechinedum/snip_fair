@@ -7,9 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:payfast/payfast.dart';
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../presentation/theme/theme.dart';
@@ -17,18 +21,22 @@ import '../presentation/theme/theme.dart';
 class AppHelper {
   AppHelper._();
 
-  static showAppModal(BuildContext context, Widget widget,
-      [Color? backgroundColor]) {
+  static showAppModal(
+    BuildContext context,
+    Widget widget, [
+    Color? backgroundColor,
+  ]) {
     showModalBottomSheet(
-        context: context,
-        backgroundColor: backgroundColor,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10),
-          ),
+      context: context,
+      backgroundColor: backgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
         ),
-        builder: (context) => widget);
+      ),
+      builder: (context) => widget,
+    );
   }
 
   static Future<T?> showAppDialog<T>(
@@ -49,8 +57,9 @@ class AppHelper {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(16)),
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
           height: height,
           width: width,
           child: Builder(
@@ -289,7 +298,8 @@ class AppHelper {
   }
 
   static bool isStylistProfileComplete(
-      ProfileCompleteness profileCompleteness) {
+    ProfileCompleteness profileCompleteness,
+  ) {
     return profilePercentCompletion(profileCompleteness) == 100;
   }
 
@@ -309,5 +319,123 @@ class AppHelper {
   static PlatformSettings appSettings(BuildContext context) {
     return context.read<AppCubit>().state.platformSettings ??
         PlatformSettings();
+  }
+
+  static Future<bool> showPaymentDialog(
+    BuildContext context,
+    PayfastPaymentData paymentData,
+  ) async {
+    // Show payment widget as a modal dialog
+    final result = await showPaymentWebView(
+      context: context,
+      paymentData: paymentData,
+      title: 'Complete Payment',
+    );
+
+    if (context.mounted) {
+      // Handle the payment result
+      if (result ?? false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (result == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment cancelled or failed!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+    return result ?? false;
+  }
+
+  /// Alternative usage: Navigate to a full screen payment page
+  // ignore: unused_element
+  static void navigateToPaymentScreen(
+    BuildContext context,
+    PayfastPaymentData paymentData,
+  ) {
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute<bool>(
+        builder: (context) => PaymentWebViewWidget(
+          paymentData: paymentData,
+          onResult: (success) {
+            Navigator.of(context).pop(success);
+          },
+        ),
+      ),
+    )
+        .then((result) {
+      if (context.mounted && result != null) {
+        // Handle payment result
+        final message = result ? 'Payment successful!' : 'Payment cancelled!';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    });
+  }
+
+  static bool isSameDate(DateTime dateTime, DateTime date) {
+    return dateTime.year == date.year &&
+        dateTime.month == date.month &&
+        dateTime.day == date.day;
+  }
+
+  static monthName(int month) {
+    switch (month) {
+      case 1:
+        return 'January';
+      case 2:
+        return 'February';
+      case 3:
+        return 'March';
+      case 4:
+        return 'April';
+      case 5:
+        return 'May';
+      case 6:
+        return 'June';
+      case 7:
+        return 'July';
+      case 8:
+        return 'August';
+      case 9:
+        return 'September';
+      case 10:
+        return 'October';
+      case 11:
+        return 'November';
+      case 12:
+        return 'December';
+      default:
+        return '';
+    }
+  }
+
+  static String dayOfWeekFromDate(DateTime date) {
+    switch (date.weekday) {
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      case DateTime.sunday:
+        return 'Sunday';
+      default:
+        return '';
+    }
   }
 }

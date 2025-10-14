@@ -27,7 +27,7 @@ class AppColors {
   static const grey2 = Color(0xffA6A6A6);
   static const grey3 = Color(0xff505E6D);
   static const grey4 = Color(0xff535353);
-  static const grey5 = Color(0xffDFD9D6);
+  static const grey5 = Color(0xffF6F7F8);
 
   // Grey
   static const grey100 = Color(0xffFAFCFE);
@@ -50,7 +50,7 @@ class AppColors {
 
   static const LinearGradient appgradient = LinearGradient(
     colors: [Color(0xff7F80DC), Color(0xffD52A81)],
-    stops: [0, 0.5],
+    stops: [0, 0.75],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

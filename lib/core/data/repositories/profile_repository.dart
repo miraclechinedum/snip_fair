@@ -8,6 +8,11 @@ import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
@@ -53,6 +58,7 @@ abstract class ProfileRepository {
   });
 
   Future<ApiResult<StylistProfileDetails>> getStylistProfile();
+  Future<ApiResult<CustomerProfileDetails>> getCustomerProfile();
 
   Future<ApiResult<SimpleResponse>> updateStylistProfile({
     required String businessName,
@@ -146,6 +152,7 @@ abstract class ProfileRepository {
 
   Future<ApiResult<List<Bank>>> getBanks();
   Future<ApiResult<StylistStats>> getStylistStats();
+  Future<ApiResult<CustomerStats>> getCustomerStats();
 
   Future<ApiResult<AvailabilitySchedule>> getAvailability();
   Future<ApiResult<SimpleResponse>> updateAvailability({
@@ -153,24 +160,28 @@ abstract class ProfileRepository {
     List<ScheduleParams>? schedules,
   });
 
-  Future<ApiResult<AppointmentList>> getAppointments({
-    String? query,
-    String? categoryId,
-    String? page,
-    int? perPage,
-    String? customerId,
-    String? portfolioId,
-    String? status,
-    String? sort,
-  });
-  Future<ApiResult<Appointment>> getAppointmentById(String id);
-  Future<ApiResult<SimpleResponse>> updateAppointment(
-    String id, {
-    required String variant,
-    required String code,
+  Future<ApiResult<StylistEarnings>> getEarnings();
+
+  Future<ApiResult<SimpleResponse>> updateUser({
+    required bool useLocation,
+    required String address,
   });
 
-  Future<ApiResult<StylistEarnings>> getEarnings();
+  Future<ApiResult<CustomerWallet>> getWallet();
+
+  Future<ApiResult<CustomerWalletTransactionList>> getWalletTransactions({
+    String page,
+    int perPage,
+  });
+
+  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
+    required String type,
+    required String amount,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? portfolioId,
+  });
 }
 
 @Injectable(as: ProfileRepository)
@@ -430,37 +441,8 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.getStylistStats();
 
   @override
-  Future<ApiResult<Appointment>> getAppointmentById(String id) =>
-      _remoteSource.getAppointmentById(id);
-
-  @override
-  Future<ApiResult<AppointmentList>> getAppointments(
-          {String? query,
-          String? categoryId,
-          String? page,
-          int? perPage,
-          String? customerId,
-          String? portfolioId,
-          String? status,
-          String? sort}) =>
-      _remoteSource.getAppointments(
-        query: query,
-        categoryId: categoryId,
-        page: page,
-        perPage: perPage,
-        customerId: customerId,
-        portfolioId: portfolioId,
-        status: status,
-        sort: sort,
-      );
-
-  @override
   Future<ApiResult<AvailabilitySchedule>> getAvailability() =>
       _remoteSource.getAvailability();
-  @override
-  Future<ApiResult<SimpleResponse>> updateAppointment(String id,
-          {required String variant, required String code}) =>
-      _remoteSource.updateAppointment(id, variant: variant, code: code);
 
   @override
   Future<ApiResult<SimpleResponse>> updateAvailability(
@@ -473,4 +455,48 @@ class ProfileRepoImpl implements ProfileRepository {
   @override
   Future<ApiResult<StylistEarnings>> getEarnings() =>
       _remoteSource.getEarnings();
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateUser(
+          {required bool useLocation, required String address}) =>
+      _remoteSource.updateUser(useLocation: useLocation, address: address);
+
+  @override
+  Future<ApiResult<CustomerProfileDetails>> getCustomerProfile() =>
+      _remoteSource.getCustomerProfile();
+
+  @override
+  Future<ApiResult<CustomerStats>> getCustomerStats() =>
+      _remoteSource.getCustomerStats();
+
+  @override
+  Future<ApiResult<CustomerWallet>> getWallet() => _remoteSource.getWallet();
+
+  @override
+  Future<ApiResult<CustomerWalletTransactionList>> getWalletTransactions({
+    String? page,
+    int? perPage = 10,
+  }) =>
+      _remoteSource.getWalletTransactions(
+        page: page,
+        perPage: perPage,
+      );
+
+  @override
+  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit(
+      {required String type,
+      required String amount,
+      String? email,
+      String? firstName,
+      String? lastName,
+      String? portfolioId}) {
+    return _remoteSource.initialisePayfastDeposit(
+      type: type,
+      amount: amount,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      portfolioId: portfolioId,
+    );
+  }
 }

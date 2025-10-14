@@ -12,6 +12,7 @@ import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
 import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/authentication/forgot_password/cubit/forgot_password_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
@@ -46,7 +47,6 @@ class ForgotPasswordScreen extends BaseStatelessPage<ForgotPasswordCubit>
                   const AppText(
                     text:
                         'Enter your email address and we will send you instructions to reset your password.',
-                    textAlign: TextAlign.center,
                   ),
                   50.verticalSpace,
                   BlocSelector<ForgotPasswordCubit, ForgotPasswordState,
@@ -66,7 +66,16 @@ class ForgotPasswordScreen extends BaseStatelessPage<ForgotPasswordCubit>
                     },
                   ),
                   16.verticalSpace,
-                  BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+                  BlocConsumer<ForgotPasswordCubit, ForgotPasswordState>(
+                    listenWhen: (previous, current) =>
+                        previous.result != current.result,
+                    listener: (context, state) {
+                      if (state.result.hasSuccess) {
+                        AppHelper.showSnackBar(context,
+                            message:
+                                'An email has been sent to you with further instructions');
+                      }
+                    },
                     builder: (context, state) {
                       return CustomButton(
                         title: 'Continue',

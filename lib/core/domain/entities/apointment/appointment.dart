@@ -8,7 +8,7 @@ import 'stylist.dart';
 part 'appointment.g.dart';
 
 @JsonSerializable()
-class Appointment {
+class StylistAppointment {
   int? id;
   @JsonKey(name: 'stylist_id')
   int? stylistId;
@@ -50,7 +50,7 @@ class Appointment {
   Proof? proof;
   List<dynamic>? disputes;
 
-  Appointment({
+  StylistAppointment({
     this.id,
     this.stylistId,
     this.customerId,
@@ -78,9 +78,9 @@ class Appointment {
     this.disputes,
   });
 
-  factory Appointment.fromJson(Map<String, dynamic> json) {
-    return _$AppointmentFromJson(json);
+  factory StylistAppointment.fromJson(Map<String, dynamic> json) {
+    return _$StylistAppointmentFromJson(json);
   }
 
-  Map<String, dynamic> toJson() => _$AppointmentToJson(this);
+  Map<String, dynamic> toJson() => _$StylistAppointmentToJson(this);
 }

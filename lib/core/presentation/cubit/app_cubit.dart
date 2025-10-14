@@ -63,12 +63,7 @@ class AppCubit extends Cubit<AppState> {
         emit(AppState.unAuthenticated(state.platformSettings));
       },
       failure: (error) {
-        emit(
-          AppState.authenticated(
-            user: state.user,
-            settings: state.platformSettings,
-          ),
-        );
+        emit(AppState.unAuthenticated(state.platformSettings));
       },
     );
   }

@@ -310,7 +310,7 @@ class CustomPhoneTextField extends StatelessWidget {
           validator: PhoneValidator.compose(
             [
               PhoneValidator.required(context),
-              PhoneValidator.validMobile(context)
+              PhoneValidator.validMobile(context),
             ],
           ),
           countrySelectorNavigator: const CountrySelectorNavigator.page(),
@@ -429,16 +429,22 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
         ),
         5.verticalSpace,
         if (_geoPlace != null)
-          ListTile(
-            title: AppText(text: _geoPlace!.address),
-            tileColor: Colors.white,
-            trailing: CloseButton(
-              onPressed: () {
-                setState(() {
-                  _geoPlace = null;
-                  widget.onSelected.call(_geoPlace);
-                });
-              },
+          Material(
+            child: ListTile(
+              title: AppText(text: _geoPlace!.address),
+              tileColor: AppColors.grey5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: AppColors.grey1),
+              ),
+              trailing: CloseButton(
+                onPressed: () {
+                  setState(() {
+                    _geoPlace = null;
+                    widget.onSelected.call(_geoPlace);
+                  });
+                },
+              ),
             ),
           )
         else
