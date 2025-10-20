@@ -42,8 +42,8 @@ class CustomButton extends StatelessWidget {
       child = Center(
         child: SizedBox.square(
           dimension: 30.h,
-          child: const CircularProgressIndicator(
-            color: AppColors.white,
+          child: CircularProgressIndicator(
+            color: isOutline ? AppColors.primaryColor : AppColors.white,
           ),
         ),
       );

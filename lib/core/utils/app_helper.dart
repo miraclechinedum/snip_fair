@@ -6,9 +6,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:logger/logger.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:payfast/payfast.dart';
+
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';

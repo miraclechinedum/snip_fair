@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
 // extension WidgetSpacing on num {
@@ -25,7 +26,7 @@ extension DateFormatter on DateTime? {
     final dateTime = this;
     if (dateTime == null) return '';
     final now = DateTime.now();
-    final difference = now.difference(dateTime);
+    final difference = now.difference(dateTime.toLocal());
 
     if (difference.inSeconds < 60) {
       return '${difference.inSeconds} seconds ago';
@@ -117,7 +118,7 @@ extension MagicString on String? {
     if (this == null || this!.isEmpty) {
       return ''; // Handle empty string case
     }
-    return "${this![0].toUpperCase()}${this!.substring(1)}";
+    return '${this![0].toUpperCase()}${this!.substring(1)}';
   }
 
   String toTimeAgo() {
@@ -142,5 +143,109 @@ extension MagicString on String? {
     } else {
       return '${(difference.inDays / 365).floor()} years ago';
     }
+  }
+}
+
+extension StatusCodeMapper on String? {
+  // All Status processing, pending, approved, confirmed, completed, canceled, escalated.
+
+  Color toStatusColor() {
+    final status = this;
+    if (status == null) return Colors.grey;
+    switch (status.toLowerCase()) {
+      case 'processing':
+        return Colors.blue;
+      case 'pending':
+        return Colors.orange;
+      case 'approved':
+        return Colors.lightGreen;
+      case 'confirmed':
+        return Colors.green;
+      case 'completed':
+        return AppColors.primaryColor;
+      case 'canceled':
+      case 'rescheduled':
+        return Colors.red;
+      case 'escalated':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String toStatusText() {
+    final status = this;
+    if (status == null) return '';
+    switch (status.toLowerCase()) {
+      case 'processing':
+        return 'Processing';
+      case 'pending':
+        return 'Awaiting stylist approval';
+      case 'approved':
+        return 'Appointment Approved';
+      case 'confirmed':
+        return 'Appointment Started';
+      case 'completed':
+        return 'Appointment Completed';
+      case 'canceled':
+        return 'Appointment Canceled';
+      case 'escalated':
+        return 'Appointment Escalated';
+      case 'rescheduled':
+        return 'Appointment Rescheduled';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  bool get isPendingStatus {
+    final status = this;
+    if (status == null) return false;
+    return status.toLowerCase() == 'pending';
+  }
+
+  bool get isCompletedStatus {
+    final status = this;
+    if (status == null) return false;
+    return status.toLowerCase() == 'completed';
+  }
+
+  bool get isCanceledStatus {
+    final status = this;
+    if (status == null) return false;
+    return status.toLowerCase() == 'canceled';
+  }
+
+  bool get isEscalatedStatus {
+    final status = this;
+    if (status == null) return false;
+    return status.toLowerCase() == 'escalated';
+  }
+
+  bool get isProcessingStatus {
+    final status = this;
+    if (status == null) return false;
+    final lowerStatus = status.toLowerCase();
+    return lowerStatus == 'processing';
+  }
+
+  bool get isApprovedStatus {
+    final status = this;
+    if (status == null) return false;
+    final lowerStatus = status.toLowerCase();
+    return lowerStatus == 'approved';
+  }
+
+  bool get isConfirmedStatus {
+    final status = this;
+    if (status == null) return false;
+    final lowerStatus = status.toLowerCase();
+    return lowerStatus == 'confirmed';
+  }
+
+  String removeAMPM() {
+    final text = this;
+    if (text == null) return '';
+    return text.replaceAll(RegExp(r'\s?(AM|PM)$', caseSensitive: false), '');
   }
 }

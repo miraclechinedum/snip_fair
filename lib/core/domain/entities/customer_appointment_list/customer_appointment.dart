@@ -9,13 +9,13 @@ part 'customer_appointment.g.dart';
 class CustomerAppointment {
   int? id;
   @JsonKey(name: 'stylist_id')
-  int? stylistId;
+  String? stylistId;
   @JsonKey(name: 'customer_id')
-  int? customerId;
+  dynamic customerId;
   @JsonKey(name: 'booking_id')
-  String? bookingId;
+  dynamic bookingId;
   @JsonKey(name: 'portfolio_id')
-  int? portfolioId;
+  dynamic portfolioId;
   double? amount;
   String? duration;
   dynamic extra;

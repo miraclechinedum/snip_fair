@@ -4,12 +4,13 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
@@ -90,6 +91,12 @@ class StylistBusinessIdVerifyScreen
                       );
                     },
                   ),
+                  12.verticalSpace,
+                  ImageTakerWidget(
+                    label: 'Identification Proof(Take a photo holding your ID)',
+                    onSelected: cubit.onPhotoPathChanged,
+                  ),
+                  12.verticalSpace,
                   16.verticalSpace,
                   BlocBuilder<StylistOnboardCubit, StylistOnboardState>(
                     builder: (context, state) {
@@ -108,7 +115,7 @@ class StylistBusinessIdVerifyScreen
                       );
                     },
                   ),
-                  12.verticalSpace,
+                  16.verticalSpace,
                   12.verticalSpace,
                 ],
               ),
@@ -149,10 +156,11 @@ class DocumentPicker extends StatefulWidget {
 class _DocumentPickerState extends State<DocumentPicker> {
   File? _file;
   Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    ImagePicker picker = ImagePicker();
+    final file = await picker.pickImage(source: ImageSource.gallery);
 
-    if (result != null) {
-      _file = File(result.files.single.path!);
+    if (file != null) {
+      _file = File(file.path);
       setState(() {});
       widget.onSelected.call(_file!.path);
     } else {}
@@ -209,7 +217,135 @@ class _DocumentPickerState extends State<DocumentPicker> {
                           ),
                           12.verticalSpace,
                           AppText(
-                            text: 'Supports: PDF, DOC, DOCX (Max 5MB each)',
+                            text: 'Supports: JPG, JPEG, PNG (Max 5MB each)',
+                            color: AppColors.grey2,
+                            fontSize: 12,
+                          )
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        if (widget.descriptionText != null)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              4.verticalSpace,
+              Text(
+                widget.descriptionText!,
+                style: AppTextStyle.caption.copyWith(
+                  letterSpacing: -0.3,
+                  fontSize: 10.sp,
+                  color: widget.isError ? Colors.red : AppColors.black,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class ImageTakerWidget extends StatefulWidget {
+  const ImageTakerWidget({
+    super.key,
+    required this.label,
+    required this.onSelected,
+    this.isError = false,
+    this.descriptionText,
+  });
+
+  final void Function(String) onSelected;
+  final bool isError;
+  final String? descriptionText;
+  final String label;
+
+  @override
+  State<ImageTakerWidget> createState() => _ImageTakerWidgetState();
+}
+
+class _ImageTakerWidgetState extends State<ImageTakerWidget> {
+  File? _file;
+  Future<void> _pickFile() async {
+    ImagePicker picker = ImagePicker();
+    XFile? result = await picker.pickImage(source: ImageSource.camera);
+
+    if (result != null) {
+      _file = File(result.path);
+      setState(() {});
+      widget.onSelected.call(_file!.path);
+    } else {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.label,
+              style: AppTextStyle.body1.copyWith(
+                fontSize: 12.sp,
+                color: AppColors.black,
+              ),
+            ),
+            5.horizontalSpace,
+            Text(
+              '*',
+              style: AppTextStyle.body1.copyWith(
+                fontSize: 12.sp,
+                color: AppColors.contentColorRed,
+              ),
+            ),
+          ],
+        ),
+        5.verticalSpace,
+        GestureDetector(
+          onTap: _pickFile,
+          child: DottedBorder(
+            options: RoundedRectDottedBorderOptions(
+              radius: Radius.circular(12),
+              dashPattern: [9, 3],
+              color: AppColors.primaryColor,
+              strokeWidth: 2,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 100,
+              child: _file != null
+                  ? Center(
+                      child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.file(
+                          _file!,
+                          height: 50,
+                        ),
+                        8.verticalSpace,
+                        Flexible(
+                            child: AppText(
+                          text: _file!.path.split('/').last,
+                          textAlign: TextAlign.center,
+                        )),
+                      ],
+                    ))
+                  : Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Iconsax.folder_add,
+                            color: AppColors.grey2,
+                          ),
+                          12.verticalSpace,
+                          AppText(
+                            text: 'Supports: JPG, JPEG, PNG (Max 5MB each)',
                             color: AppColors.grey2,
                             fontSize: 12,
                           )

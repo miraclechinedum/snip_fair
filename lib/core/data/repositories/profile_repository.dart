@@ -1,17 +1,16 @@
-import 'dart:io';
-
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
+import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
@@ -55,6 +54,7 @@ abstract class ProfileRepository {
   Future<ApiResult<SimpleResponse>> updateIdentityInfo({
     required String documentNumber,
     required String filePath,
+    required String photoPath,
   });
 
   Future<ApiResult<StylistProfileDetails>> getStylistProfile();
@@ -64,6 +64,16 @@ abstract class ProfileRepository {
     required String businessName,
     required List<Social> socials,
     required List<String> medias,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    String? yearsOfExperience,
+    String? bio,
+  });
+
+  Future<ApiResult<SimpleResponse>> updateCustomerProfile({
+    String? avatar,
     String? firstName,
     String? lastName,
     String? phone,
@@ -116,8 +126,8 @@ abstract class ProfileRepository {
   Future<ApiResult<WorkList>> fetchWorks({
     String? query,
     String? categoryId,
-    String page,
-    int perPage,
+    String? page,
+    int? perPage,
   });
 
   Future<ApiResult<SimpleResponse>> createWork({
@@ -163,15 +173,16 @@ abstract class ProfileRepository {
   Future<ApiResult<StylistEarnings>> getEarnings();
 
   Future<ApiResult<SimpleResponse>> updateUser({
-    required bool useLocation,
-    required String address,
+    bool? useLocation,
+    String? address,
+    String? fcmToken,
   });
 
   Future<ApiResult<CustomerWallet>> getWallet();
 
   Future<ApiResult<CustomerWalletTransactionList>> getWalletTransactions({
-    String page,
-    int perPage,
+    String? page,
+    int? perPage,
   });
 
   Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
@@ -182,6 +193,26 @@ abstract class ProfileRepository {
     String? lastName,
     String? portfolioId,
   });
+
+  Future<ApiResult<List<ChatConversation>>> getChatConversations();
+
+  Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId);
+
+  Future<ApiResult<SimpleResponse>> sendMessage({
+    required String conversationId,
+    required String text,
+  });
+
+  Future<ApiResult<ChatConversation>> startConversation({
+    required String recipientId,
+  });
+
+  Future<ApiResult<SimpleResponse>> markMessageAsRead({
+    required String conversationId,
+    required String messageId,
+  });
+
+  Future<ApiResult<DisputeList>> getDisputes();
 }
 
 @Injectable(as: ProfileRepository)
@@ -258,10 +289,12 @@ class ProfileRepoImpl implements ProfileRepository {
   Future<ApiResult<SimpleResponse>> updateIdentityInfo({
     required String documentNumber,
     required String filePath,
+    required String photoPath,
   }) =>
       _remoteSource.updateIdentityInfo(
         documentNumber: documentNumber,
         filePath: filePath,
+        photoPath: photoPath,
       );
 
   @override
@@ -445,8 +478,10 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.getAvailability();
 
   @override
-  Future<ApiResult<SimpleResponse>> updateAvailability(
-          {bool? isAvailable, List<ScheduleParams>? schedules}) =>
+  Future<ApiResult<SimpleResponse>> updateAvailability({
+    bool? isAvailable,
+    List<ScheduleParams>? schedules,
+  }) =>
       _remoteSource.updateAvailability(
         isAvailable: isAvailable,
         schedules: schedules,
@@ -457,8 +492,11 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.getEarnings();
 
   @override
-  Future<ApiResult<SimpleResponse>> updateUser(
-          {required bool useLocation, required String address}) =>
+  Future<ApiResult<SimpleResponse>> updateUser({
+    bool? useLocation,
+    String? address,
+    String? fcmToken,
+  }) =>
       _remoteSource.updateUser(useLocation: useLocation, address: address);
 
   @override
@@ -483,13 +521,14 @@ class ProfileRepoImpl implements ProfileRepository {
       );
 
   @override
-  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit(
-      {required String type,
-      required String amount,
-      String? email,
-      String? firstName,
-      String? lastName,
-      String? portfolioId}) {
+  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
+    required String type,
+    required String amount,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? portfolioId,
+  }) {
     return _remoteSource.initialisePayfastDeposit(
       type: type,
       amount: amount,
@@ -497,6 +536,60 @@ class ProfileRepoImpl implements ProfileRepository {
       firstName: firstName,
       lastName: lastName,
       portfolioId: portfolioId,
+    );
+  }
+
+  @override
+  Future<ApiResult<List<ChatConversation>>> getChatConversations() =>
+      _remoteSource.getChatConversations();
+
+  @override
+  Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId) =>
+      _remoteSource.getChatMessages(conversationId);
+
+  @override
+  Future<ApiResult<SimpleResponse>> markMessageAsRead({
+    required String conversationId,
+    required String messageId,
+  }) =>
+      _remoteSource.markMessageAsRead(
+        conversationId: conversationId,
+        messageId: messageId,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> sendMessage({
+    required String conversationId,
+    required String text,
+  }) =>
+      _remoteSource.sendMessage(conversationId: conversationId, text: text);
+
+  @override
+  Future<ApiResult<ChatConversation>> startConversation({
+    required String recipientId,
+  }) =>
+      _remoteSource.startConversation(recipientId: recipientId);
+
+  @override
+  Future<ApiResult<DisputeList>> getDisputes() => _remoteSource.getDisputes();
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerProfile(
+      {String? avatar,
+      String? firstName,
+      String? lastName,
+      String? phone,
+      String? country,
+      String? yearsOfExperience,
+      String? bio}) {
+    return _remoteSource.updateCustomerProfile(
+      avatar: avatar,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      country: country,
+      yearsOfExperience: yearsOfExperience,
+      bio: bio,
     );
   }
 }

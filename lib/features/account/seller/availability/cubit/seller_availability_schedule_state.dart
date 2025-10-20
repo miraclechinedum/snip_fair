@@ -16,9 +16,11 @@ class SellerAvailabilityScheduleState extends Equatable {
         scheduleAvailability = {
           for (var day in scheduleDays) day: false,
         },
+
         scheduleTimeSlots = {
           for (var day in scheduleDays) day: [],
         },
+        userChangedSomething = false,
         updateScheduleState = const ProcessState.init(null);
 
   const SellerAvailabilityScheduleState._({
@@ -26,11 +28,12 @@ class SellerAvailabilityScheduleState extends Equatable {
     required this.scheduleAvailability,
     required this.scheduleTimeSlots,
     required this.updateScheduleState,
+    required this.userChangedSomething,
   });
   final ProcessState<List<Schedule>> schedules;
   final Map<String, bool> scheduleAvailability;
   final Map<String, List<TimeSlot>> scheduleTimeSlots;
-
+  final bool userChangedSomething;
   final ProcessState<bool> updateScheduleState;
 
   SellerAvailabilityScheduleState copyWith({
@@ -38,12 +41,15 @@ class SellerAvailabilityScheduleState extends Equatable {
     Map<String, bool>? scheduleAvailability,
     Map<String, List<TimeSlot>>? scheduleTimeSlots,
     ProcessState<bool>? updateScheduleState,
+    bool? userChangedSomething,
   }) {
     return SellerAvailabilityScheduleState._(
       schedules: schedules ?? this.schedules,
       scheduleAvailability: scheduleAvailability ?? this.scheduleAvailability,
       scheduleTimeSlots: scheduleTimeSlots ?? this.scheduleTimeSlots,
       updateScheduleState: updateScheduleState ?? this.updateScheduleState,
+      userChangedSomething:
+          userChangedSomething ?? this.userChangedSomething,
     );
   }
 
@@ -54,6 +60,7 @@ class SellerAvailabilityScheduleState extends Equatable {
       scheduleAvailability,
       scheduleTimeSlots,
       updateScheduleState,
+      userChangedSomething,
     ];
   }
 }

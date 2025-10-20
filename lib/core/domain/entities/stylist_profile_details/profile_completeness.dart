@@ -12,7 +12,7 @@ class ProfileCompleteness {
   @JsonKey(name: 'status_approved')
   bool? statusApproved;
   @JsonKey(name: 'location_service')
-  LocationService? locationService;
+  bool? locationService;
   bool? address;
   @JsonKey(name: 'subscription_status')
   bool? subscriptionStatus;

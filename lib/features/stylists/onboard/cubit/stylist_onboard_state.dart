@@ -12,6 +12,7 @@ class StylistOnboardState extends BaseState {
     required this.imagePath,
     required this.updateBusinessInfoResult,
     required this.updateIdentityInfoResult,
+    required this.photoPath,
     super.exception,
     super.isLoading,
   });
@@ -24,6 +25,7 @@ class StylistOnboardState extends BaseState {
           bio: const StringInput.pure(),
           documentNumber: const StringInput.pure(),
           imagePath: const StringInput.pure(),
+          photoPath: const StringInput.pure(),
           updateBusinessInfoResult: const ProcessState.init(false),
           updateIdentityInfoResult: const ProcessState.init(false),
         );
@@ -33,6 +35,7 @@ class StylistOnboardState extends BaseState {
   final StringInput yearsOfExperience;
   final StringInput bio;
   final StringInput documentNumber;
+  final StringInput photoPath;
   final StringInput imagePath;
   final ProcessState<bool> updateBusinessInfoResult;
   final ProcessState<bool> updateIdentityInfoResult;
@@ -50,6 +53,7 @@ class StylistOnboardState extends BaseState {
       Formz.validate([
         documentNumber,
         imagePath,
+        photoPath,
       ]) &&
       !updateIdentityInfoResult.isLoading;
 
@@ -61,6 +65,7 @@ class StylistOnboardState extends BaseState {
     StringInput? bio,
     StringInput? documentNumber,
     StringInput? imagePath,
+    StringInput? photoPath,
     ProcessState<bool>? updateBusinessInfoResult,
     ProcessState<bool>? updateIdentityInfoResult,
     Exception? exception,
@@ -73,6 +78,7 @@ class StylistOnboardState extends BaseState {
       bio: bio ?? this.bio,
       documentNumber: documentNumber ?? this.documentNumber,
       imagePath: imagePath ?? this.imagePath,
+      photoPath: photoPath ?? this.photoPath,
       updateBusinessInfoResult:
           updateBusinessInfoResult ?? this.updateBusinessInfoResult,
       updateIdentityInfoResult:
@@ -90,6 +96,7 @@ class StylistOnboardState extends BaseState {
         bio,
         documentNumber,
         imagePath,
+        photoPath,
         updateBusinessInfoResult,
         updateIdentityInfoResult,
         exception,

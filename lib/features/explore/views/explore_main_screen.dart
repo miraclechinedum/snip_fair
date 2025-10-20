@@ -478,6 +478,11 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
               final portfolio = portfolios[index];
               return PopularStyleCard(
                 portfolio: portfolio,
+                onLikePressed: () {
+                  return context
+                      .read<ExploreCubit>()
+                      .likePortfolio(portfolio.id!.toString());
+                },
               );
             },
             separatorBuilder: (context, index) => 12.horizontalSpace,

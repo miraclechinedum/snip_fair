@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
@@ -27,6 +28,31 @@ class LocationService {
     _timer?.toString();
   }
 
+  ///Write function to check location permission and return true or false
+  Future<bool> checkLocationPermission() async {
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return false;
+    }
+    return true;
+  }
+
+  //Write functions to request location permission
+  Future<bool> requestLocationPermission() async {
+    final permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return false;
+    }
+    return true;
+  }
+
+  //Write function to go to location settings
+  Future<void> openLocationSettings() async {
+    await Geolocator.openLocationSettings();
+  }
+
   Future<void> _updateCurrentLocationToServer() async {
     final repo = getIt<ProfileRepository>();
     try {
@@ -36,6 +62,25 @@ class LocationService {
         longitude: position.longitude,
         accuracy: position.accuracy,
       );
+    } catch (e, s) {
+      Logger().e('LocationService: ', error: e, stackTrace: s);
+    }
+  }
+
+  void sendLocationUpdateRequest() {
+    unawaited(_updateCurrentLocationToServer());
+  }
+
+  void sendConsentToUseLocation(bool consentGiven) {
+    unawaited(_updateLocationConsentToServer(consentGiven: consentGiven));
+  }
+
+  Future<void> _updateLocationConsentToServer(
+      {required bool consentGiven}) async {
+    final repo = getIt<ProfileRepository>();
+    try {
+      await repo.updateLocationConsent(consentGiven);
+      Fluttertoast.showToast(msg: 'Location consent updated');
     } catch (e, s) {
       Logger().e('LocationService: ', error: e, stackTrace: s);
     }

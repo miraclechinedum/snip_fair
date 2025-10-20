@@ -14,10 +14,10 @@ StylistAppointmentList _$StylistAppointmentListFromJson(
           .toList(),
       path: json['path'] as String?,
       perPage: (json['per_page'] as num?)?.toInt(),
-      nextCursor: json['next_cursor'],
-      nextPageUrl: json['next_page_url'],
-      prevCursor: json['prev_cursor'],
-      prevPageUrl: json['prev_page_url'],
+      nextCursor: json['next_cursor'] as String?,
+      nextPageUrl: json['next_page_url'] as String?,
+      prevCursor: json['prev_cursor'] as String?,
+      prevPageUrl: json['prev_page_url'] as String?,
     );
 
 Map<String, dynamic> _$StylistAppointmentListToJson(

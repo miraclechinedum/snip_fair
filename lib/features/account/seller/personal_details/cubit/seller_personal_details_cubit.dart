@@ -53,6 +53,7 @@ class SellerPersonalDetailsCubit extends BaseCubit<SellerPersonalDetailsState> {
         socials: details.user?.stylistProfile?.socials ?? [],
         medias: details.user?.stylistProfile?.works ?? [],
         businessName: state.businessName.value,
+        phone: state.phone.value,
         country: state.address.value,
         yearsOfExperience: state.yearsOfExperience.value,
         bio: state.bio.value,

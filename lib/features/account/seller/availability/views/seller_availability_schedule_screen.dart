@@ -386,17 +386,36 @@ class DayAvailabilityWidget extends StatelessWidget {
                   final time = await showTimePicker(
                     context: context,
                     initialTime: TimeOfDay.now(),
+                    builder: (BuildContext context, Widget? child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: true),
+                        child: child!,
+                      );
+                    },
                   );
                   if (time != null) {
-                    final parts = slot.to?.split(':') ?? [];
-                    if (parts.isNotEmpty) {
-                      final toTime = TimeOfDay(
-                        hour: int.parse(parts[0]),
-                        minute: int.parse(parts[1]),
-                      );
+                    TimeOfDay? parseTime(String? s) {
+                      if (s == null) return null;
+                      // Expect 24-hour format HH:mm or H:mm
+                      final match =
+                          RegExp(r'^\s*(\d{1,2}):(\d{2})\s*$').firstMatch(s);
+                      if (match == null) return null;
 
-                      final diff = toTime.compareTo(time);
-                      if (diff.isNegative || diff == 0) {
+                      final hour = int.parse(match.group(1)!);
+                      final minute = int.parse(match.group(2)!);
+
+                      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                        return null;
+                      }
+                      return TimeOfDay(hour: hour, minute: minute);
+                    }
+
+                    final toTime = parseTime(slot.to);
+                    if (toTime != null) {
+                      final selectedMinutes = time.hour * 60 + time.minute;
+                      final toMinutes = toTime.hour * 60 + toTime.minute;
+                      if (selectedMinutes >= toMinutes) {
                         AppHelper.showSnackBar(
                           // ignore: use_build_context_synchronously
                           context,
@@ -410,7 +429,10 @@ class DayAvailabilityWidget extends StatelessWidget {
                       day: day,
                       index: index,
                       // ignore: use_build_context_synchronously
-                      slot: slot.copyWith(from: time.format(context)),
+                      slot: slot.copyWith(
+                        from:
+                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+                      ),
                     );
                   }
                 },
@@ -420,14 +442,15 @@ class DayAvailabilityWidget extends StatelessWidget {
                     border: Border.all(color: AppColors.grey1),
                   ),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   child: Row(
                     children: [
                       AppText(text: slot.from ?? '00:00'),
-                      5.horizontalSpace,
+                      6.horizontalSpace,
                       const Icon(
-                        Icons.access_time_sharp,
-                        size: 12,
+                        Iconsax.clock,
+                        size: 16,
+                        color: AppColors.grey3,
                       ),
                     ],
                   ),
@@ -450,29 +473,51 @@ class DayAvailabilityWidget extends StatelessWidget {
                   final time = await showTimePicker(
                     context: context,
                     initialTime: TimeOfDay.now(),
+                    builder: (BuildContext context, Widget? child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: true),
+                        child: child!,
+                      );
+                    },
                   );
                   if (time != null) {
-                    final parts = slot.to?.split(':') ?? [];
-                    if (parts.isNotEmpty) {
-                      final fromTime = TimeOfDay(
-                        hour: int.parse(parts[0]),
-                        minute: int.parse(parts[1]),
-                      );
+                    TimeOfDay? parseTime(String? s) {
+                      if (s == null) return null;
+                      // Expect 24-hour format HH:mm or H:mm
+                      final match =
+                          RegExp(r'^\s*(\d{1,2}):(\d{2})\s*$').firstMatch(s);
+                      if (match == null) return null;
 
-                      final diff = time.compareTo(fromTime);
-                      if (diff.isNegative || diff == 0) {
+                      final hour = int.parse(match.group(1)!);
+                      final minute = int.parse(match.group(2)!);
+
+                      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                        return null;
+                      }
+                      return TimeOfDay(hour: hour, minute: minute);
+                    }
+
+                    final fromTime = parseTime(slot.from);
+                    if (fromTime != null) {
+                      final selectedMinutes = time.hour * 60 + time.minute;
+                      final fromMinutes = fromTime.hour * 60 + fromTime.minute;
+                      if (selectedMinutes <= fromMinutes) {
                         AppHelper.showSnackBar(
                           context,
-                          message: "'To' must be After 'From'",
+                          message: "'To' must be after 'From'",
                         );
                         return;
                       }
                     }
+
                     cubit.updateTimeSlot(
                       day: day,
                       index: index,
                       // ignore: use_build_context_synchronously
-                      slot: slot.copyWith(to: time.format(context)),
+                      slot: slot.copyWith(
+                        to: '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+                      ),
                     );
                   }
                 },
@@ -486,10 +531,11 @@ class DayAvailabilityWidget extends StatelessWidget {
                   child: Row(
                     children: [
                       AppText(text: slot.to ?? '00:00'),
-                      5.horizontalSpace,
+                      6.horizontalSpace,
                       const Icon(
-                        Icons.access_time_sharp,
-                        size: 12,
+                        Iconsax.clock,
+                        size: 16,
+                        color: AppColors.grey3,
                       ),
                     ],
                   ),

@@ -11,6 +11,8 @@ class UpdateCreateAppointmentState extends Equatable {
       address: null,
       notes: null,
       fetchSellerDetailsState: ProcessState.init(null),
+      cancelBookingState: ProcessState.init(null),
+      rescheduleBookingState: ProcessState.init(null),
     );
   }
 
@@ -23,17 +25,31 @@ class UpdateCreateAppointmentState extends Equatable {
     required this.address,
     required this.notes,
     required this.fetchSellerDetailsState,
+    required this.cancelBookingState,
+    required this.rescheduleBookingState,
   });
+
   final ProcessState<SellerPortfolio> fetchPortfolioState;
   final ProcessState<CustomerAppointment> fetchAppointmentState;
   final ProcessState<SellerDetails> fetchSellerDetailsState;
   final ProcessState<void> updateOrCreateAppointmentState;
+  final ProcessState<void> cancelBookingState;
+  final ProcessState<void> rescheduleBookingState;
+
   final DateTime? selectedDate;
   final TimeOfDay? selectedTime;
   final String? address;
   final String? notes;
 
-  
+  bool get canBookAppointment {
+    return selectedDate != null &&
+        selectedTime != null &&
+        (fetchPortfolioState.data?.userId != null);
+  }
+
+  String get appointmentStatus {
+    return fetchAppointmentState.data?.status ?? '';
+  }
 
   @override
   List<Object?> get props => [
@@ -45,7 +61,10 @@ class UpdateCreateAppointmentState extends Equatable {
         address,
         notes,
         fetchSellerDetailsState,
+        cancelBookingState,
+        rescheduleBookingState,
       ];
+
   UpdateCreateAppointmentState copyWith({
     ProcessState<SellerPortfolio>? fetchPortfolioState,
     ProcessState<CustomerAppointment>? fetchAppointmentState,
@@ -55,6 +74,8 @@ class UpdateCreateAppointmentState extends Equatable {
     String? address,
     String? notes,
     ProcessState<SellerDetails>? fetchSellerDetailsState,
+    ProcessState<void>? cancelBookingState,
+    ProcessState<void>? rescheduleBookingState,
   }) {
     return UpdateCreateAppointmentState._(
       fetchPortfolioState: fetchPortfolioState ?? this.fetchPortfolioState,
@@ -68,6 +89,9 @@ class UpdateCreateAppointmentState extends Equatable {
       notes: notes ?? this.notes,
       fetchSellerDetailsState:
           fetchSellerDetailsState ?? this.fetchSellerDetailsState,
+      cancelBookingState: cancelBookingState ?? this.cancelBookingState,
+      rescheduleBookingState:
+          rescheduleBookingState ?? this.rescheduleBookingState,
     );
   }
 }

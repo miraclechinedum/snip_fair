@@ -6,7 +6,8 @@ part of 'datum.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Datum _$DatumFromJson(Map<String, dynamic> json) => Datum(
+CustomerTransaction _$CustomerTransactionFromJson(Map<String, dynamic> json) =>
+    CustomerTransaction(
       id: (json['id'] as num?)?.toInt(),
       type: json['type'] as String?,
       amount: (json['amount'] as num?)?.toDouble(),
@@ -21,7 +22,9 @@ Datum _$DatumFromJson(Map<String, dynamic> json) => Datum(
           : DateTime.parse(json['updated_at'] as String),
     );
 
-Map<String, dynamic> _$DatumToJson(Datum instance) => <String, dynamic>{
+Map<String, dynamic> _$CustomerTransactionToJson(
+        CustomerTransaction instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
       'amount': instance.amount,

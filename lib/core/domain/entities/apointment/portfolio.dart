@@ -8,7 +8,7 @@ part 'portfolio.g.dart';
 class Portfolio {
   int? id;
   @JsonKey(name: 'user_id')
-  int? userId;
+  dynamic userId;
   String? title;
   @JsonKey(name: 'category_id')
   String? categoryId;
@@ -19,7 +19,7 @@ class Portfolio {
   @JsonKey(name: 'media_urls')
   List<String>? mediaUrls;
   @JsonKey(name: 'visits_count')
-  int? visitsCount;
+  dynamic? visitsCount;
   bool? status;
   @JsonKey(name: 'is_available')
   bool? isAvailable;

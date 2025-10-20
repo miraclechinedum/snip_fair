@@ -80,7 +80,6 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
                     5.verticalSpace,
                     AppText(
                       text: 'An email has been sent to $email',
-                      textAlign: TextAlign.center,
                     ),
                     20.verticalSpace,
                     Text(
@@ -131,6 +130,9 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
                       },
                     ),
                     12.verticalSpace,
+                    ResendVerificationButton(
+                      email: email,
+                    ),
                     12.verticalSpace,
                   ],
                 ),
@@ -147,6 +149,90 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
     return BlocProvider(
       create: (context) => getIt<VerifyEmailCubit>(),
       child: this,
+    );
+  }
+}
+
+class ResendVerificationButton extends StatefulWidget {
+  final int cooldownSeconds;
+  final String label;
+  final String email;
+
+  const ResendVerificationButton({
+    this.cooldownSeconds = 30,
+    this.label = 'Resend code',
+    required this.email,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<ResendVerificationButton> createState() =>
+      _ResendVerificationButtonState();
+}
+
+class _ResendVerificationButtonState extends State<ResendVerificationButton> {
+  int _remaining = 0;
+  bool _loading = false;
+
+  void _startCooldown() {
+    if (!mounted) return;
+    setState(() => _remaining = widget.cooldownSeconds);
+    _tick();
+  }
+
+  void _tick() {
+    if (!mounted || _remaining <= 0) return;
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() => _remaining -= 1);
+      if (_remaining > 0) _tick();
+    });
+  }
+
+  Future<void> _onPressed() async {
+    if (_loading || _remaining > 0) return;
+
+    setState(() => _loading = true);
+
+    try {
+      final maybeFuture = context
+          .read<VerifyEmailCubit>()
+          .resendVerificationEmail(widget.email);
+      await maybeFuture;
+      // start cooldown after attempting resend
+      if (mounted) _startCooldown();
+    } catch (_) {
+      // still start a cooldown to prevent spamming; adjust if you prefer otherwise
+      if (mounted) _startCooldown();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = _loading
+        ? null
+        : (_remaining > 0 ? 'Resend in $_remaining s' : widget.label);
+
+    return TextButton(
+      onPressed: (_loading || _remaining > 0) ? null : _onPressed,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      ),
+      child: _loading
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primaryColor,
+              ),
+            )
+          : Text(
+              text ?? '',
+              style: AppTextStyle.body1.copyWith(color: AppColors.primaryColor),
+            ),
     );
   }
 }

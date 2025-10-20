@@ -1,10 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/user/user.dart';
 import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
+import 'package:snip_fair/core/utils/preferences/config/shared_pref_key.dart';
 
 part 'app_state.dart';
 
@@ -26,12 +33,27 @@ class AppCubit extends Cubit<AppState> {
 
   Future<void> _getPlatformSettings() async {
     emit(AppState.initial(state.user, state.platformSettings));
+    final localStorage = getIt<LocalKeyStorage>();
     final result = await _repository.getPlatformSettings();
-    result.when(
-      success: (settings) {
+    await result.when(
+      success: (settings) async {
+        await localStorage.storeString(
+          key: SharedPrefKey.platformSettings,
+          value: jsonEncode(settings.toJson()),
+        );
         emit(AppState.initial(state.user, settings));
       },
       failure: (error) {
+        final settingsString =
+            localStorage.getString(SharedPrefKey.platformSettings);
+
+        if (settingsString != null) {
+          final settings = PlatformSettings.fromJson(
+            jsonDecode(settingsString) as Map<String, dynamic>,
+          );
+          emit(AppState.initial(state.user, settings));
+          return;
+        }
         emit(AppState.initial(state.user));
       },
     );
@@ -48,6 +70,8 @@ class AppCubit extends Cubit<AppState> {
             settings: state.platformSettings,
           ),
         );
+        final fcmToken = await NotificationService.instance.getToken();
+        if (fcmToken != null) unawaited(updateDeviceToken(fcmToken));
       },
       failure: (error) {
         emit(AppState.unAuthenticated(state.platformSettings));
@@ -70,5 +94,9 @@ class AppCubit extends Cubit<AppState> {
 
   void onUpdateUser() {
     _getUserDetails();
+  }
+
+  Future<void> updateDeviceToken(String fcmToken) async {
+    await _repository.updateUser(fcmToken: fcmToken);
   }
 }

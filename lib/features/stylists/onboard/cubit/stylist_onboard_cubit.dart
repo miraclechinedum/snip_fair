@@ -66,8 +66,10 @@ class StylistOnboardCubit extends BaseCubit<StylistOnboardState> {
   Future<void> updateIdentityInfo() async {
     await launchApiCall(
       () => _profileRepository.updateIdentityInfo(
-          documentNumber: state.documentNumber.value,
-          filePath: state.imagePath.value),
+        documentNumber: state.documentNumber.value,
+        filePath: state.imagePath.value,
+        photoPath: state.photoPath.value,
+      ),
       doOnLoading: () => emit(
         state.copyWith(
           updateIdentityInfoResult: const ProcessState.loading(),
@@ -82,5 +84,9 @@ class StylistOnboardCubit extends BaseCubit<StylistOnboardState> {
         ),
       ),
     );
+  }
+
+  void onPhotoPathChanged(String p1) {
+    emit(state.copyWith(photoPath: StringInput.dirty(p1)));
   }
 }

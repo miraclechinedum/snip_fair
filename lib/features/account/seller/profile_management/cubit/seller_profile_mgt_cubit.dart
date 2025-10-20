@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
@@ -80,8 +80,11 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
         getProfileDetails(true);
       },
       failure: (error) {
-        emit(state.copyWith(
-            updateLocationSettingsState: ProcessState.error(error)));
+        emit(
+          state.copyWith(
+            updateLocationSettingsState: ProcessState.error(error),
+          ),
+        );
       },
     );
   }
@@ -109,7 +112,8 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
       },
       failure: (error) {
         emit(
-            state.copyWith(updateAvailabilityState: ProcessState.error(error)));
+          state.copyWith(updateAvailabilityState: ProcessState.error(error)),
+        );
       },
     );
   }
@@ -169,7 +173,23 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
   }
 
   Future<String?> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    return result?.paths.single;
+    final result = await ImagePicker().pickImage(source: ImageSource.gallery);
+    return result?.path;
+  }
+
+  Future<void> updateLocationConsent({required bool consentGiven}) async {
+    await _profileRepository.updateLocationConsent(consentGiven);
+  }
+
+  Future<void> updateUserPosition({
+    required double latitude,
+    required double longitude,
+    required double accuracy,
+  }) async {
+    await _profileRepository.updateUserLocation(
+      latitude: latitude,
+      longitude: longitude,
+      accuracy: accuracy,
+    );
   }
 }

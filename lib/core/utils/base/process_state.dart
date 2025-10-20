@@ -17,8 +17,8 @@ class ProcessState<T> {
   const ProcessState.loading([T? data])
       : this._(status: StateStatus.loading, data: data);
 
-  const ProcessState.error(Object error)
-      : this._(status: StateStatus.error, error: error);
+  const ProcessState.error(Object error, [T? data])
+      : this._(status: StateStatus.error, error: error, data: data);
   final StateStatus status;
   final T? data;
   final Object? error;

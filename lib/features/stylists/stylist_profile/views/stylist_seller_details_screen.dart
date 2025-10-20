@@ -292,7 +292,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             color: Colors.grey.shade200,
                           ),
                           SizedBox(
-                            height: 60,
+                            height: 60.h,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
@@ -588,17 +588,32 @@ class PortfolioView extends StatelessWidget {
             delegate: SliverChildListDelegate(
               List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0,
                   (index) {
-                return CachedNetworkImage(
-                  imageUrl: state.sellerDetails.data?.mediaUrls?[index]
-                          .completeImagePath() ??
-                      '',
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey.shade200,
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.error),
+                return GestureDetector(
+                  onTap: () {
+                    if (state.sellerDetails.data?.mediaUrls?[index]
+                            .completeImagePath() ==
+                        null) {
+                      return;
+                    }
+                    context.router.pushWidget(
+                      FullScreenImageView(
+                        imagePath: state.sellerDetails.data!.mediaUrls![index]
+                            .completeImagePath(),
+                      ),
+                    );
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: state.sellerDetails.data?.mediaUrls?[index]
+                            .completeImagePath() ??
+                        '',
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey.shade200,
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.error),
+                    ),
                   ),
                 );
               }),
@@ -645,7 +660,7 @@ class ServicesListView extends StatelessWidget {
                 vertical: 8,
               ),
               sliver: SliverFixedExtentList(
-                itemExtent: 100.0,
+                itemExtent: 100.0.h,
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final service = services[index];
@@ -668,6 +683,7 @@ class ServicesListView extends StatelessWidget {
                               children: [
                                 AppText(
                                   text: service.title ?? 'N/A',
+                                  maxLines: 1,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -707,8 +723,8 @@ class ServicesListView extends StatelessWidget {
                               ),
                               const Spacer(),
                               SizedBox(
-                                width: 120,
-                                height: 30,
+                                width: 120.w,
+                                height: 30.h,
                                 child: CustomButton(
                                   title: 'Book Now',
                                   onPressed: () {
@@ -733,6 +749,34 @@ class ServicesListView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class FullScreenImageView extends StatelessWidget {
+  const FullScreenImageView({super.key, required this.imagePath});
+
+  final String imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: SafeArea(
+        child: Center(
+          child: InteractiveViewer(
+            child: CachedNetworkImage(
+              imageUrl: imagePath,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

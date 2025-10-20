@@ -30,13 +30,26 @@ class AppRouter extends RootStackRouter {
           path: '/change-password',
           page: ChangePasswordRoute.page,
         ),
+        AutoRoute(
+          path: '/conversation-list',
+          page: ConversationListRoute.page,
+        ),
+        AutoRoute(
+          path: '/conversation-chat',
+          page: ConvesationChatRoute.page,
+        ),
+        AutoRoute(
+          path: '/disputes',
+          page: DisputesRoute.page,
+        ),
 
         /// Customer Specific Routes
         ///
         AutoRoute(
           path: '/customer-profile-details',
-          page: CustomerProfileMgtRoute.page,
+          page: CustomerPersonalDetailsRoute.page,
         ),
+
         AutoRoute(
           path: '/customer-wallet',
           page: CustomerWalletRoute.page,
@@ -48,6 +61,10 @@ class AppRouter extends RootStackRouter {
         AutoRoute(
           path: '/update-create-appointment',
           page: UpdateCreateAppointmentRoute.page,
+        ),
+        AutoRoute(
+          path: '/customer-appointment-calendar',
+          page: CustomerAppointmentsCalendarRoute.page,
         ),
 
         /// Seller Specific Routes
@@ -83,6 +100,14 @@ class AppRouter extends RootStackRouter {
         AutoRoute(
           path: '/seller-availability-schedue',
           page: SellerAvailabilityScheduleRoute.page,
+        ),
+        AutoRoute(
+          path: '/seller-appointment-details',
+          page: SellerAppointmentDetailsRoute.page,
+        ),
+        AutoRoute(
+          path: '/seller-appointment-calendar',
+          page: SellerAppointmentsCalendarRoute.page,
         ),
 
         // Become Seller

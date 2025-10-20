@@ -15,6 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 import '../../features/account/change_password/cubit/change_password_cubit.dart'
     as _i902;
+import '../../features/account/customer/personal_details/cubit/customer_personal_details_cubit.dart'
+    as _i34;
 import '../../features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart'
     as _i1025;
 import '../../features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart'
@@ -29,8 +31,12 @@ import '../../features/account/seller/profile_management/cubit/seller_profile_mg
     as _i762;
 import '../../features/account/seller/work/cubit/seller_works_cubit.dart'
     as _i159;
+import '../../features/appointments/customer_appointments/cubit/customer_appointments_cubit.dart'
+    as _i438;
 import '../../features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart'
     as _i329;
+import '../../features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart'
+    as _i368;
 import '../../features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart'
     as _i400;
 import '../../features/authentication/forgot_password/cubit/forgot_password_cubit.dart'
@@ -39,6 +45,8 @@ import '../../features/authentication/login/cubit/login_cubit.dart' as _i553;
 import '../../features/authentication/signup/cubit/signup_cubit.dart' as _i643;
 import '../../features/authentication/verify_email/cubit/verify_email_cubit.dart'
     as _i97;
+import '../../features/conversations/cubit/conversations_cubit.dart' as _i42;
+import '../../features/disputes/cubit/disputes_cubit.dart' as _i455;
 import '../../features/explore/cubit/explore_cubit.dart' as _i561;
 import '../../features/favorites/cubit/customer_favorites_cubit.dart' as _i200;
 import '../../features/stylists/onboard/cubit/stylist_onboard_cubit.dart'
@@ -92,10 +100,16 @@ Future<_i174.GetIt> $initGetIt(
       () => _i187.SearchCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i329.SellerAppointMgtCubit>(
       () => _i329.SellerAppointMgtCubit(gh<_i939.AppointmentRepository>()));
-  gh.factory<_i561.ExploreCubit>(
-      () => _i561.ExploreCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i368.SellerAppointmentDetailsCubit>(() =>
+      _i368.SellerAppointmentDetailsCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i400.UpdateCreateAppointmentCubit>(() =>
       _i400.UpdateCreateAppointmentCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i438.CustomerAppointmentsCubit>(
+      () => _i438.CustomerAppointmentsCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i200.CustomerFavoritesCubit>(
+      () => _i200.CustomerFavoritesCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i561.ExploreCubit>(
+      () => _i561.ExploreCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i345.AuthenticationRepository>(() => _i345.AuthenticationRepoImpl(
         gh<_i395.LocalKeyStorage>(),
         gh<_i637.SnipFairBackendRemoteSource>(),
@@ -114,8 +128,10 @@ Future<_i174.GetIt> $initGetIt(
       () => _i553.LoginCubit(gh<_i345.AuthenticationRepository>()));
   gh.factory<_i570.StylistOnboardCubit>(
       () => _i570.StylistOnboardCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i200.CustomerFavoritesCubit>(
-      () => _i200.CustomerFavoritesCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i455.DisputesCubit>(
+      () => _i455.DisputesCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i42.ConversationsCubit>(
+      () => _i42.ConversationsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i570.SellerPersonalDetailsCubit>(
       () => _i570.SellerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i759.EarningsCubit>(
@@ -130,6 +146,8 @@ Future<_i174.GetIt> $initGetIt(
       () => _i485.SellerPaymentMethodsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i902.ChangePasswordCubit>(
       () => _i902.ChangePasswordCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i34.CustomerPersonalDetailsCubit>(
+      () => _i34.CustomerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i1025.CustomerProfileMgtCubit>(
       () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i782.AppCubit>(

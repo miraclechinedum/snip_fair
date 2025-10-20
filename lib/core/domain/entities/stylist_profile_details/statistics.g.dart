@@ -7,12 +7,12 @@ part of 'statistics.dart';
 // **************************************************************************
 
 Statistics _$StatisticsFromJson(Map<String, dynamic> json) => Statistics(
-      totalWorks: (json['total_works'] as num?)?.toInt(),
-      totalLikes: (json['total_likes'] as num?)?.toInt(),
-      totalReviews: (json['total_reviews'] as num?)?.toInt(),
-      averageRating: (json['average_rating'] as num?)?.toInt(),
-      totalAppointments: (json['total_appointments'] as num?)?.toInt(),
-      totalEarnings: (json['total_earnings'] as num?)?.toInt(),
+      totalWorks: json['total_works'],
+      totalLikes: json['total_likes'],
+      totalReviews: json['total_reviews'],
+      averageRating: json['average_rating'],
+      totalAppointments: json['total_appointments'],
+      totalEarnings: json['total_earnings'],
       scheduleSummary: json['schedule_summary'],
     );
 

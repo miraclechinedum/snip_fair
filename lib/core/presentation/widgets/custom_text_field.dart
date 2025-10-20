@@ -135,7 +135,7 @@ class CustomTextField extends StatelessWidget {
             alignLabelWithHint: true,
 
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14).dg,
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 14).dg,
             // floatingLabelBehavior: FloatingLabelBehavior.always,
 
             enabledBorder: OutlineInputBorder(
@@ -370,6 +370,7 @@ class CustomPlaceSearchField extends StatefulWidget {
     required this.onSelected,
     this.isError = false,
     this.descriptionText,
+    this.readOnly = false,
     this.initialPlace,
   }) : super(key: key);
 
@@ -379,6 +380,7 @@ class CustomPlaceSearchField extends StatefulWidget {
   final bool isError;
   final String? descriptionText;
   final GeoPlace? initialPlace;
+  final bool readOnly;
 
   @override
   State<CustomPlaceSearchField> createState() => _CustomPlaceSearchFieldState();
@@ -439,6 +441,7 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
               ),
               trailing: CloseButton(
                 onPressed: () {
+                  if (widget.readOnly) return;
                   setState(() {
                     _geoPlace = null;
                     widget.onSelected.call(_geoPlace);

@@ -1,5 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart' hide Environment;
+import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/network/error_interceptor.dart';
+import 'package:snip_fair/core/presentation/app.dart';
+import 'package:snip_fair/core/routing/routes.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 
 import '../utils/environment/environment.dart';
 import 'token_interceptor.dart';
@@ -20,7 +26,7 @@ class HttpService {
             if (isFormDataRequest)
               'Content-Type': 'application/x-www-form-urlencoded'
             else
-              'Content-type': 'application/json'
+              'Content-type': 'application/json',
           },
         ),
       )
@@ -28,6 +34,18 @@ class HttpService {
         ..interceptors.add(
           TokenInterceptor(
             requireAuth: requireAuth,
+          ),
+        )
+        ..interceptors.add(
+          ErrorInterceptor(
+            onAuthTokenExpired: (failedRequest) async {
+              final appRouter = getIt<AppRouter>();
+              // Handle token expiration (e.g., refresh token)
+              await appRouter.replaceAll([const LandingRoute()]);
+              Fluttertoast.showToast(
+                msg: 'Session expired. Please log in again.',
+              );
+            },
           ),
         )
         ..interceptors.add(

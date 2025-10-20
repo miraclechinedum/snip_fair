@@ -118,7 +118,7 @@ class ExploreCubit extends Cubit<ExploreState> {
   }
 
   Future<bool?> likePortfolio(String portfolioId) async {
-    Fluttertoast.showToast(msg: 'Liking portfolio...');
+    Fluttertoast.showToast(msg: 'Toggling like...');
     final response = await _appointmentRepository.toggleLike(
       type: 'portfolio',
       typeId: portfolioId,

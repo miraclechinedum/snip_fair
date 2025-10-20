@@ -5,17 +5,17 @@ part 'statistics.g.dart';
 @JsonSerializable()
 class Statistics {
   @JsonKey(name: 'total_works')
-  int? totalWorks;
+  dynamic totalWorks;
   @JsonKey(name: 'total_likes')
-  int? totalLikes;
+  dynamic totalLikes;
   @JsonKey(name: 'total_reviews')
-  int? totalReviews;
+  dynamic totalReviews;
   @JsonKey(name: 'average_rating')
-  int? averageRating;
+ dynamic averageRating;
   @JsonKey(name: 'total_appointments')
-  int? totalAppointments;
+  dynamic totalAppointments;
   @JsonKey(name: 'total_earnings')
-  int? totalEarnings;
+  dynamic totalEarnings;
   @JsonKey(name: 'schedule_summary')
   dynamic scheduleSummary;
 

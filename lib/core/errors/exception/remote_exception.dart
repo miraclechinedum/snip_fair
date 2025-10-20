@@ -8,8 +8,12 @@ class RemoteException implements Exception {
     this.exception,
   });
 
-  const RemoteException.httpError(int? statusCode)
-      : this._(RemoteExceptionKind.http, statusCode: statusCode);
+  RemoteException.httpError(int? statusCode)
+      : this._(
+          RemoteExceptionKind.http,
+          statusCode: statusCode,
+          errorResponse: const ServerError(message: 'Server Error'),
+        );
 
   const RemoteException.serverError(int? statusCode, ServerError errorResponse)
       : this._(
@@ -29,8 +33,12 @@ class RemoteException implements Exception {
   const RemoteException.cancellationError()
       : this._(RemoteExceptionKind.cancellation);
 
-  const RemoteException.unexpectedError(Object? exception)
-      : this._(RemoteExceptionKind.unexpected, exception: exception);
+  RemoteException.unexpectedError(Object? exception)
+      : this._(
+          RemoteExceptionKind.unexpected,
+          exception: exception,
+          errorResponse: const ServerError(message: 'Server Error'),
+        );
   final RemoteExceptionKind kind;
   final int? statusCode;
   final ServerError? errorResponse;

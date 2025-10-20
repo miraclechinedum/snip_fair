@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "93247050443",
+    "project_id": "snipfair-firebase",
+    "storage_bucket": "snipfair-firebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93247050443:android:ea7fafe45f3a13ae32c14e",
+        "android_client_info": {
+          "package_name": "com.snipfair.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5oM9nH6xwC2OTzN6l3NtMROnO7ING-Hc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

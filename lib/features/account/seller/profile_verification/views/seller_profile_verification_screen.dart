@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
@@ -348,12 +348,14 @@ class MultiDocumentPicker extends StatefulWidget {
     required this.onSelected,
     this.isError = false,
     this.descriptionText,
+    this.initialFilePaths = const [],
   });
 
   final void Function(List<String>) onSelected;
   final bool isError;
   final String? descriptionText;
   final String label;
+  final List<String> initialFilePaths;
 
   @override
   State<MultiDocumentPicker> createState() => _MultiDocumentPickerState();
@@ -362,19 +364,12 @@ class MultiDocumentPicker extends StatefulWidget {
 class _MultiDocumentPickerState extends State<MultiDocumentPicker> {
   List<File>? _files;
   Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(allowMultiple: true, type: FileType.media);
+    final picker = ImagePicker();
 
-    if (result != null) {
-      if (result.paths.length > 10) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You can only upload up to 10 files.'),
-          ),
-        );
-        return;
-      }
-      _files = result.paths.map((path) => File(path!)).toList();
+    final files = await picker.pickMultiImage(imageQuality: 80, limit: 10);
+
+    if (files.isNotEmpty) {
+      _files = files.map((file) => File(file.path)).toList();
       setState(() {});
       widget.onSelected.call(_files!.map((e) => e.path).toList());
     } else {}
@@ -415,6 +410,7 @@ class _MultiDocumentPickerState extends State<MultiDocumentPicker> {
         5.verticalSpace,
         GestureDetector(
           onTap: _pickFile,
+          behavior: HitTestBehavior.translucent,
           child: DottedBorder(
             options: const RoundedRectDottedBorderOptions(
               radius: Radius.circular(12),
@@ -425,29 +421,23 @@ class _MultiDocumentPickerState extends State<MultiDocumentPicker> {
             child: SizedBox(
               width: double.infinity,
               height: 100,
-              child: _files != null
-                  ? Center(
-                      child: AppText(
-                        text: '${_files!.length} File(s) selected',
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Iconsax.folder_add,
-                            color: AppColors.grey2,
-                          ),
-                          12.verticalSpace,
-                          const AppText(
-                            text: 'Supports: PDF, DOC, DOCX (Max 5MB each)',
-                            color: AppColors.grey2,
-                            fontSize: 12,
-                          ),
-                        ],
-                      ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Iconsax.folder_add,
+                      color: AppColors.grey2,
                     ),
+                    12.verticalSpace,
+                    const AppText(
+                      text: 'Supports: JPG, JPEG, PNG (Max 5MB each)',
+                      color: AppColors.grey2,
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

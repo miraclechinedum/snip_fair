@@ -23,7 +23,7 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
 
   Future<void> getWorkList() async {
     emit(state.copyWith(worksList: const ProcessState.loading()));
-    final response = await _profileRepository.fetchWorks();
+    final response = await _profileRepository.fetchWorks(perPage: 50);
     response.when(
       success: (data) {
         emit(state.copyWith(worksList: ProcessState.success(data)));
@@ -99,6 +99,7 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
   }
 
   void onSelectImages(List<String> filePaths) {
+    print('filePaths: $filePaths');
     emit(state.copyWith(workFilePaths: [...state.workFilePaths, ...filePaths]));
   }
 

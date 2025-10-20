@@ -11,10 +11,7 @@ ProfileCompleteness _$ProfileCompletenessFromJson(Map<String, dynamic> json) =>
       portfolio: json['portfolio'] as bool?,
       paymentMethod: json['payment_method'] as bool?,
       statusApproved: json['status_approved'] as bool?,
-      locationService: json['location_service'] == null
-          ? null
-          : LocationService.fromJson(
-              json['location_service'] as Map<String, dynamic>),
+      locationService: json['location_service'] as bool?,
       address: json['address'] as bool?,
       subscriptionStatus: json['subscription_status'] as bool?,
       socialLinks: json['social_links'] as bool?,

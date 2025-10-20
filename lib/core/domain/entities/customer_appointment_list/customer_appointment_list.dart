@@ -11,13 +11,13 @@ class CustomerAppointmentList {
   @JsonKey(name: 'per_page')
   int? perPage;
   @JsonKey(name: 'next_cursor')
-  dynamic nextCursor;
+  String? nextCursor;
   @JsonKey(name: 'next_page_url')
-  dynamic nextPageUrl;
+  String? nextPageUrl;
   @JsonKey(name: 'prev_cursor')
-  dynamic prevCursor;
+  String? prevCursor;
   @JsonKey(name: 'prev_page_url')
-  dynamic prevPageUrl;
+  String? prevPageUrl;
 
   CustomerAppointmentList({
     this.data,

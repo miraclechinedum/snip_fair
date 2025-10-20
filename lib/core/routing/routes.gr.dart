@@ -9,88 +9,105 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i33;
-import 'package:flutter/material.dart' as _i34;
+import 'package:auto_route/auto_route.dart' as _i39;
+import 'package:flutter/material.dart' as _i40;
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart'
+    as _i41;
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/initiator.dart'
+    as _i43;
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/recipient.dart'
+    as _i42;
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart'
-    as _i38;
+    as _i47;
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart'
-    as _i36;
+    as _i45;
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart'
-    as _i37;
+    as _i46;
 import 'package:snip_fair/core/domain/entities/work_list/work_item.dart'
-    as _i35;
-import 'package:snip_fair/core/presentation/main_screen.dart' as _i12;
+    as _i44;
+import 'package:snip_fair/core/presentation/main_screen.dart' as _i16;
 import 'package:snip_fair/features/account/change_password/views/change_password_screen.dart'
-    as _i4;
+    as _i3;
+import 'package:snip_fair/features/account/customer/personal_details/views/customer_personal_details_screen.dart'
+    as _i8;
 import 'package:snip_fair/features/account/customer/profile_management/views/customer_profile_mgt_screen.dart'
-    as _i6;
+    as _i9;
 import 'package:snip_fair/features/account/seller/availability/views/seller_availability_schedule_screen.dart'
-    as _i16;
-import 'package:snip_fair/features/account/seller/earnings/views/seller_earning_screen.dart'
-    as _i19;
-import 'package:snip_fair/features/account/seller/payment_methods/views/seller_payment_methods_screen.dart'
-    as _i20;
-import 'package:snip_fair/features/account/seller/personal_details/views/seller_personal_details_screen.dart'
-    as _i21;
-import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart'
-    as _i23;
-import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart'
-    as _i24;
-import 'package:snip_fair/features/account/seller/work/views/seller_add_new_work_screen.dart'
-    as _i14;
-import 'package:snip_fair/features/account/seller/work/views/seller_portfolio_screen.dart'
     as _i22;
-import 'package:snip_fair/features/account/seller/work/views/seller_work_screen.dart'
+import 'package:snip_fair/features/account/seller/earnings/views/seller_earning_screen.dart'
     as _i25;
+import 'package:snip_fair/features/account/seller/payment_methods/views/seller_payment_methods_screen.dart'
+    as _i26;
+import 'package:snip_fair/features/account/seller/personal_details/views/seller_personal_details_screen.dart'
+    as _i27;
+import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart'
+    as _i29;
+import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart'
+    as _i30;
+import 'package:snip_fair/features/account/seller/work/views/seller_add_new_work_screen.dart'
+    as _i18;
+import 'package:snip_fair/features/account/seller/work/views/seller_portfolio_screen.dart'
+    as _i28;
+import 'package:snip_fair/features/account/seller/work/views/seller_work_screen.dart'
+    as _i31;
 import 'package:snip_fair/features/account/views/account_main_screen.dart'
     as _i1;
-import 'package:snip_fair/features/appointments/appointments_calendar_screen.dart'
-    as _i3;
-import 'package:snip_fair/features/appointments/stylist_appointments/views/seller_appointments_main_screen.dart'
-    as _i15;
-import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart'
-    as _i31;
-import 'package:snip_fair/features/appointments/views/appointements_main_screen.dart'
+import 'package:snip_fair/features/appointments/customer_appointments/views/appointements_main_screen.dart'
     as _i2;
+import 'package:snip_fair/features/appointments/customer_appointments/views/customer_appointments_calendar_screen.dart'
+    as _i6;
+import 'package:snip_fair/features/appointments/stylist_appointments/details/views/seller_appointment_details_screen.dart'
+    as _i19;
+import 'package:snip_fair/features/appointments/stylist_appointments/views/seller_appointments_calendar_screen.dart'
+    as _i20;
+import 'package:snip_fair/features/appointments/stylist_appointments/views/seller_appointments_main_screen.dart'
+    as _i21;
+import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart'
+    as _i37;
 import 'package:snip_fair/features/authentication/forgot_password/views/forgot_password_screen.dart'
-    as _i9;
-import 'package:snip_fair/features/authentication/login/views/login_screen.dart'
-    as _i11;
-import 'package:snip_fair/features/authentication/signup/views/signup_screen.dart'
-    as _i26;
-import 'package:snip_fair/features/authentication/verify_email/views/verify_email_screen.dart'
-    as _i32;
-import 'package:snip_fair/features/dashboard/views/seller_dashboard_main_screen.dart'
-    as _i18;
-import 'package:snip_fair/features/explore/views/explore_main_screen.dart'
-    as _i8;
-import 'package:snip_fair/features/favorites/views/customer_favorites_screen.dart'
-    as _i5;
-import 'package:snip_fair/features/onboarding/views/landing_screen.dart'
-    as _i10;
-import 'package:snip_fair/features/onboarding/views/splash_screen.dart' as _i27;
-import 'package:snip_fair/features/stylists/onboard/views/seller_business_create_screen.dart'
-    as _i17;
-import 'package:snip_fair/features/stylists/onboard/views/seller_business_id_verify.dart'
-    as _i28;
-import 'package:snip_fair/features/stylists/search/views/search_main_screen.dart'
     as _i13;
-import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_more_info_screen.dart'
-    as _i29;
-import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_seller_details_screen.dart'
-    as _i30;
-import 'package:snip_fair/features/wallet/views/customer_wallet_screen.dart'
+import 'package:snip_fair/features/authentication/login/views/login_screen.dart'
+    as _i15;
+import 'package:snip_fair/features/authentication/signup/views/signup_screen.dart'
+    as _i32;
+import 'package:snip_fair/features/authentication/verify_email/views/verify_email_screen.dart'
+    as _i38;
+import 'package:snip_fair/features/conversations/conversation/views/conversation_chat_screen.dart'
+    as _i5;
+import 'package:snip_fair/features/conversations/conversations_list/views/conversation_list_screen.dart'
+    as _i4;
+import 'package:snip_fair/features/dashboard/views/seller_dashboard_main_screen.dart'
+    as _i24;
+import 'package:snip_fair/features/disputes/views/disputes_screen.dart' as _i11;
+import 'package:snip_fair/features/explore/views/explore_main_screen.dart'
+    as _i12;
+import 'package:snip_fair/features/favorites/views/customer_favorites_screen.dart'
     as _i7;
+import 'package:snip_fair/features/onboarding/views/landing_screen.dart'
+    as _i14;
+import 'package:snip_fair/features/onboarding/views/splash_screen.dart' as _i33;
+import 'package:snip_fair/features/stylists/onboard/views/seller_business_create_screen.dart'
+    as _i23;
+import 'package:snip_fair/features/stylists/onboard/views/seller_business_id_verify.dart'
+    as _i34;
+import 'package:snip_fair/features/stylists/search/views/search_main_screen.dart'
+    as _i17;
+import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_more_info_screen.dart'
+    as _i35;
+import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_seller_details_screen.dart'
+    as _i36;
+import 'package:snip_fair/features/wallet/views/customer_wallet_screen.dart'
+    as _i10;
 
 /// generated route for
 /// [_i1.AccountMainScreen]
-class AccountMainRoute extends _i33.PageRouteInfo<void> {
-  const AccountMainRoute({List<_i33.PageRouteInfo>? children})
+class AccountMainRoute extends _i39.PageRouteInfo<void> {
+  const AccountMainRoute({List<_i39.PageRouteInfo>? children})
       : super(AccountMainRoute.name, initialChildren: children);
 
   static const String name = 'AccountMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       return const _i1.AccountMainScreen();
@@ -100,13 +117,13 @@ class AccountMainRoute extends _i33.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i2.AppointementsMainScreen]
-class AppointementsMainRoute extends _i33.PageRouteInfo<void> {
-  const AppointementsMainRoute({List<_i33.PageRouteInfo>? children})
+class AppointementsMainRoute extends _i39.PageRouteInfo<void> {
+  const AppointementsMainRoute({List<_i39.PageRouteInfo>? children})
       : super(AppointementsMainRoute.name, initialChildren: children);
 
   static const String name = 'AppointementsMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       return const _i2.AppointementsMainScreen();
@@ -115,140 +132,315 @@ class AppointementsMainRoute extends _i33.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i3.AppointmentsCalendarScreen]
-class AppointmentsCalendarRoute extends _i33.PageRouteInfo<void> {
-  const AppointmentsCalendarRoute({List<_i33.PageRouteInfo>? children})
-      : super(AppointmentsCalendarRoute.name, initialChildren: children);
-
-  static const String name = 'AppointmentsCalendarRoute';
-
-  static _i33.PageInfo page = _i33.PageInfo(
-    name,
-    builder: (data) {
-      return const _i3.AppointmentsCalendarScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i4.ChangePasswordScreen]
-class ChangePasswordRoute extends _i33.PageRouteInfo<void> {
-  const ChangePasswordRoute({List<_i33.PageRouteInfo>? children})
+/// [_i3.ChangePasswordScreen]
+class ChangePasswordRoute extends _i39.PageRouteInfo<void> {
+  const ChangePasswordRoute({List<_i39.PageRouteInfo>? children})
       : super(ChangePasswordRoute.name, initialChildren: children);
 
   static const String name = 'ChangePasswordRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i4.ChangePasswordScreen());
+      return _i39.WrappedRoute(child: const _i3.ChangePasswordScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i5.CustomerFavoritesScreen]
-class CustomerFavoritesRoute extends _i33.PageRouteInfo<void> {
-  const CustomerFavoritesRoute({List<_i33.PageRouteInfo>? children})
+/// [_i4.ConversationListScreen]
+class ConversationListRoute
+    extends _i39.PageRouteInfo<ConversationListRouteArgs> {
+  ConversationListRoute({
+    _i40.Key? key,
+    _i41.ChatConversation? chatConversation,
+    List<_i39.PageRouteInfo>? children,
+  }) : super(
+          ConversationListRoute.name,
+          args: ConversationListRouteArgs(
+            key: key,
+            chatConversation: chatConversation,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ConversationListRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ConversationListRouteArgs>(
+        orElse: () => const ConversationListRouteArgs(),
+      );
+      return _i4.ConversationListScreen(
+        key: args.key,
+        chatConversation: args.chatConversation,
+      );
+    },
+  );
+}
+
+class ConversationListRouteArgs {
+  const ConversationListRouteArgs({this.key, this.chatConversation});
+
+  final _i40.Key? key;
+
+  final _i41.ChatConversation? chatConversation;
+
+  @override
+  String toString() {
+    return 'ConversationListRouteArgs{key: $key, chatConversation: $chatConversation}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ConversationListRouteArgs) return false;
+    return key == other.key && chatConversation == other.chatConversation;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ chatConversation.hashCode;
+}
+
+/// generated route for
+/// [_i5.ConvesationChatScreen]
+class ConvesationChatRoute
+    extends _i39.PageRouteInfo<ConvesationChatRouteArgs> {
+  ConvesationChatRoute({
+    required String conversationId,
+    required String currentUserId,
+    _i42.Recipient? recipient,
+    _i43.Initiator? initiator,
+    _i40.Key? key,
+    List<_i39.PageRouteInfo>? children,
+  }) : super(
+          ConvesationChatRoute.name,
+          args: ConvesationChatRouteArgs(
+            conversationId: conversationId,
+            currentUserId: currentUserId,
+            recipient: recipient,
+            initiator: initiator,
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ConvesationChatRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ConvesationChatRouteArgs>();
+      return _i5.ConvesationChatScreen(
+        conversationId: args.conversationId,
+        currentUserId: args.currentUserId,
+        recipient: args.recipient,
+        initiator: args.initiator,
+        key: args.key,
+      );
+    },
+  );
+}
+
+class ConvesationChatRouteArgs {
+  const ConvesationChatRouteArgs({
+    required this.conversationId,
+    required this.currentUserId,
+    this.recipient,
+    this.initiator,
+    this.key,
+  });
+
+  final String conversationId;
+
+  final String currentUserId;
+
+  final _i42.Recipient? recipient;
+
+  final _i43.Initiator? initiator;
+
+  final _i40.Key? key;
+
+  @override
+  String toString() {
+    return 'ConvesationChatRouteArgs{conversationId: $conversationId, currentUserId: $currentUserId, recipient: $recipient, initiator: $initiator, key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ConvesationChatRouteArgs) return false;
+    return conversationId == other.conversationId &&
+        currentUserId == other.currentUserId &&
+        recipient == other.recipient &&
+        initiator == other.initiator &&
+        key == other.key;
+  }
+
+  @override
+  int get hashCode =>
+      conversationId.hashCode ^
+      currentUserId.hashCode ^
+      recipient.hashCode ^
+      initiator.hashCode ^
+      key.hashCode;
+}
+
+/// generated route for
+/// [_i6.CustomerAppointmentsCalendarScreen]
+class CustomerAppointmentsCalendarRoute extends _i39.PageRouteInfo<void> {
+  const CustomerAppointmentsCalendarRoute({List<_i39.PageRouteInfo>? children})
+      : super(CustomerAppointmentsCalendarRoute.name,
+            initialChildren: children);
+
+  static const String name = 'CustomerAppointmentsCalendarRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      return const _i6.CustomerAppointmentsCalendarScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i7.CustomerFavoritesScreen]
+class CustomerFavoritesRoute extends _i39.PageRouteInfo<void> {
+  const CustomerFavoritesRoute({List<_i39.PageRouteInfo>? children})
       : super(CustomerFavoritesRoute.name, initialChildren: children);
 
   static const String name = 'CustomerFavoritesRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i5.CustomerFavoritesScreen();
+      return _i39.WrappedRoute(child: const _i7.CustomerFavoritesScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i6.CustomerProfileMgtScreen]
-class CustomerProfileMgtRoute extends _i33.PageRouteInfo<void> {
-  const CustomerProfileMgtRoute({List<_i33.PageRouteInfo>? children})
+/// [_i8.CustomerPersonalDetailsScreen]
+class CustomerPersonalDetailsRoute extends _i39.PageRouteInfo<void> {
+  const CustomerPersonalDetailsRoute({List<_i39.PageRouteInfo>? children})
+      : super(CustomerPersonalDetailsRoute.name, initialChildren: children);
+
+  static const String name = 'CustomerPersonalDetailsRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      return _i39.WrappedRoute(
+        child: const _i8.CustomerPersonalDetailsScreen(),
+      );
+    },
+  );
+}
+
+/// generated route for
+/// [_i9.CustomerProfileMgtScreen]
+class CustomerProfileMgtRoute extends _i39.PageRouteInfo<void> {
+  const CustomerProfileMgtRoute({List<_i39.PageRouteInfo>? children})
       : super(CustomerProfileMgtRoute.name, initialChildren: children);
 
   static const String name = 'CustomerProfileMgtRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i6.CustomerProfileMgtScreen();
+      return const _i9.CustomerProfileMgtScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i7.CustomerWalletScreen]
-class CustomerWalletRoute extends _i33.PageRouteInfo<void> {
-  const CustomerWalletRoute({List<_i33.PageRouteInfo>? children})
+/// [_i10.CustomerWalletScreen]
+class CustomerWalletRoute extends _i39.PageRouteInfo<void> {
+  const CustomerWalletRoute({List<_i39.PageRouteInfo>? children})
       : super(CustomerWalletRoute.name, initialChildren: children);
 
   static const String name = 'CustomerWalletRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i7.CustomerWalletScreen();
+      return const _i10.CustomerWalletScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i8.ExploreMainScreen]
-class ExploreMainRoute extends _i33.PageRouteInfo<void> {
-  const ExploreMainRoute({List<_i33.PageRouteInfo>? children})
+/// [_i11.DisputesScreen]
+class DisputesRoute extends _i39.PageRouteInfo<void> {
+  const DisputesRoute({List<_i39.PageRouteInfo>? children})
+      : super(DisputesRoute.name, initialChildren: children);
+
+  static const String name = 'DisputesRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      return _i39.WrappedRoute(child: const _i11.DisputesScreen());
+    },
+  );
+}
+
+/// generated route for
+/// [_i12.ExploreMainScreen]
+class ExploreMainRoute extends _i39.PageRouteInfo<void> {
+  const ExploreMainRoute({List<_i39.PageRouteInfo>? children})
       : super(ExploreMainRoute.name, initialChildren: children);
 
   static const String name = 'ExploreMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i8.ExploreMainScreen());
+      return _i39.WrappedRoute(child: const _i12.ExploreMainScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i9.ForgotPasswordScreen]
-class ForgotPasswordRoute extends _i33.PageRouteInfo<void> {
-  const ForgotPasswordRoute({List<_i33.PageRouteInfo>? children})
+/// [_i13.ForgotPasswordScreen]
+class ForgotPasswordRoute extends _i39.PageRouteInfo<void> {
+  const ForgotPasswordRoute({List<_i39.PageRouteInfo>? children})
       : super(ForgotPasswordRoute.name, initialChildren: children);
 
   static const String name = 'ForgotPasswordRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i9.ForgotPasswordScreen());
+      return _i39.WrappedRoute(child: const _i13.ForgotPasswordScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i10.LandingScreen]
-class LandingRoute extends _i33.PageRouteInfo<void> {
-  const LandingRoute({List<_i33.PageRouteInfo>? children})
+/// [_i14.LandingScreen]
+class LandingRoute extends _i39.PageRouteInfo<void> {
+  const LandingRoute({List<_i39.PageRouteInfo>? children})
       : super(LandingRoute.name, initialChildren: children);
 
   static const String name = 'LandingRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i10.LandingScreen();
+      return const _i14.LandingScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i11.LoginScreen]
-class LoginRoute extends _i33.PageRouteInfo<LoginRouteArgs> {
+/// [_i15.LoginScreen]
+class LoginRoute extends _i39.PageRouteInfo<LoginRouteArgs> {
   LoginRoute({
-    _i34.Key? key,
+    _i40.Key? key,
     bool isStylist = false,
-    List<_i33.PageRouteInfo>? children,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           LoginRoute.name,
           args: LoginRouteArgs(key: key, isStylist: isStylist),
@@ -257,14 +449,14 @@ class LoginRoute extends _i33.PageRouteInfo<LoginRouteArgs> {
 
   static const String name = 'LoginRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<LoginRouteArgs>(
         orElse: () => const LoginRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i11.LoginScreen(key: args.key, isStylist: args.isStylist),
+      return _i39.WrappedRoute(
+        child: _i15.LoginScreen(key: args.key, isStylist: args.isStylist),
       );
     },
   );
@@ -273,7 +465,7 @@ class LoginRoute extends _i33.PageRouteInfo<LoginRouteArgs> {
 class LoginRouteArgs {
   const LoginRouteArgs({this.key, this.isStylist = false});
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   final bool isStylist;
 
@@ -294,77 +486,152 @@ class LoginRouteArgs {
 }
 
 /// generated route for
-/// [_i12.MainScreen]
-class MainRoute extends _i33.PageRouteInfo<void> {
-  const MainRoute({List<_i33.PageRouteInfo>? children})
+/// [_i16.MainScreen]
+class MainRoute extends _i39.PageRouteInfo<void> {
+  const MainRoute({List<_i39.PageRouteInfo>? children})
       : super(MainRoute.name, initialChildren: children);
 
   static const String name = 'MainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i12.MainScreen();
+      return const _i16.MainScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i13.SearchMainScreen]
-class SearchMainRoute extends _i33.PageRouteInfo<void> {
-  const SearchMainRoute({List<_i33.PageRouteInfo>? children})
+/// [_i17.SearchMainScreen]
+class SearchMainRoute extends _i39.PageRouteInfo<void> {
+  const SearchMainRoute({List<_i39.PageRouteInfo>? children})
       : super(SearchMainRoute.name, initialChildren: children);
 
   static const String name = 'SearchMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i13.SearchMainScreen());
+      return _i39.WrappedRoute(child: const _i17.SearchMainScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i14.SellerAddNewWorkScreen]
-class SellerAddNewWorkRoute extends _i33.PageRouteInfo<void> {
-  const SellerAddNewWorkRoute({List<_i33.PageRouteInfo>? children})
+/// [_i18.SellerAddNewWorkScreen]
+class SellerAddNewWorkRoute extends _i39.PageRouteInfo<void> {
+  const SellerAddNewWorkRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerAddNewWorkRoute.name, initialChildren: children);
 
   static const String name = 'SellerAddNewWorkRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i14.SellerAddNewWorkScreen();
+      return const _i18.SellerAddNewWorkScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i15.SellerAppointmentsMainScreen]
-class SellerAppointmentsMainRoute extends _i33.PageRouteInfo<void> {
-  const SellerAppointmentsMainRoute({List<_i33.PageRouteInfo>? children})
+/// [_i19.SellerAppointmentDetailsScreen]
+class SellerAppointmentDetailsRoute
+    extends _i39.PageRouteInfo<SellerAppointmentDetailsRouteArgs> {
+  SellerAppointmentDetailsRoute({
+    _i40.Key? key,
+    required String? appointmentId,
+    List<_i39.PageRouteInfo>? children,
+  }) : super(
+          SellerAppointmentDetailsRoute.name,
+          args: SellerAppointmentDetailsRouteArgs(
+            key: key,
+            appointmentId: appointmentId,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'SellerAppointmentDetailsRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<SellerAppointmentDetailsRouteArgs>();
+      return _i39.WrappedRoute(
+        child: _i19.SellerAppointmentDetailsScreen(
+          key: args.key,
+          appointmentId: args.appointmentId,
+        ),
+      );
+    },
+  );
+}
+
+class SellerAppointmentDetailsRouteArgs {
+  const SellerAppointmentDetailsRouteArgs({
+    this.key,
+    required this.appointmentId,
+  });
+
+  final _i40.Key? key;
+
+  final String? appointmentId;
+
+  @override
+  String toString() {
+    return 'SellerAppointmentDetailsRouteArgs{key: $key, appointmentId: $appointmentId}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SellerAppointmentDetailsRouteArgs) return false;
+    return key == other.key && appointmentId == other.appointmentId;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ appointmentId.hashCode;
+}
+
+/// generated route for
+/// [_i20.SellerAppointmentsCalendarScreen]
+class SellerAppointmentsCalendarRoute extends _i39.PageRouteInfo<void> {
+  const SellerAppointmentsCalendarRoute({List<_i39.PageRouteInfo>? children})
+      : super(SellerAppointmentsCalendarRoute.name, initialChildren: children);
+
+  static const String name = 'SellerAppointmentsCalendarRoute';
+
+  static _i39.PageInfo page = _i39.PageInfo(
+    name,
+    builder: (data) {
+      return const _i20.SellerAppointmentsCalendarScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i21.SellerAppointmentsMainScreen]
+class SellerAppointmentsMainRoute extends _i39.PageRouteInfo<void> {
+  const SellerAppointmentsMainRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerAppointmentsMainRoute.name, initialChildren: children);
 
   static const String name = 'SellerAppointmentsMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i15.SellerAppointmentsMainScreen();
+      return const _i21.SellerAppointmentsMainScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i16.SellerAvailabilityScheduleScreen]
+/// [_i22.SellerAvailabilityScheduleScreen]
 class SellerAvailabilityScheduleRoute
-    extends _i33.PageRouteInfo<SellerAvailabilityScheduleRouteArgs> {
+    extends _i39.PageRouteInfo<SellerAvailabilityScheduleRouteArgs> {
   SellerAvailabilityScheduleRoute({
-    _i34.Key? key,
+    _i40.Key? key,
     bool goToLocationSettings = false,
-    List<_i33.PageRouteInfo>? children,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           SellerAvailabilityScheduleRoute.name,
           args: SellerAvailabilityScheduleRouteArgs(
@@ -376,14 +643,14 @@ class SellerAvailabilityScheduleRoute
 
   static const String name = 'SellerAvailabilityScheduleRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SellerAvailabilityScheduleRouteArgs>(
         orElse: () => const SellerAvailabilityScheduleRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i16.SellerAvailabilityScheduleScreen(
+      return _i39.WrappedRoute(
+        child: _i22.SellerAvailabilityScheduleScreen(
           key: args.key,
           goToLocationSettings: args.goToLocationSettings,
         ),
@@ -398,7 +665,7 @@ class SellerAvailabilityScheduleRouteArgs {
     this.goToLocationSettings = false,
   });
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   final bool goToLocationSettings;
 
@@ -420,13 +687,13 @@ class SellerAvailabilityScheduleRouteArgs {
 }
 
 /// generated route for
-/// [_i17.SellerBusinessCreateScreen]
+/// [_i23.SellerBusinessCreateScreen]
 class SellerBusinessCreateRoute
-    extends _i33.PageRouteInfo<SellerBusinessCreateRouteArgs> {
+    extends _i39.PageRouteInfo<SellerBusinessCreateRouteArgs> {
   SellerBusinessCreateRoute({
-    _i34.Key? key,
+    _i40.Key? key,
     bool fromSignUp = false,
-    List<_i33.PageRouteInfo>? children,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           SellerBusinessCreateRoute.name,
           args: SellerBusinessCreateRouteArgs(key: key, fromSignUp: fromSignUp),
@@ -435,14 +702,14 @@ class SellerBusinessCreateRoute
 
   static const String name = 'SellerBusinessCreateRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SellerBusinessCreateRouteArgs>(
         orElse: () => const SellerBusinessCreateRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i17.SellerBusinessCreateScreen(
+      return _i39.WrappedRoute(
+        child: _i23.SellerBusinessCreateScreen(
           key: args.key,
           fromSignUp: args.fromSignUp,
         ),
@@ -454,7 +721,7 @@ class SellerBusinessCreateRoute
 class SellerBusinessCreateRouteArgs {
   const SellerBusinessCreateRouteArgs({this.key, this.fromSignUp = false});
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   final bool fromSignUp;
 
@@ -475,126 +742,126 @@ class SellerBusinessCreateRouteArgs {
 }
 
 /// generated route for
-/// [_i18.SellerDashboardMainScreen]
-class SellerDashboardMainRoute extends _i33.PageRouteInfo<void> {
-  const SellerDashboardMainRoute({List<_i33.PageRouteInfo>? children})
+/// [_i24.SellerDashboardMainScreen]
+class SellerDashboardMainRoute extends _i39.PageRouteInfo<void> {
+  const SellerDashboardMainRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerDashboardMainRoute.name, initialChildren: children);
 
   static const String name = 'SellerDashboardMainRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i18.SellerDashboardMainScreen();
+      return const _i24.SellerDashboardMainScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i19.SellerEarningScreen]
-class SellerEarningRoute extends _i33.PageRouteInfo<void> {
-  const SellerEarningRoute({List<_i33.PageRouteInfo>? children})
+/// [_i25.SellerEarningScreen]
+class SellerEarningRoute extends _i39.PageRouteInfo<void> {
+  const SellerEarningRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerEarningRoute.name, initialChildren: children);
 
   static const String name = 'SellerEarningRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i19.SellerEarningScreen());
+      return _i39.WrappedRoute(child: const _i25.SellerEarningScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i20.SellerPaymentMethodsScreen]
-class SellerPaymentMethodsRoute extends _i33.PageRouteInfo<void> {
-  const SellerPaymentMethodsRoute({List<_i33.PageRouteInfo>? children})
+/// [_i26.SellerPaymentMethodsScreen]
+class SellerPaymentMethodsRoute extends _i39.PageRouteInfo<void> {
+  const SellerPaymentMethodsRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerPaymentMethodsRoute.name, initialChildren: children);
 
   static const String name = 'SellerPaymentMethodsRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i20.SellerPaymentMethodsScreen());
+      return _i39.WrappedRoute(child: const _i26.SellerPaymentMethodsScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i21.SellerPersonalDetailsScreen]
-class SellerPersonalDetailsRoute extends _i33.PageRouteInfo<void> {
-  const SellerPersonalDetailsRoute({List<_i33.PageRouteInfo>? children})
+/// [_i27.SellerPersonalDetailsScreen]
+class SellerPersonalDetailsRoute extends _i39.PageRouteInfo<void> {
+  const SellerPersonalDetailsRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerPersonalDetailsRoute.name, initialChildren: children);
 
   static const String name = 'SellerPersonalDetailsRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i21.SellerPersonalDetailsScreen());
+      return _i39.WrappedRoute(child: const _i27.SellerPersonalDetailsScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i22.SellerPortfolioScreen]
-class SellerPortfolioRoute extends _i33.PageRouteInfo<void> {
-  const SellerPortfolioRoute({List<_i33.PageRouteInfo>? children})
+/// [_i28.SellerPortfolioScreen]
+class SellerPortfolioRoute extends _i39.PageRouteInfo<void> {
+  const SellerPortfolioRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerPortfolioRoute.name, initialChildren: children);
 
   static const String name = 'SellerPortfolioRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(child: const _i22.SellerPortfolioScreen());
+      return _i39.WrappedRoute(child: const _i28.SellerPortfolioScreen());
     },
   );
 }
 
 /// generated route for
-/// [_i23.SellerProfileManagementScreen]
-class SellerProfileManagementRoute extends _i33.PageRouteInfo<void> {
-  const SellerProfileManagementRoute({List<_i33.PageRouteInfo>? children})
+/// [_i29.SellerProfileManagementScreen]
+class SellerProfileManagementRoute extends _i39.PageRouteInfo<void> {
+  const SellerProfileManagementRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerProfileManagementRoute.name, initialChildren: children);
 
   static const String name = 'SellerProfileManagementRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i23.SellerProfileManagementScreen();
+      return const _i29.SellerProfileManagementScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i24.SellerProfileVerificationScreen]
-class SellerProfileVerificationRoute extends _i33.PageRouteInfo<void> {
-  const SellerProfileVerificationRoute({List<_i33.PageRouteInfo>? children})
+/// [_i30.SellerProfileVerificationScreen]
+class SellerProfileVerificationRoute extends _i39.PageRouteInfo<void> {
+  const SellerProfileVerificationRoute({List<_i39.PageRouteInfo>? children})
       : super(SellerProfileVerificationRoute.name, initialChildren: children);
 
   static const String name = 'SellerProfileVerificationRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return _i33.WrappedRoute(
-        child: const _i24.SellerProfileVerificationScreen(),
+      return _i39.WrappedRoute(
+        child: const _i30.SellerProfileVerificationScreen(),
       );
     },
   );
 }
 
 /// generated route for
-/// [_i25.SellerWorkScreen]
-class SellerWorkRoute extends _i33.PageRouteInfo<SellerWorkRouteArgs> {
+/// [_i31.SellerWorkScreen]
+class SellerWorkRoute extends _i39.PageRouteInfo<SellerWorkRouteArgs> {
   SellerWorkRoute({
-    _i34.Key? key,
-    _i35.WorkItem? workItem,
-    List<_i33.PageRouteInfo>? children,
+    _i40.Key? key,
+    _i44.WorkItem? workItem,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           SellerWorkRoute.name,
           args: SellerWorkRouteArgs(key: key, workItem: workItem),
@@ -603,14 +870,14 @@ class SellerWorkRoute extends _i33.PageRouteInfo<SellerWorkRouteArgs> {
 
   static const String name = 'SellerWorkRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SellerWorkRouteArgs>(
         orElse: () => const SellerWorkRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i25.SellerWorkScreen(key: args.key, workItem: args.workItem),
+      return _i39.WrappedRoute(
+        child: _i31.SellerWorkScreen(key: args.key, workItem: args.workItem),
       );
     },
   );
@@ -619,9 +886,9 @@ class SellerWorkRoute extends _i33.PageRouteInfo<SellerWorkRouteArgs> {
 class SellerWorkRouteArgs {
   const SellerWorkRouteArgs({this.key, this.workItem});
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
-  final _i35.WorkItem? workItem;
+  final _i44.WorkItem? workItem;
 
   @override
   String toString() {
@@ -640,12 +907,12 @@ class SellerWorkRouteArgs {
 }
 
 /// generated route for
-/// [_i26.SignupScreen]
-class SignupRoute extends _i33.PageRouteInfo<SignupRouteArgs> {
+/// [_i32.SignupScreen]
+class SignupRoute extends _i39.PageRouteInfo<SignupRouteArgs> {
   SignupRoute({
     bool asStylist = false,
-    _i34.Key? key,
-    List<_i33.PageRouteInfo>? children,
+    _i40.Key? key,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           SignupRoute.name,
           args: SignupRouteArgs(asStylist: asStylist, key: key),
@@ -654,14 +921,14 @@ class SignupRoute extends _i33.PageRouteInfo<SignupRouteArgs> {
 
   static const String name = 'SignupRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SignupRouteArgs>(
         orElse: () => const SignupRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i26.SignupScreen(asStylist: args.asStylist, key: args.key),
+      return _i39.WrappedRoute(
+        child: _i32.SignupScreen(asStylist: args.asStylist, key: args.key),
       );
     },
   );
@@ -672,7 +939,7 @@ class SignupRouteArgs {
 
   final bool asStylist;
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   @override
   String toString() {
@@ -691,29 +958,29 @@ class SignupRouteArgs {
 }
 
 /// generated route for
-/// [_i27.SplashScreen]
-class SplashRoute extends _i33.PageRouteInfo<void> {
-  const SplashRoute({List<_i33.PageRouteInfo>? children})
+/// [_i33.SplashScreen]
+class SplashRoute extends _i39.PageRouteInfo<void> {
+  const SplashRoute({List<_i39.PageRouteInfo>? children})
       : super(SplashRoute.name, initialChildren: children);
 
   static const String name = 'SplashRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i27.SplashScreen();
+      return const _i33.SplashScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i28.StylistBusinessIdVerifyScreen]
+/// [_i34.StylistBusinessIdVerifyScreen]
 class StylistBusinessIdVerifyRoute
-    extends _i33.PageRouteInfo<StylistBusinessIdVerifyRouteArgs> {
+    extends _i39.PageRouteInfo<StylistBusinessIdVerifyRouteArgs> {
   StylistBusinessIdVerifyRoute({
-    _i34.Key? key,
+    _i40.Key? key,
     bool fromSignUp = false,
-    List<_i33.PageRouteInfo>? children,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           StylistBusinessIdVerifyRoute.name,
           args: StylistBusinessIdVerifyRouteArgs(
@@ -725,14 +992,14 @@ class StylistBusinessIdVerifyRoute
 
   static const String name = 'StylistBusinessIdVerifyRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<StylistBusinessIdVerifyRouteArgs>(
         orElse: () => const StylistBusinessIdVerifyRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i28.StylistBusinessIdVerifyScreen(
+      return _i39.WrappedRoute(
+        child: _i34.StylistBusinessIdVerifyScreen(
           key: args.key,
           fromSignUp: args.fromSignUp,
         ),
@@ -744,7 +1011,7 @@ class StylistBusinessIdVerifyRoute
 class StylistBusinessIdVerifyRouteArgs {
   const StylistBusinessIdVerifyRouteArgs({this.key, this.fromSignUp = false});
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   final bool fromSignUp;
 
@@ -765,30 +1032,30 @@ class StylistBusinessIdVerifyRouteArgs {
 }
 
 /// generated route for
-/// [_i29.StylistMoreInfoScreen]
-class StylistMoreInfoRoute extends _i33.PageRouteInfo<void> {
-  const StylistMoreInfoRoute({List<_i33.PageRouteInfo>? children})
+/// [_i35.StylistMoreInfoScreen]
+class StylistMoreInfoRoute extends _i39.PageRouteInfo<void> {
+  const StylistMoreInfoRoute({List<_i39.PageRouteInfo>? children})
       : super(StylistMoreInfoRoute.name, initialChildren: children);
 
   static const String name = 'StylistMoreInfoRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
-      return const _i29.StylistMoreInfoScreen();
+      return const _i35.StylistMoreInfoScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i30.StylistSellerDetailsScreen]
+/// [_i36.StylistSellerDetailsScreen]
 class StylistSellerDetailsRoute
-    extends _i33.PageRouteInfo<StylistSellerDetailsRouteArgs> {
+    extends _i39.PageRouteInfo<StylistSellerDetailsRouteArgs> {
   StylistSellerDetailsRoute({
-    _i34.Key? key,
-    _i36.SellerDetails? seller,
+    _i40.Key? key,
+    _i45.SellerDetails? seller,
     String? id,
-    List<_i33.PageRouteInfo>? children,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           StylistSellerDetailsRoute.name,
           args: StylistSellerDetailsRouteArgs(key: key, seller: seller, id: id),
@@ -797,14 +1064,14 @@ class StylistSellerDetailsRoute
 
   static const String name = 'StylistSellerDetailsRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<StylistSellerDetailsRouteArgs>(
         orElse: () => const StylistSellerDetailsRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i30.StylistSellerDetailsScreen(
+      return _i39.WrappedRoute(
+        child: _i36.StylistSellerDetailsScreen(
           key: args.key,
           seller: args.seller,
           id: args.id,
@@ -817,9 +1084,9 @@ class StylistSellerDetailsRoute
 class StylistSellerDetailsRouteArgs {
   const StylistSellerDetailsRouteArgs({this.key, this.seller, this.id});
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
-  final _i36.SellerDetails? seller;
+  final _i45.SellerDetails? seller;
 
   final String? id;
 
@@ -840,16 +1107,16 @@ class StylistSellerDetailsRouteArgs {
 }
 
 /// generated route for
-/// [_i31.UpdateCreateAppointmentScreen]
+/// [_i37.UpdateCreateAppointmentScreen]
 class UpdateCreateAppointmentRoute
-    extends _i33.PageRouteInfo<UpdateCreateAppointmentRouteArgs> {
+    extends _i39.PageRouteInfo<UpdateCreateAppointmentRouteArgs> {
   UpdateCreateAppointmentRoute({
-    _i34.Key? key,
+    _i40.Key? key,
     String? portfolioId,
     String? appointmentId,
-    _i37.SellerPortfolio? portfolio,
-    _i38.CustomerAppointment? appointment,
-    List<_i33.PageRouteInfo>? children,
+    _i46.SellerPortfolio? portfolio,
+    _i47.CustomerAppointment? appointment,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           UpdateCreateAppointmentRoute.name,
           args: UpdateCreateAppointmentRouteArgs(
@@ -864,14 +1131,14 @@ class UpdateCreateAppointmentRoute
 
   static const String name = 'UpdateCreateAppointmentRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<UpdateCreateAppointmentRouteArgs>(
         orElse: () => const UpdateCreateAppointmentRouteArgs(),
       );
-      return _i33.WrappedRoute(
-        child: _i31.UpdateCreateAppointmentScreen(
+      return _i39.WrappedRoute(
+        child: _i37.UpdateCreateAppointmentScreen(
           key: args.key,
           portfolioId: args.portfolioId,
           appointmentId: args.appointmentId,
@@ -892,15 +1159,15 @@ class UpdateCreateAppointmentRouteArgs {
     this.appointment,
   });
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   final String? portfolioId;
 
   final String? appointmentId;
 
-  final _i37.SellerPortfolio? portfolio;
+  final _i46.SellerPortfolio? portfolio;
 
-  final _i38.CustomerAppointment? appointment;
+  final _i47.CustomerAppointment? appointment;
 
   @override
   String toString() {
@@ -928,13 +1195,13 @@ class UpdateCreateAppointmentRouteArgs {
 }
 
 /// generated route for
-/// [_i32.VerifyEmailScreen]
-class VerifyEmailRoute extends _i33.PageRouteInfo<VerifyEmailRouteArgs> {
+/// [_i38.VerifyEmailScreen]
+class VerifyEmailRoute extends _i39.PageRouteInfo<VerifyEmailRouteArgs> {
   VerifyEmailRoute({
     required String email,
     bool asStylist = false,
-    _i34.Key? key,
-    List<_i33.PageRouteInfo>? children,
+    _i40.Key? key,
+    List<_i39.PageRouteInfo>? children,
   }) : super(
           VerifyEmailRoute.name,
           args: VerifyEmailRouteArgs(
@@ -947,12 +1214,12 @@ class VerifyEmailRoute extends _i33.PageRouteInfo<VerifyEmailRouteArgs> {
 
   static const String name = 'VerifyEmailRoute';
 
-  static _i33.PageInfo page = _i33.PageInfo(
+  static _i39.PageInfo page = _i39.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<VerifyEmailRouteArgs>();
-      return _i33.WrappedRoute(
-        child: _i32.VerifyEmailScreen(
+      return _i39.WrappedRoute(
+        child: _i38.VerifyEmailScreen(
           email: args.email,
           asStylist: args.asStylist,
           key: args.key,
@@ -973,7 +1240,7 @@ class VerifyEmailRouteArgs {
 
   final bool asStylist;
 
-  final _i34.Key? key;
+  final _i40.Key? key;
 
   @override
   String toString() {

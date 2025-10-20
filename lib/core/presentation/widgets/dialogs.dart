@@ -203,3 +203,104 @@ class BiometricModal extends StatelessWidget {
     );
   }
 }
+
+class OnConfirmDialog extends StatelessWidget {
+  const OnConfirmDialog({
+    Key? key,
+    this.title,
+    required this.content,
+    this.confirmText = 'Confirm',
+    this.cancelText = 'Cancel',
+    this.onConfirmed,
+    this.onCancelled,
+    this.confirmIsDestructive = false,
+    this.showCancel = true,
+    this.icon,
+  }) : super(key: key);
+
+  final String? title;
+  final String content;
+  final String confirmText;
+  final String cancelText;
+  final void Function(BuildContext)? onConfirmed;
+  final void Function(BuildContext)? onCancelled;
+  final bool confirmIsDestructive;
+  final bool showCancel;
+  final Widget? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.all(24).dg,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Spacer(),
+            if (icon != null) ...[
+              Center(child: icon),
+              12.verticalSpace,
+            ],
+            if (title != null) ...[
+              AppText(
+                text: title!,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                textAlign: TextAlign.center,
+              ),
+              8.verticalSpace,
+            ],
+            AppText(
+              text: content,
+              color: AppColors.grey3,
+              textAlign: TextAlign.center,
+              fontSize: 14,
+            ),
+            16.verticalSpace,
+            // buttons
+            if (showCancel)
+              Column(
+                children: [
+                  12.verticalSpace,
+                  CustomButton(
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                      onConfirmed?.call(context);
+                    },
+                    title: confirmText,
+                  ),
+                  12.verticalSpace,
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                      onCancelled?.call(context);
+                    },
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(double.infinity, 48.sp),
+                    ),
+                    child: AppText(
+                      text: cancelText,
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              )
+            else
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                    onConfirmed?.call(context);
+                  },
+                  title: confirmText,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

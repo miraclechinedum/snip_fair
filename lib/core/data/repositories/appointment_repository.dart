@@ -1,8 +1,8 @@
-import 'package:flutter/src/material/time.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
@@ -14,7 +14,7 @@ import 'package:snip_fair/core/domain/entities/work_category/work_category.dart'
 import 'package:snip_fair/core/network/api_result.dart';
 
 abstract class AppointmentRepository {
-  Future<ApiResult<CustomerAppointmentList>> getStylistAppointments({
+  Future<ApiResult<StylistAppointmentList>> getStylistAppointments({
     String? query,
     String? categoryId,
     String? page,
@@ -29,8 +29,8 @@ abstract class AppointmentRepository {
 
   Future<ApiResult<SimpleResponse>> updateStylistAppointment(
     String id, {
-    required String variant,
-    required String code,
+    required String verdict,
+    String? code,
   });
 
   Future<ApiResult<StylistList>> customerFetchStylists({
@@ -39,6 +39,7 @@ abstract class AppointmentRepository {
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   });
 
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id);
@@ -50,6 +51,7 @@ abstract class AppointmentRepository {
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   });
 
   Future<ApiResult<SellerPortfolio>> customerFetchPortfolioById({
@@ -63,7 +65,7 @@ abstract class AppointmentRepository {
 
   Future<ApiResult<List<WorkCategory>>> fetchWorkCategories();
 
-  Future<ApiResult<SimpleResponse>> createAppointment({
+  Future<ApiResult<CustomerAppointment>> createAppointment({
     required String portfolioId,
     required String date,
     required String time,
@@ -71,10 +73,31 @@ abstract class AppointmentRepository {
     String? address,
   });
 
+  Future<ApiResult<SimpleResponse>> updateCustomerAppointment(
+    String id, {
+    required String verdict,
+  });
+
+  Future<ApiResult<SimpleResponse>> disputeCustomerAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  });
+
+  Future<ApiResult<SimpleResponse>> reviewCustomerAppointment(
+    String id, {
+    required int rating,
+    String? comment,
+  });
+
   Future<ApiResult<CustomerAppointment>> getCustomerAppointmentById(
     String appointmentId,
   );
-  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments();
+
+  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments({
+    String? page,
+    String? perPage,
+  });
 }
 
 @Injectable(as: AppointmentRepository)
@@ -87,7 +110,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
       _remoteSource.getStylistAppointmentById(id);
 
   @override
-  Future<ApiResult<CustomerAppointmentList>> getStylistAppointments({
+  Future<ApiResult<StylistAppointmentList>> getStylistAppointments({
     String? query,
     String? categoryId,
     String? page,
@@ -111,10 +134,10 @@ class AppointmentRepoImpl implements AppointmentRepository {
   @override
   Future<ApiResult<SimpleResponse>> updateStylistAppointment(
     String id, {
-    required String variant,
-    required String code,
+    required String verdict,
+    String? code,
   }) =>
-      _remoteSource.updateStylistAppointment(id, variant: variant, code: code);
+      _remoteSource.updateStylistAppointment(id, verdict: verdict, code: code);
 
   @override
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) =>
@@ -127,6 +150,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   }) =>
       _remoteSource.customerFetchStylists(
         query: query,
@@ -134,6 +158,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
         page: page,
         perPage: perPage,
         sort: sort,
+        favourite: favourite,
       );
 
   @override
@@ -144,6 +169,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   }) =>
       _remoteSource.customerFetchPortfolioList(
         query: query,
@@ -152,6 +178,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
         page: page,
         perPage: perPage,
         sort: sort,
+        favourite: favourite,
       );
 
   @override
@@ -170,7 +197,7 @@ class AppointmentRepoImpl implements AppointmentRepository {
       _remoteSource.customerFetchPortfolioById(id: id);
 
   @override
-  Future<ApiResult<SimpleResponse>> createAppointment({
+  Future<ApiResult<CustomerAppointment>> createAppointment({
     required String portfolioId,
     required String date,
     required String time,
@@ -192,6 +219,43 @@ class AppointmentRepoImpl implements AppointmentRepository {
       _remoteSource.getCustomerAppointmentById(appointmentId);
 
   @override
-  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments() =>
-      _remoteSource.getCustomerAppointments();
+  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments({
+    String? page,
+    String? perPage,
+  }) =>
+      _remoteSource.getCustomerAppointments(
+        page: page,
+        perPage: perPage,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> disputeCustomerAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) =>
+      _remoteSource.disputeCustomerAppointment(
+        id,
+        comment: comment,
+        images: images,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> reviewCustomerAppointment(
+    String id, {
+    required int rating,
+    String? comment,
+  }) =>
+      _remoteSource.reviewCustomerAppointment(
+        id,
+        rating: rating,
+        comment: comment,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerAppointment(
+    String id, {
+    required String verdict,
+  }) =>
+      _remoteSource.updateCustomerAppointment(id, verdict: verdict);
 }

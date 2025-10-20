@@ -20,7 +20,7 @@ class SellerPortfolio {
   @JsonKey(name: 'media_urls')
   List<String>? mediaUrls;
   @JsonKey(name: 'visits_count')
-  String? visitsCount;
+  dynamic visitsCount;
   bool? status;
   @JsonKey(name: 'is_available')
   bool? isAvailable;

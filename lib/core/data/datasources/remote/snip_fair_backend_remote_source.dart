@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/src/material/time.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/datasources/remote/base_remote_source.dart';
 import 'package:snip_fair/core/data/models/remote/login_response.dart';
@@ -16,12 +14,15 @@ import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
+import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
 import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
@@ -63,6 +64,10 @@ class AuthPath {
   static const portfolio = '/customer/portfolio';
   static const toggleLike = '/like/toggle';
   static const customerAppointment = '/customer/appointment';
+
+  // Chats
+  static const conversations = '/conversations';
+  static const disputes = '/dispute/list';
 
   //Wallet
   static const customerWallet = '/wallet';
@@ -284,16 +289,23 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   Future<ApiResult<SimpleResponse>> updateIdentityInfo({
     required String documentNumber,
     required String filePath,
+    required String photoPath,
   }) {
     return run(() async {
+      print(photoPath);
       final client = getIt<HttpService>().client(isFormDataRequest: true);
       final formData = FormData.fromMap({
         'identification_id': documentNumber,
+        'identification_proof': await MultipartFile.fromFile(
+          photoPath,
+          filename: photoPath.split('/').last,
+        ),
         'identification_file[]': await MultipartFile.fromFile(
           filePath,
           filename: filePath.split('/').last,
         ),
       });
+      ;
       await client.post<Map<String, dynamic>>(
         AuthPath.updateIdentityInfo,
         data: formData,
@@ -717,7 +729,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<CustomerAppointmentList>> getStylistAppointments({
+  Future<ApiResult<StylistAppointmentList>> getStylistAppointments({
     String? query,
     String? categoryId,
     String? page,
@@ -743,7 +755,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         },
       );
       return ApiResult.success(
-        data: CustomerAppointmentList.fromJson(response.data!),
+        data: StylistAppointmentList.fromJson(response.data!),
       );
     });
   }
@@ -764,16 +776,16 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SimpleResponse>> updateStylistAppointment(
     String id, {
-    required String variant,
-    required String code,
+    required String verdict,
+    String? code,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
       await client.post<Map<String, dynamic>>(
         '${AuthPath.stylistAppointment}/$id',
         data: {
-          'variant': variant,
-          'code': code,
+          'verdict': verdict,
+          if (code != null) 'code': code,
         },
       );
       return ApiResult.success(
@@ -818,16 +830,18 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
 
   @override
   Future<ApiResult<SimpleResponse>> updateUser({
-    required bool useLocation,
-    required String address,
+    bool? useLocation,
+    String? address,
+    String? fcmToken,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
       await client.patch<Map<String, dynamic>>(
         AuthPath.updateUser,
         data: {
-          'use_location': useLocation,
-          'country': address,
+          if (useLocation != null) 'use_location': useLocation,
+          if (address != null) 'country': address,
+          if (fcmToken != null) 'firebase_device_token': fcmToken,
         },
       );
       return ApiResult.success(data: SimpleResponse.fromJson({}));
@@ -880,6 +894,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
@@ -891,6 +906,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           if (page != null) 'page': page,
           if (perPage != null) 'per_page': perPage,
           if (sort != null) 'sort': sort,
+          if (favourite != null) 'favourite': favourite,
         },
       );
       return ApiResult.success(
@@ -907,6 +923,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? page,
     String? perPage,
     String? sort,
+    bool? favourite,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
@@ -919,6 +936,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           if (page != null) 'page': page,
           if (perPage != null) 'per_page': perPage,
           if (sort != null) 'sort': sort,
+          if (favourite != null) 'favourite': favourite,
         },
       );
       return ApiResult.success(
@@ -1020,7 +1038,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<SimpleResponse>> createAppointment({
+  Future<ApiResult<CustomerAppointment>> createAppointment({
     required String portfolioId,
     required String date,
     required String time,
@@ -1029,8 +1047,8 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
-      await client.post<Map<String, dynamic>>(
-        AuthPath.initializePayfastDeposit,
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/book',
         data: {
           'portfolio_id': portfolioId,
           'selected_date': date,
@@ -1040,14 +1058,15 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         },
       );
       return ApiResult.success(
-        data: SimpleResponse.fromJson({}),
+        data: CustomerAppointment.fromJson(response.data!),
       );
     });
   }
 
   @override
   Future<ApiResult<CustomerAppointment>> getCustomerAppointmentById(
-      String appointmentId) {
+    String appointmentId,
+  ) {
     return run(() async {
       final client = getIt<HttpService>().client();
       final response = await client.get<Map<String, dynamic>>(
@@ -1060,14 +1079,223 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments() {
+  Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments({
+    String? page,
+    String? perPage,
+  }) {
     return run(() async {
       final client = getIt<HttpService>().client();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerAppointment}/list',
+        queryParameters: {
+          if (page != null) 'page': page,
+          if (perPage != null) 'per_page': perPage,
+        },
       );
       return ApiResult.success(
         data: CustomerAppointmentList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<List<ChatConversation>>> getChatConversations() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<List<dynamic>>(
+        AuthPath.conversations,
+      );
+      return ApiResult.success(
+        data: response.data!
+            .map<ChatConversation>(
+              (json) => ChatConversation.fromJson(json as Map<String, dynamic>),
+            )
+            .toList(),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.conversations}/$conversationId/messages',
+      );
+      return ApiResult.success(
+        data: ChatMessageList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> markMessageAsRead({
+    required String conversationId,
+    required String messageId,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.conversations}/$conversationId/messages/$messageId/read',
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> sendMessage({
+    required String conversationId,
+    required String text,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.conversations}/$conversationId/messages',
+        data: {
+          'text': text,
+        },
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<ChatConversation>> startConversation({
+    required String recipientId,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        AuthPath.conversations,
+        data: {
+          'recipient_id': recipientId,
+        },
+      );
+      return ApiResult.success(
+        data: ChatConversation.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> disputeCustomerAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final formData = FormData.fromMap({
+        'comment': comment,
+        for (int i = 0; i < images.length; i++)
+          'images[$i]': await MultipartFile.fromFile(
+            images[i],
+            filename: images[i].split('/').last,
+          ),
+      });
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$id/dispute',
+        data: formData,
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> reviewCustomerAppointment(
+    String id, {
+    required int rating,
+    String? comment,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$id/review',
+        data: {
+          'rating': rating,
+          if (comment != null) 'review': comment,
+        },
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerAppointment(
+    String id, {
+    required String verdict,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+
+      await client.patch<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$id',
+        data: {
+          'verdict': verdict,
+        },
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<DisputeList>> getDisputes() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.disputes,
+      );
+      return ApiResult.success(
+        data: DisputeList.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerProfile({
+    String? avatar,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    String? yearsOfExperience,
+    String? bio,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client(isFormDataRequest: true);
+      final formData = FormData.fromMap({
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (phone != null) 'phone': phone,
+        if (country != null) 'country': country,
+        if (bio != null) 'bio': bio,
+        if (avatar != null)
+          'avatar': avatar.isLocalFilePath
+              ? await MultipartFile.fromFile(
+                  avatar!,
+                  filename: avatar.split('/').last,
+                )
+              : avatar?.completeImagePath(),
+      });
+
+      await client.post<Map<String, dynamic>>(
+        AuthPath.customerProfile,
+        queryParameters: {'_method': 'PATCH'},
+        data: formData,
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
       );
     });
   }

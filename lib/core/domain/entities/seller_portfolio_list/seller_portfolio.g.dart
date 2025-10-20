@@ -19,7 +19,7 @@ SellerPortfolio _$SellerPortfolioFromJson(Map<String, dynamic> json) =>
       mediaUrls: (json['media_urls'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      visitsCount: json['visits_count']?.toString(),
+      visitsCount: json['visits_count'],
       status: json['status'] as bool?,
       isAvailable: json['is_available'] as bool?,
       deletedAt: json['deleted_at'],

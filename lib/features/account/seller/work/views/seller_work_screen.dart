@@ -1,5 +1,7 @@
 // ignore_for_file: unawaited_futures
 
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/image_carousel.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/work/cubit/seller_works_cubit.dart';
 import 'package:snip_fair/features/account/seller/work/views/seller_work_form_view.dart';
@@ -90,34 +93,44 @@ class _SellerWorkScreenState extends State<SellerWorkScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
-          child: BlocBuilder<SellerWorksCubit, SellerWorksState>(
-            builder: (context, state) {
-              if (state.worksList.isLoading) {
-                return const SizedBox(
-                  height: 400,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final works = state.worksList.data?.data ?? [];
-              if (works.isEmpty) return const Text('No Data');
-
-              return ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final work = works[index];
-                  return SellerWorkItemWidget(
-                    work: work,
-                    onDelete: () {
-                      context.read<SellerWorksCubit>().deleteWorkItem(work.id!);
-                    },
-                    onEdit: () => SellerWorkFormWidget.show(context, work),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height -
+                  AppBar().preferredSize.height -
+                  MediaQuery.of(context).padding.top, // E
+            ),
+            child: BlocBuilder<SellerWorksCubit, SellerWorksState>(
+              builder: (context, state) {
+                if (state.worksList.isLoading) {
+                  return const SizedBox(
+                    height: 400,
+                    child: Center(child: CircularProgressIndicator()),
                   );
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemCount: works.length,
-              );
-            },
+                }
+                final works = state.worksList.data?.data ?? [];
+                if (works.isEmpty) {
+                  return const Center(child: Text('No Work Items'));
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    final work = works[index];
+                    return SellerWorkItemWidget(
+                      work: work,
+                      onDelete: () {
+                        context
+                            .read<SellerWorksCubit>()
+                            .deleteWorkItem(work.id!);
+                      },
+                      onEdit: () => SellerWorkFormWidget.show(context, work),
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemCount: works.length,
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -154,12 +167,12 @@ class SellerWorkItemWidget extends StatelessWidget {
               children: [
                 ColoredBox(
                   color: AppColors.primaryColor.withValues(alpha: 0.3),
-                  child: CachedNetworkImage(
-                    imageUrl: work.mediaUrls?.first.completeImagePath() ?? '',
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) =>
-                        const SizedBox.expand(),
+                  child: ImageCarousel(
+                    autoPlay: true,
+                    imagePaths: work.mediaUrls
+                            ?.map((e) => e.completeImagePath())
+                            .toList() ??
+                        [],
                   ),
                 ),
                 Positioned(

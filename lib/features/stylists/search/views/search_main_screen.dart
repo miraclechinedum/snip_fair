@@ -160,7 +160,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                       ),
                       12.verticalSpace,
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -344,6 +344,11 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
               final portfolio = portfolios[index];
               return PopularStyleCard(
                 portfolio: portfolio,
+                onLikePressed: () {
+                  return context
+                      .read<SearchCubit>()
+                      .likePortfolio(portfolio.id!.toString());
+                },
               );
             },
             separatorBuilder: (context, index) => 12.horizontalSpace,

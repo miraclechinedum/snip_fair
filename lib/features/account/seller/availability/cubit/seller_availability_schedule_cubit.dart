@@ -89,7 +89,12 @@ class SellerAvailabilityScheduleCubit
       list[index] = timeSlot;
       return list;
     });
-    emit(state.copyWith(scheduleTimeSlots: scheduleTimeSlotsMap));
+    emit(
+      state.copyWith(
+        scheduleTimeSlots: scheduleTimeSlotsMap,
+        userChangedSomething: true,
+      ),
+    );
   }
 
   void deleteTimeSlot({required String day, required int index}) {
@@ -98,13 +103,23 @@ class SellerAvailabilityScheduleCubit
         final list = [...value]..removeAt(index);
         return list;
       });
-    emit(state.copyWith(scheduleTimeSlots: scheduleTimeSlotsMap));
+    emit(
+      state.copyWith(
+        scheduleTimeSlots: scheduleTimeSlotsMap,
+        userChangedSomething: true,
+      ),
+    );
   }
 
   void updateAvailabilitu({required String day, required bool newValue}) {
     final scheduleAvailabilityMap = {...state.scheduleAvailability}
       ..update(day, (value) => newValue);
-    emit(state.copyWith(scheduleAvailability: scheduleAvailabilityMap));
+    emit(
+      state.copyWith(
+        scheduleAvailability: scheduleAvailabilityMap,
+        userChangedSomething: true,
+      ),
+    );
   }
 
   Future<void> submitAvailability() async {

@@ -9,17 +9,21 @@ import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_port
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/image_carousel.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
 class PopularStyleCard extends StatelessWidget {
   const PopularStyleCard({
     super.key,
     required this.portfolio,
+    required this.onLikePressed,
   });
 
   final SellerPortfolio portfolio;
+  final Future<bool?> Function() onLikePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +45,13 @@ class PopularStyleCard extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(12)),
-                    child: CachedNetworkImage(
-                      imageUrl:
-                          portfolio.mediaUrls?.first.completeImagePath() ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Assets.images.loading.image(
-                        fit: BoxFit.cover,
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const SizedBox.expand(),
+                    child: ImageCarousel(
+                      autoPlay: true,
+                      imagePaths: portfolio.mediaUrls
+                              ?.map((e) => e.completeImagePath())
+                              .toList() ?? [
+                      
+                    ],
                     ),
                   ),
                 ),
@@ -68,9 +69,20 @@ class PopularStyleCard extends StatelessWidget {
                     vertical: 5,
                   ),
                   child: AppText(
-                    text: portfolio.title ?? 'N/A',
+                    text: portfolio.category?.name ?? 'N/A',
                     fontSize: 12,
                   ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xffF9F6F5),
+                  shape: BoxShape.circle,
+                ),
+                margin: const EdgeInsets.all(8),
+                child: LikeItemWidget(
+                  onLikePressed: onLikePressed,
+                  isLiked: portfolio.favourite ?? false,
                 ),
               ),
             ],
@@ -86,7 +98,7 @@ class PopularStyleCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        text: portfolio.category?.name ?? 'N/A',
+                        text: portfolio.title ?? 'N/A',
                         fontWeight: FontWeight.w500,
                       ),
                     ],
@@ -94,7 +106,7 @@ class PopularStyleCard extends StatelessWidget {
                 ),
                 SizedBox(
                   height: 30,
-                  width: 120,
+                  width: 120.w,
                   child: CustomButton(
                     title: 'Book Now',
                     onPressed: () {

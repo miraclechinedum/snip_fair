@@ -467,64 +467,65 @@ class SellerProfileManagementScreen extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  Stack(
-                    children: [
-                      Container(
-                        height: 150,
-                        decoration: const BoxDecoration(
-                          gradient: AppColors.appgradient,
-                        ),
-                        child: state.updateBannerState.isLoading
-                            ? const LinearProgressIndicator()
-                            : state.profileDetails.data?.user?.stylistProfile
-                                        ?.banner !=
-                                    null
-                                ? CachedNetworkImage(
-                                    imageUrl: state.profileDetails.data?.user
-                                            ?.stylistProfile?.banner
-                                            ?.completeImagePath() ??
-                                        '',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: 150,
-                                    placeholder: (context, url) =>
-                                        const SizedBox(
-                                      height: 40,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 1,
+                  GestureDetector(
+                    onTap: () => context
+                        .read<SellerProfileMgtCubit>()
+                        .pickAndUploadBanner(),
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 150,
+                          decoration: const BoxDecoration(
+                            gradient: AppColors.appgradient,
+                          ),
+                          child: state.updateBannerState.isLoading
+                              ? const LinearProgressIndicator()
+                              : state.profileDetails.data?.user?.stylistProfile
+                                          ?.banner !=
+                                      null
+                                  ? CachedNetworkImage(
+                                      imageUrl: state.profileDetails.data?.user
+                                              ?.stylistProfile?.banner
+                                              ?.completeImagePath() ??
+                                          '',
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: 150,
+                                      placeholder: (context, url) =>
+                                          const LinearProgressIndicator(
                                         valueColor: AlwaysStoppedAnimation(
                                           Colors.grey,
                                         ),
                                       ),
-                                    ),
-                                  )
-                                : null,
-                      ),
-                      Positioned(
-                        bottom: 12,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () {
-                            context
-                                .read<SellerProfileMgtCubit>()
-                                .pickAndUploadBanner();
-                          },
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: const BoxDecoration(
-                              color: AppColors.contentColorBlue,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Iconsax.edit,
-                              size: 15,
-                              color: AppColors.white,
+                                    )
+                                  : null,
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          right: 12,
+                          child: GestureDetector(
+                            onTap: () {
+                              context
+                                  .read<SellerProfileMgtCubit>()
+                                  .pickAndUploadBanner();
+                            },
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: const BoxDecoration(
+                                color: AppColors.contentColorBlue,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Iconsax.edit,
+                                size: 15,
+                                color: AppColors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Container(
                     height: 190,
@@ -535,47 +536,55 @@ class SellerProfileManagementScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Stack(
-                            children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 500),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 5,
+                          GestureDetector(
+                            onTap: () {
+                              context
+                                  .read<SellerProfileMgtCubit>()
+                                  .pickAndUploadAvatar();
+                            },
+                            child: Stack(
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 500),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 5,
+                                    ),
+                                    shape: BoxShape.circle,
                                   ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: SellerProfileAvatar(
-                                  profileDetails: state.profileDetails.data,
-                                  isLoading: state.updateAvatarState.isLoading,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    context
-                                        .read<SellerProfileMgtCubit>()
-                                        .pickAndUploadAvatar();
-                                  },
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.contentColorBlue,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Iconsax.edit,
-                                      size: 15,
-                                      color: AppColors.white,
-                                    ),
+                                  child: SellerProfileAvatar(
+                                    profileDetails: state.profileDetails.data,
+                                    isLoading:
+                                        state.updateAvatarState.isLoading,
                                   ),
                                 ),
-                              ),
-                            ],
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      context
+                                          .read<SellerProfileMgtCubit>()
+                                          .pickAndUploadAvatar();
+                                    },
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.contentColorBlue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Iconsax.edit,
+                                        size: 15,
+                                        color: AppColors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           SizedBox(
                             height: 30,
@@ -649,6 +658,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                           ?.toString() ??
                                       '0',
                                   fontSize: 12,
+                                  maxLines: 1,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 5.horizontalSpace,
@@ -669,10 +679,13 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   color: AppColors.grey3,
                                 ),
                                 4.horizontalSpace,
-                                AppText(
-                                  text:
-                                      '${state.profileDetails.data?.user?.stylistProfile?.yearsOfExperience} Years of experience',
-                                  color: AppColors.grey3,
+                                Expanded(
+                                  child: AppText(
+                                    text:
+                                        '${state.profileDetails.data?.user?.stylistProfile?.yearsOfExperience} Years of experience',
+                                    color: AppColors.grey3,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               ],
                             ),
@@ -685,11 +698,14 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   color: AppColors.grey3,
                                 ),
                                 4.horizontalSpace,
-                                AppText(
-                                  text: state
-                                          .profileDetails.data?.user?.country ??
-                                      '',
-                                  color: AppColors.grey3,
+                                Expanded(
+                                  child: AppText(
+                                    text: state.profileDetails.data?.user
+                                            ?.country ??
+                                        '',
+                                    color: AppColors.grey3,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               ],
                             ),

@@ -40,6 +40,7 @@ class PaymentWebViewWidget extends StatefulWidget {
 class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  String _currentExitUrl = '';
 
   @override
   void initState() {
@@ -86,6 +87,10 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
   }
 
   void _handleUrlChange(String url) {
+    if (_currentExitUrl == url) {
+      return;
+    }
+    _currentExitUrl = url;
     final successUrl = widget.paymentData.successUrl;
     final cancelUrl = widget.paymentData.cancelUrl;
 

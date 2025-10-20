@@ -12,8 +12,10 @@ import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/personal_details/cubit/seller_personal_details_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
@@ -34,11 +36,15 @@ class SellerPersonalDetailsScreen extends StatelessWidget
       listener: (context, state) {
         if (state.updateProfile.hasSuccess) {
           context.read<SellerProfileMgtCubit>().getProfileDetails(true);
-          context.router.pop();
+          AppHelper.showAppDialog(
+            context,
+            const OnSuccessDialogContent(
+                subtext: 'Profile Updated Successfully'),
+          );
         }
       },
       child: Scaffold(
-        appBar: CustomAppBar(),
+        appBar: const CustomAppBar(),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -206,7 +212,8 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                             onChanged: (value) {
                               if (value != null) {
                                 cubit.onYearsOfExperienceChanged(
-                                    value.toString());
+                                  value.toString(),
+                                );
                               }
                             },
                             style: AppTextStyle.body1.copyWith(
@@ -293,7 +300,8 @@ class SellerPersonalDetailsScreen extends StatelessWidget
         ..onPhoneChanged(currentProfile.user!.phone!)
         ..onAddressChanged(currentProfile.user!.country!)
         ..onYearsOfExperienceChanged(
-            currentProfile.user!.stylistProfile!.yearsOfExperience!.toString())
+          currentProfile.user!.stylistProfile!.yearsOfExperience!.toString(),
+        )
         ..onBioChanged(currentProfile.user!.bio!)
         ..onBusinessNameChanged(
           currentProfile.user!.stylistProfile!.businessName!,

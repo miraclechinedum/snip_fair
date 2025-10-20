@@ -6,11 +6,11 @@ part 'location_service.g.dart';
 class LocationService {
   int? id;
   @JsonKey(name: 'user_id')
-  int? userId;
+  dynamic userId;
   String? latitude;
   String? longitude;
   @JsonKey(name: 'location_accuracy')
-  int? locationAccuracy;
+  dynamic locationAccuracy;
   @JsonKey(name: 'location_updated_at')
   DateTime? locationUpdatedAt;
   @JsonKey(name: 'location_permission_granted')

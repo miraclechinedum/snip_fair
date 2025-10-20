@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
@@ -155,13 +159,50 @@ class AccountMainScreen extends StatelessWidget {
               ),
             ],
             ListTile(
+              leading: const Icon(Iconsax.message),
+              title: const AppText(
+                text: 'Chats',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              onTap: () {
+                context.pushRoute(ConversationListRoute());
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.message_question),
+              title: const AppText(
+                text: 'Disputes',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              onTap: () {
+                final token = getIt<LocalKeyStorage>().accessToken;
+                final supportUrl =
+                    Environment().config.apiHost.replaceAll('api', 'disputes');
+                context.router.pushWidget(SupportWebViewWidget(
+                  authToken: token!,
+                  title: 'Disputes',
+                  supportUrl: supportUrl,
+                ));
+              },
+            ),
+            ListTile(
               leading: const Icon(Iconsax.message_question),
               title: const AppText(
                 text: 'Support',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
-              onTap: () {},
+              onTap: () {
+                final token = getIt<LocalKeyStorage>().accessToken;
+                final supportUrl =
+                    Environment().config.apiHost.replaceAll('api', 'support');
+                context.router.pushWidget(SupportWebViewWidget(
+                  authToken: token!,
+                  supportUrl: supportUrl,
+                ));
+              },
             ),
             ListTile(
               leading: const Icon(
@@ -175,7 +216,21 @@ class AccountMainScreen extends StatelessWidget {
                 color: Colors.red,
               ),
               onTap: () {
-                context.read<AppCubit>().onLogout();
+                AppHelper.showAppDialog(
+                  context,
+                  OnConfirmDialog(
+                    icon: const Icon(
+                      Icons.logout,
+                      color: Colors.red,
+                      size: 48,
+                    ),
+                    title: 'Logout',
+                    content: 'Are you sure you want to logout?',
+                    onConfirmed: (_) {
+                      context.read<AppCubit>().onLogout();
+                    },
+                  ),
+                );
               },
             ),
             24.verticalSpace,
@@ -367,52 +422,56 @@ class AccountMainScreen extends StatelessWidget {
     return BlocBuilder<CustomerProfileMgtCubit, CustomerProfileMgtState>(
       builder: (context, state) {
         if (state.profileDetails.data == null) return const SizedBox();
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: AppColors.appgradient,
-          ),
-          padding: const EdgeInsets.all(16),
-          margin: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: state.profileDetails.data?.user?.avatar != null
-                    ? CachedNetworkImageProvider(
-                        state.profileDetails.data!.user!.avatar
-                            .completeImagePath(),
-                      )
-                    : null,
-                child: AppText(
-                  text: state.profileDetails.data!.user!.name!
-                          .split(' ')
-                          .first[0]
-                          .toUpperCase() +
-                      state.profileDetails.data!.user!.name!
-                          .split(' ')
-                          .last[0]
-                          .toUpperCase(),
-                  fontSize: 18,
+        return GestureDetector(
+          onTap: () => context.pushRoute(const CustomerPersonalDetailsRoute()),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: AppColors.appgradient,
+            ),
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage:
+                      state.profileDetails.data?.user?.avatar != null
+                          ? CachedNetworkImageProvider(
+                              state.profileDetails.data!.user!.avatar
+                                  .completeImagePath(),
+                            )
+                          : null,
+                  child: AppText(
+                    text: state.profileDetails.data!.user!.name!
+                            .split(' ')
+                            .first[0]
+                            .toUpperCase() +
+                        state.profileDetails.data!.user!.name!
+                            .split(' ')
+                            .last[0]
+                            .toUpperCase(),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                10.verticalSpace,
+                AppText(
+                  text: state.profileDetails.data?.user?.name ?? 'N/A',
+                  color: AppColors.white,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
-              10.verticalSpace,
-              AppText(
-                text: state.profileDetails.data?.user?.name ?? 'N/A',
-                color: AppColors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              AppText(
-                text: state.profileDetails.data?.user?.email ?? 'N/A',
-                color: AppColors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ],
+                AppText(
+                  text: state.profileDetails.data?.user?.email ?? 'N/A',
+                  color: AppColors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ],
+            ),
           ),
         );
       },

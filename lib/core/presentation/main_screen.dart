@@ -1,18 +1,22 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:snip_fair/core/services/location_service.dart';
+import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
@@ -24,10 +28,41 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final locationService = getIt<LocationService>();
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _checkLocationPermission();
+  }
+
+  Future<void> _checkLocationPermission() async {
+    final appCubit = context.read<AppCubit>();
+    final hasPermission = await locationService.checkLocationPermission();
+    if (!hasPermission && mounted) {
+      var consentGiven = await LocationPermissionBottomSheet.show(
+        context,
+        subtitle: appCubit.state.isStylist
+            ? 'Allow the app to access your device location so we can recommend you to nearby clients.'
+            : 'Allow the app to access your device location so we can show nearby stylists and appointments.',
+      );
+      consentGiven ??= false;
+      locationService.sendConsentToUseLocation(consentGiven);
+      if (consentGiven) {
+        final permissionGranted =
+            await locationService.requestLocationPermission();
+
+        if (permissionGranted) {
+          locationService.sendLocationUpdateRequest();
+        } else {
+          unawaited(locationService.openLocationSettings());
+          Fluttertoast.showToast(
+            msg: 'Location permission is required to use this feature.',
+          );
+        }
+      }
+    } else {
+      locationService.sendLocationUpdateRequest();
+    }
   }
 
   @override
@@ -73,17 +108,21 @@ class _MainScreenState extends State<MainScreen> {
           centerTitle: false,
           actions: [
             IconButton(
-              onPressed: () {},
-              icon: const Icon(Iconsax.notification),
+              onPressed: () {
+                context.read<ConversationsCubit>().fetchConversations();
+                context.router.push(ConversationListRoute());
+              },
+              icon: const Icon(
+                Iconsax.message,
+                color: AppColors.primaryColor,
+              ),
             ),
-          ]
-              .map(
-                (e) => Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: e,
-                ),
-              )
-              .toList(),
+            // IconButton(
+            //   onPressed: () {},
+            //   icon: const Icon(Iconsax.notification),
+            // ),
+            12.horizontalSpace,
+          ],
         );
       },
       routes: appState.isStylist
@@ -187,6 +226,127 @@ class CustomBarItem extends StatelessWidget {
               text: label,
               fontSize: 12,
               color: isActive ? AppColors.primaryColor : AppColors.darkGrey700,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LocationPermissionBottomSheet extends StatelessWidget {
+  const LocationPermissionBottomSheet({
+    super.key,
+    this.onAllow,
+    this.onDeny,
+    this.title = 'Enable location sharing',
+    this.subtitle =
+        'Allow the app to access your device location so we can show nearby results and appointments.',
+  });
+
+  final VoidCallback? onAllow;
+  final VoidCallback? onDeny;
+  final String title;
+  final String subtitle;
+
+  /// Convenience helper to display the sheet and receive a bool result:
+  /// true = allowed, false = denied, null = dismissed.
+  static Future<bool?> show(
+    BuildContext context, {
+    VoidCallback? onAllow,
+    VoidCallback? onDeny,
+    String? title,
+    String? subtitle,
+  }) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => LocationPermissionBottomSheet(
+        onAllow: onAllow,
+        onDeny: onDeny,
+        title: title ?? 'Enable location sharing',
+        subtitle: subtitle ??
+            'Allow the app to access your device location so we can show nearby results and appointments.',
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: const Radius.circular(16).r),
+      ),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // drag handle
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: AppColors.darkGrey100,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            16.verticalSpace,
+            Icon(
+              Icons.location_on,
+              size: 56.r,
+              color: AppColors.primaryColor,
+            ),
+            12.verticalSpace,
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style:
+                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+            ),
+            8.verticalSpace,
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: AppTextStyle.subTitle2.copyWith(
+                color: AppColors.darkGrey700,
+              ),
+            ),
+            20.verticalSpace,
+            CustomButton(
+              title: 'Allow location',
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                onAllow?.call();
+              },
+            ),
+            8.verticalSpace,
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                  onDeny?.call();
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    side: const BorderSide(color: AppColors.darkGrey100),
+                  ),
+                ),
+                child: Text(
+                  'Not now',
+                  style: AppTextStyle.subTitle2.copyWith(
+                    color: AppColors.darkGrey700,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
