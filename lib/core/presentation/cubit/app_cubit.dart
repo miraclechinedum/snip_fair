@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -71,7 +72,8 @@ class AppCubit extends Cubit<AppState> {
           ),
         );
         final fcmToken = await NotificationService.instance.getToken();
-        if (fcmToken != null) unawaited(updateDeviceToken(fcmToken));
+        log('FCM Token: $fcmToken');
+        if (fcmToken != null) await updateDeviceToken(fcmToken);
       },
       failure: (error) {
         emit(AppState.unAuthenticated(state.platformSettings));

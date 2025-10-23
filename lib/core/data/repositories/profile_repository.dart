@@ -11,6 +11,7 @@ import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dar
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
+import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
@@ -213,6 +214,18 @@ abstract class ProfileRepository {
   });
 
   Future<ApiResult<DisputeList>> getDisputes();
+
+  Future<ApiResult<SimpleResponse>> requestPayout(
+    String paymentMethodId,
+    double amount,
+  );
+
+  Future<ApiResult<SimpleResponse>> deleteAccount();
+
+  Future<ApiResult<NotificationsList>> getNotifications({
+    String? page,
+    int? perPage,
+  });
 }
 
 @Injectable(as: ProfileRepository)
@@ -497,7 +510,11 @@ class ProfileRepoImpl implements ProfileRepository {
     String? address,
     String? fcmToken,
   }) =>
-      _remoteSource.updateUser(useLocation: useLocation, address: address);
+      _remoteSource.updateUser(
+        useLocation: useLocation,
+        address: address,
+        fcmToken: fcmToken,
+      );
 
   @override
   Future<ApiResult<CustomerProfileDetails>> getCustomerProfile() =>
@@ -574,14 +591,15 @@ class ProfileRepoImpl implements ProfileRepository {
   Future<ApiResult<DisputeList>> getDisputes() => _remoteSource.getDisputes();
 
   @override
-  Future<ApiResult<SimpleResponse>> updateCustomerProfile(
-      {String? avatar,
-      String? firstName,
-      String? lastName,
-      String? phone,
-      String? country,
-      String? yearsOfExperience,
-      String? bio}) {
+  Future<ApiResult<SimpleResponse>> updateCustomerProfile({
+    String? avatar,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    String? yearsOfExperience,
+    String? bio,
+  }) {
     return _remoteSource.updateCustomerProfile(
       avatar: avatar,
       firstName: firstName,
@@ -592,4 +610,25 @@ class ProfileRepoImpl implements ProfileRepository {
       bio: bio,
     );
   }
+
+  @override
+  Future<ApiResult<SimpleResponse>> requestPayout(
+    String paymentMethodId,
+    double amount,
+  ) =>
+      _remoteSource.requestPayout(paymentMethodId, amount);
+
+  @override
+  Future<ApiResult<SimpleResponse>> deleteAccount() =>
+      _remoteSource.deleteAccount();
+
+  @override
+  Future<ApiResult<NotificationsList>> getNotifications({
+    String? page,
+    int? perPage,
+  }) =>
+      _remoteSource.getNotifications(
+        page: page,
+        perPage: perPage,
+      );
 }

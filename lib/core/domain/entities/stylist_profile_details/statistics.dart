@@ -11,7 +11,7 @@ class Statistics {
   @JsonKey(name: 'total_reviews')
   dynamic totalReviews;
   @JsonKey(name: 'average_rating')
- dynamic averageRating;
+  dynamic averageRating;
   @JsonKey(name: 'total_appointments')
   dynamic totalAppointments;
   @JsonKey(name: 'total_earnings')

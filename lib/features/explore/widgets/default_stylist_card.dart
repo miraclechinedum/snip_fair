@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
@@ -57,8 +58,13 @@ class DefaultStylistCard extends StatelessWidget {
                               Assets.images.loading.image(
                             fit: BoxFit.cover,
                           ),
-                          errorWidget: (context, url, error) =>
-                              const SizedBox.expand(),
+                          errorWidget: (context, url, error) {
+                            return ColoredBox(
+                              color: Colors.grey.shade200,
+                              child: Center(
+                                  child: SvgPicture.asset(Assets.images.logo)),
+                            );
+                          },
                         ),
                       ),
                     ),

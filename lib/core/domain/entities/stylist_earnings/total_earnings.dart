@@ -6,11 +6,11 @@ part 'total_earnings.g.dart';
 class TotalEarnings {
   int? value;
   @JsonKey(name: 'current_period')
-  int? currentPeriod;
+  dynamic currentPeriod;
   @JsonKey(name: 'change_percentage')
-  int? changePercentage;
+  dynamic changePercentage;
   @JsonKey(name: 'change_text')
-  String? changeText;
+  dynamic changeText;
   @JsonKey(name: 'is_positive')
   bool? isPositive;
 

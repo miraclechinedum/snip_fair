@@ -3,15 +3,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/core/presentation/app.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
 import 'package:snip_fair/features/stylists/stylist_profile/cubit/stylist_seller_details_cubit.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
 class StylistSellerDetailsScreen extends StatelessWidget
@@ -122,17 +126,36 @@ class StylistSellerDetailsScreen extends StatelessWidget
                     decoration: const BoxDecoration(
                       gradient: AppColors.appgradient,
                     ),
-                    child: CachedNetworkImage(
-                      imageUrl: state.sellerDetails.data?.stylistProfile?.banner
-                              ?.completeImagePath() ??
-                          '',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: 150,
-                      errorWidget: (context, url, error) =>
-                          const SizedBox.expand(),
-                      placeholder: (context, url) =>
-                          const LinearProgressIndicator(),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (state.sellerDetails.data?.stylistProfile?.banner
+                                .completeImagePath() ==
+                            null) {
+                          return;
+                        }
+                        AppHelper.showImagePreview(context,
+                            imageUrl: state
+                                .sellerDetails.data!.stylistProfile!.banner!
+                                .completeImagePath());
+                      },
+                      child: CachedNetworkImage(
+                        imageUrl: state
+                                .sellerDetails.data?.stylistProfile?.banner
+                                ?.completeImagePath() ??
+                            '',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 150,
+                        errorWidget: (context, url, error) {
+                          return ColoredBox(
+                            color: Colors.grey.shade200,
+                            child: Center(
+                                child: SvgPicture.asset(Assets.images.logo)),
+                          );
+                        },
+                        placeholder: (context, url) =>
+                            const LinearProgressIndicator(),
+                      ),
                     ),
                   );
                 },
@@ -148,44 +171,56 @@ class StylistSellerDetailsScreen extends StatelessWidget
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 500),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 5,
+                          GestureDetector(
+                            onTap: () {
+                              if (state.sellerDetails.data?.avatar
+                                      .completeImagePath() ==
+                                  null) {
+                                return;
+                              }
+                              AppHelper.showImagePreview(context,
+                                  imageUrl: state.sellerDetails.data!.avatar!
+                                      .completeImagePath());
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 5,
+                                ),
+                                shape: BoxShape.circle,
                               ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: CircleAvatar(
-                              radius: 30,
-                              backgroundImage:
-                                  state.sellerDetails.data?.avatar != null
-                                      ? CachedNetworkImageProvider(
-                                          state.sellerDetails.data!.avatar!
-                                              .completeImagePath(),
-                                        )
-                                      : null,
-                              child: state.sellerDetails.data?.avatar != null
-                                  ? null
-                                  : AppText(
-                                      text:
-                                          state.sellerDetails.data?.firstName !=
-                                                      null &&
-                                                  state.sellerDetails.data
-                                                          ?.lastName !=
-                                                      null
-                                              ? AppHelper.initialsFromName(
-                                                  state.sellerDetails.data!
-                                                      .firstName!,
-                                                  state.sellerDetails.data!
-                                                      .lastName!,
-                                                )
-                                              : 'N/A',
-                                      color: AppColors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundImage:
+                                    state.sellerDetails.data?.avatar != null
+                                        ? CachedNetworkImageProvider(
+                                            state.sellerDetails.data!.avatar!
+                                                .completeImagePath(),
+                                          )
+                                        : null,
+                                child: state.sellerDetails.data?.avatar != null
+                                    ? null
+                                    : AppText(
+                                        text: state.sellerDetails.data
+                                                        ?.firstName !=
+                                                    null &&
+                                                state.sellerDetails.data
+                                                        ?.lastName !=
+                                                    null
+                                            ? AppHelper.initialsFromName(
+                                                state.sellerDetails.data!
+                                                    .firstName!,
+                                                state.sellerDetails.data!
+                                                    .lastName!,
+                                              )
+                                            : 'N/A',
+                                        color: AppColors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                              ),
                             ),
                           ),
                           // SizedBox(
@@ -610,10 +645,13 @@ class PortfolioView extends StatelessWidget {
                     placeholder: (context, url) => Container(
                       color: Colors.grey.shade200,
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.error),
-                    ),
+                    errorWidget: (context, url, error) {
+                      return ColoredBox(
+                        color: Colors.grey.shade200,
+                        child:
+                            Center(child: SvgPicture.asset(Assets.images.logo)),
+                      );
+                    },
                   ),
                 );
               }),
@@ -660,87 +698,91 @@ class ServicesListView extends StatelessWidget {
                 vertical: 8,
               ),
               sliver: SliverFixedExtentList(
-                itemExtent: 100.0.h,
+                itemExtent: 220.0.h,
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final service = services[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                        boxShadow: AppColors.defaultBoxShadow,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AppText(
-                                  text: service.title ?? 'N/A',
-                                  maxLines: 1,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                AppText(
-                                  text: service.description ?? 'N/A',
-                                  fontSize: 12,
-                                  maxLines: 1,
-                                ),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      const WidgetSpan(
-                                        child: Icon(
-                                          Icons.timelapse,
-                                          color: Colors.grey,
-                                          size: 15,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: ' ${service.duration ?? 'N/A'}',
-                                        style: AppTextStyle.caption,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              AppText(
-                                text: service.price?.formatAmount() ?? 'R0',
-                                color: AppColors.primaryColor,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: 120.w,
-                                height: 30.h,
-                                child: CustomButton(
-                                  title: 'Book Now',
-                                  onPressed: () {
-                                    context.pushRoute(
-                                      UpdateCreateAppointmentRoute(
-                                        portfolio: service,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: PopularStyleCard(portfolio: service),
                     );
+                    // return Container(
+                    //   margin: const EdgeInsets.symmetric(vertical: 5),
+                    //   decoration: BoxDecoration(
+                    //     borderRadius: BorderRadius.circular(12),
+                    //     color: Colors.white,
+                    //     boxShadow: AppColors.defaultBoxShadow,
+                    //   ),
+                    //   padding: const EdgeInsets.symmetric(
+                    //     horizontal: 16,
+                    //     vertical: 10,
+                    //   ),
+                    //   child: Row(
+                    //     children: [
+                    //       Expanded(
+                    //         child: Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.start,
+                    //           children: [
+                    //             AppText(
+                    //               text: service.title ?? 'N/A',
+                    //               maxLines: 1,
+                    //               fontSize: 16,
+                    //               fontWeight: FontWeight.bold,
+                    //             ),
+                    //             AppText(
+                    //               text: service.description ?? 'N/A',
+                    //               fontSize: 12,
+                    //               maxLines: 1,
+                    //             ),
+                    //             Text.rich(
+                    //               TextSpan(
+                    //                 children: [
+                    //                   const WidgetSpan(
+                    //                     child: Icon(
+                    //                       Icons.timelapse,
+                    //                       color: Colors.grey,
+                    //                       size: 15,
+                    //                     ),
+                    //                   ),
+                    //                   TextSpan(
+                    //                     text: ' ${service.duration ?? 'N/A'}',
+                    //                     style: AppTextStyle.caption,
+                    //                   ),
+                    //                 ],
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       Column(
+                    //         crossAxisAlignment: CrossAxisAlignment.end,
+                    //         children: [
+                    //           AppText(
+                    //             text: service.price?.formatAmount() ?? 'R0',
+                    //             color: AppColors.primaryColor,
+                    //             fontSize: 18,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //           const Spacer(),
+                    //           SizedBox(
+                    //             width: 120.w,
+                    //             height: 30.h,
+                    //             child: CustomButton(
+                    //               title: 'Book Now',
+                    //               onPressed: () {
+                    //                 context.pushRoute(
+                    //                   UpdateCreateAppointmentRoute(
+                    //                     portfolio: service,
+                    //                   ),
+                    //                 );
+                    //               },
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ],
+                    //   ),
+                    // );
                   },
                   childCount: services.length,
                 ),
@@ -772,7 +814,12 @@ class FullScreenImageView extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: imagePath,
               placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
+              errorWidget: (context, url, error) {
+                return ColoredBox(
+                  color: Colors.grey.shade200,
+                  child: Center(child: SvgPicture.asset(Assets.images.logo)),
+                );
+              },
             ),
           ),
         ),

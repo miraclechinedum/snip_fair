@@ -16,7 +16,6 @@ class SellerAvailabilityScheduleState extends Equatable {
         scheduleAvailability = {
           for (var day in scheduleDays) day: false,
         },
-
         scheduleTimeSlots = {
           for (var day in scheduleDays) day: [],
         },
@@ -48,8 +47,7 @@ class SellerAvailabilityScheduleState extends Equatable {
       scheduleAvailability: scheduleAvailability ?? this.scheduleAvailability,
       scheduleTimeSlots: scheduleTimeSlots ?? this.scheduleTimeSlots,
       updateScheduleState: updateScheduleState ?? this.updateScheduleState,
-      userChangedSomething:
-          userChangedSomething ?? this.userChangedSomething,
+      userChangedSomething: userChangedSomething ?? this.userChangedSomething,
     );
   }
 

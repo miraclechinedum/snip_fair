@@ -1,12 +1,12 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'datum.dart';
+import 'notification_datum.dart';
 
-part 'customer_wallet_transaction_list.g.dart';
+part 'notifications_list.g.dart';
 
 @JsonSerializable()
-class CustomerWalletTransactionList {
-  List<UserTransaction>? data;
+class NotificationsList {
+  List<NotificationDatum>? data;
   String? path;
   @JsonKey(name: 'per_page')
   int? perPage;
@@ -19,7 +19,7 @@ class CustomerWalletTransactionList {
   @JsonKey(name: 'prev_page_url')
   String? prevPageUrl;
 
-  CustomerWalletTransactionList({
+  NotificationsList({
     this.data,
     this.path,
     this.perPage,
@@ -29,9 +29,9 @@ class CustomerWalletTransactionList {
     this.prevPageUrl,
   });
 
-  factory CustomerWalletTransactionList.fromJson(Map<String, dynamic> json) {
-    return _$CustomerWalletTransactionListFromJson(json);
+  factory NotificationsList.fromJson(Map<String, dynamic> json) {
+    return _$NotificationsListFromJson(json);
   }
 
-  Map<String, dynamic> toJson() => _$CustomerWalletTransactionListToJson(this);
+  Map<String, dynamic> toJson() => _$NotificationsListToJson(this);
 }

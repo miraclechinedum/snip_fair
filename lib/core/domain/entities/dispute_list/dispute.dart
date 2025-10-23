@@ -69,7 +69,8 @@ class Dispute {
     this.messages,
   });
 
-  factory Dispute.fromJson(Map<String, dynamic> json) => _$DisputeFromJson(json);
+  factory Dispute.fromJson(Map<String, dynamic> json) =>
+      _$DisputeFromJson(json);
 
   Map<String, dynamic> toJson() => _$DisputeToJson(this);
 }

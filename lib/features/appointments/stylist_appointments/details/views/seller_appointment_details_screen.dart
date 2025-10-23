@@ -12,6 +12,7 @@ import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/utils/utils.dart';
@@ -134,11 +135,31 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                   fontWeight: FontWeight.w600,
                                 ),
                                 80.horizontalSpace,
-                                Expanded(
-                                  child: SelectableText(
-                                    appointment.bookingId?.toString() ?? 'N/A',
-                                    textAlign: TextAlign.end,
-                                  ),
+                                const Spacer(),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SelectableText(
+                                      appointment.bookingId?.toString() ??
+                                          'N/A',
+                                      textAlign: TextAlign.end,
+                                    ),
+                                    4.horizontalSpace,
+                                    GestureDetector(
+                                      onTap: () {
+                                        AppHelper.copyToClipboard(
+                                          context,
+                                          appointment.bookingId?.toString() ??
+                                              'N/A',
+                                        );
+                                      },
+                                      child: const Icon(
+                                        Icons.copy,
+                                        size: 16,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -146,36 +167,46 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage:
-                                      appointment.customer?.avatar != null
-                                          ? CachedNetworkImageProvider(
-                                              appointment.customer!.avatar!
-                                                  .toString()
-                                                  .completeImagePath(),
-                                            )
-                                          : null,
-                                  child: appointment.customer?.avatar != null
-                                      ? null
-                                      : AppText(
-                                          text:
-                                              appointment.customer?.firstName !=
-                                                          null &&
-                                                      appointment.customer
-                                                              ?.lastName !=
-                                                          null
-                                                  ? AppHelper.initialsFromName(
-                                                      appointment
-                                                          .customer!.firstName!,
-                                                      appointment
-                                                          .customer!.lastName!,
-                                                    )
-                                                  : 'N/A',
-                                          color: AppColors.grey3,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                GestureDetector(
+                                  onTap: () {
+                                    AppHelper.showImagePreview(
+                                      context,
+                                      imageUrl: appointment.customer?.avatar
+                                          ?.toString()
+                                          .completeImagePath(),
+                                    );
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage:
+                                        appointment.customer?.avatar != null
+                                            ? CachedNetworkImageProvider(
+                                                appointment.customer!.avatar!
+                                                    .toString()
+                                                    .completeImagePath(),
+                                              )
+                                            : null,
+                                    child: appointment.customer?.avatar != null
+                                        ? null
+                                        : AppText(
+                                            text: appointment.customer
+                                                            ?.firstName !=
+                                                        null &&
+                                                    appointment.customer
+                                                            ?.lastName !=
+                                                        null
+                                                ? AppHelper.initialsFromName(
+                                                    appointment
+                                                        .customer!.firstName!,
+                                                    appointment
+                                                        .customer!.lastName!,
+                                                  )
+                                                : 'N/A',
+                                            color: AppColors.grey3,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                  ),
                                 ),
                                 8.horizontalSpace,
                                 Expanded(
@@ -257,6 +288,75 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                     textAlign: TextAlign.end,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            8.verticalSpace,
+                          ],
+                        ),
+                      ),
+                      16.verticalSpace,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const AppText(
+                              text: 'Appointment Date & Time',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            const Divider(),
+                            12.verticalSpace,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const AppText(
+                                  text: 'Date: ',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                100.horizontalSpace,
+                                Expanded(
+                                  child: AppText(
+                                    text: appointment.appointmentDate ?? 'N/A',
+                                    textAlign: TextAlign.end,
+                                    color: AppColors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            8.verticalSpace,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const AppText(
+                                  text: 'Time: ',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                100.horizontalSpace,
+                                Expanded(
+                                  child: AppText(
+                                    text: TimeOfDay(
+                                                hour: int.parse(appointment
+                                                    .appointmentTime!
+                                                    .split(':')[0]),
+                                                minute: int.parse(appointment
+                                                    .appointmentTime!
+                                                    .split(':')[1]
+                                                    .removeAMPM()))
+                                            .format(context) ??
+                                        'N/A',
+                                    textAlign: TextAlign.end,
+                                    color: AppColors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -490,26 +590,30 @@ class _CodeEntryBottomSheetState extends State<CodeEntryBottomSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const ModalPill(),
+              12.verticalSpace,
               AppText(
                 text: widget.title,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
+              ),
+              5.verticalSpace,
+              const AppText(
+                text: 'Please enter the code provided by the customer',
+                textAlign: TextAlign.center,
               ),
               12.verticalSpace,
               TextField(
                 controller: _controller,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
+                decoration: AppColors.inputDecoration.copyWith(
                   hintText: widget.hint,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
                   errorText: _error,
                 ),
                 onSubmitted: (_) => _handleSubmit(),
               ),
-              12.verticalSpace,
+              16.verticalSpace,
               Column(
                 children: [
                   CustomButton(
@@ -526,7 +630,7 @@ class _CodeEntryBottomSheetState extends State<CodeEntryBottomSheet> {
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       backgroundColor: Colors.grey.shade200,
-                      minimumSize: Size(double.infinity, 48),
+                      minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

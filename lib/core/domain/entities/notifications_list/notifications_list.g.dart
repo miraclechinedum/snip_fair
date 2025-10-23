@@ -1,16 +1,15 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_wallet_transaction_list.dart';
+part of 'notifications_list.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-CustomerWalletTransactionList _$CustomerWalletTransactionListFromJson(
-        Map<String, dynamic> json) =>
-    CustomerWalletTransactionList(
+NotificationsList _$NotificationsListFromJson(Map<String, dynamic> json) =>
+    NotificationsList(
       data: (json['data'] as List<dynamic>?)
-          ?.map((e) => UserTransaction.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => NotificationDatum.fromJson(e as Map<String, dynamic>))
           .toList(),
       path: json['path'] as String?,
       perPage: (json['per_page'] as num?)?.toInt(),
@@ -20,8 +19,7 @@ CustomerWalletTransactionList _$CustomerWalletTransactionListFromJson(
       prevPageUrl: json['prev_page_url'] as String?,
     );
 
-Map<String, dynamic> _$CustomerWalletTransactionListToJson(
-        CustomerWalletTransactionList instance) =>
+Map<String, dynamic> _$NotificationsListToJson(NotificationsList instance) =>
     <String, dynamic>{
       'data': instance.data,
       'path': instance.path,

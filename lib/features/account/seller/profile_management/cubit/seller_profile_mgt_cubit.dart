@@ -192,4 +192,24 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
       accuracy: accuracy,
     );
   }
+
+  Future<void> deleteAccount() async {
+    emit(state.copyWith(deleteAccountState: const ProcessState.loading()));
+
+    final result = await _profileRepository.deleteAccount();
+    result.when(
+      success: (data) {
+        emit(
+          state.copyWith(
+            deleteAccountState: const ProcessState.success(true),
+          ),
+        );
+      },
+      failure: (error) {
+        emit(
+          state.copyWith(deleteAccountState: ProcessState.error(error)),
+        );
+      },
+    );
+  }
 }

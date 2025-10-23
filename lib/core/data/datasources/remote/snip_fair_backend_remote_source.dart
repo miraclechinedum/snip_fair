@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/datasources/remote/base_remote_source.dart';
 import 'package:snip_fair/core/data/models/remote/login_response.dart';
@@ -24,6 +25,7 @@ import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.d
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
 import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
+import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
@@ -72,6 +74,7 @@ class AuthPath {
   //Wallet
   static const customerWallet = '/wallet';
   static const customerWalletTransactions = '/wallet/transactions';
+  static const withdrawFunds = '/wallet/withdraw';
 
   //Payment
   static const initializePayfastDeposit = '/payment/initiate/payfast';
@@ -109,6 +112,24 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         AuthenticationRepository,
         ProfileRepository,
         AppointmentRepository {
+  /// Helper method to get a Dio client with retry interceptor for GET requests
+  Dio _clientWithRetry({bool requireAuth = true}) {
+    final client = getIt<HttpService>().client(requireAuth: requireAuth);
+    client.interceptors.add(
+      RetryInterceptor(
+        dio: client,
+        logPrint: print,
+        retries: 5,
+        retryDelays: const [
+          Duration(seconds: 1),
+          Duration(seconds: 2),
+          Duration(seconds: 3),
+        ],
+      ),
+    );
+    return client;
+  }
+
   @override
   Future<ApiResult<SimpleResponse>> forgotPassowrd(String email) {
     return run(() async {
@@ -124,7 +145,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<User>> getUser() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final result = await client.get<Map<String, dynamic>>(AuthPath.user);
       return ApiResult.success(data: User.fromJson(result.data!));
     });
@@ -255,7 +276,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<PlatformSettings>> getPlatformSettings() {
     return run(() async {
-      final client = getIt<HttpService>().client(requireAuth: false);
+      final client = _clientWithRetry(requireAuth: false);
       final result = await client.get<Map<String, dynamic>>(
         AuthPath.platformSetting,
       );
@@ -353,7 +374,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<List<PaymentMethod>>> getPaymentMethods() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<List<dynamic>>(
         AuthPath.stylistPaymentMethods,
       );
@@ -417,7 +438,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<StylistProfileDetails>> getStylistProfile() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.stylistProfile,
       );
@@ -430,7 +451,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<StylistSettings>> getStylistSettings() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.stylistSettings,
       );
@@ -582,7 +603,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<WorkItem>> fetchWorkById(String workId) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.createWork}/$workId',
       );
@@ -593,7 +614,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<List<WorkCategory>>> fetchWorkCategories() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<List<dynamic>>(
         AuthPath.workCategories,
       );
@@ -615,7 +636,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     int? perPage,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.workList,
         queryParameters: {
@@ -688,7 +709,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<List<Bank>>> getBanks() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<List<dynamic>>(
         AuthPath.banks,
       );
@@ -705,7 +726,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<StylistStats>> getStylistStats() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.stats,
       );
@@ -718,7 +739,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<StylistAppointment>> getStylistAppointmentById(String id) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.stylistAppointment}/$id',
       );
@@ -740,7 +761,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? sort,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.stylistAppointment}/list',
         queryParameters: {
@@ -763,7 +784,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<AvailabilitySchedule>> getAvailability() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.availability,
       );
@@ -818,7 +839,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<StylistEarnings>> getEarnings() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.earnings,
       );
@@ -851,7 +872,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<CustomerProfileDetails>> getCustomerProfile() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.customerProfile,
       );
@@ -864,7 +885,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<CustomerStats>> getCustomerStats() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.customerStats,
       );
@@ -877,7 +898,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/$id',
       );
@@ -897,7 +918,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     bool? favourite,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/list',
         queryParameters: {
@@ -926,7 +947,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     bool? favourite,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/list',
         queryParameters: {
@@ -948,7 +969,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<CustomerWallet>> getWallet() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.customerWallet,
       );
@@ -964,7 +985,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     int? perPage = 10,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.customerWalletTransactions,
         queryParameters: {
@@ -1027,7 +1048,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerPortfolio>> customerFetchPortfolioById({String? id}) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/$id',
       );
@@ -1068,7 +1089,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String appointmentId,
   ) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerAppointment}/$appointmentId',
       );
@@ -1084,7 +1105,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? perPage,
   }) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerAppointment}/list',
         queryParameters: {
@@ -1101,7 +1122,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<List<ChatConversation>>> getChatConversations() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<List<dynamic>>(
         AuthPath.conversations,
       );
@@ -1118,7 +1139,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId) {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.conversations}/$conversationId/messages',
       );
@@ -1252,7 +1273,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<DisputeList>> getDisputes() {
     return run(() async {
-      final client = getIt<HttpService>().client();
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         AuthPath.disputes,
       );
@@ -1274,6 +1295,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }) {
     return run(() async {
       final client = getIt<HttpService>().client(isFormDataRequest: true);
+
       final formData = FormData.fromMap({
         if (firstName != null) 'first_name': firstName,
         if (lastName != null) 'last_name': lastName,
@@ -1283,10 +1305,10 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (avatar != null)
           'avatar': avatar.isLocalFilePath
               ? await MultipartFile.fromFile(
-                  avatar!,
+                  avatar,
                   filename: avatar.split('/').last,
                 )
-              : avatar?.completeImagePath(),
+              : avatar.completeImagePath(),
       });
 
       await client.post<Map<String, dynamic>>(
@@ -1296,6 +1318,57 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
       return ApiResult.success(
         data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> requestPayout(
+    String paymentMethodId,
+    double amount,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+
+      await client.post<Map<String, dynamic>>(
+        AuthPath.withdrawFunds,
+        data: {'amount': amount.toString(), 'method': paymentMethodId},
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> deleteAccount() {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.delete<Map<String, dynamic>>(
+        AuthPath.user,
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<NotificationsList>> getNotifications({
+    String? page,
+    int? perPage,
+  }) {
+    return run(() async {
+      final client = _clientWithRetry();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.user}/notifications',
+        queryParameters: {
+          if (page != null) 'page': page,
+          if (perPage != null) 'per_page': perPage.toString(),
+        },
+      );
+      return ApiResult.success(
+        data: NotificationsList.fromJson(response.data!),
       );
     });
   }

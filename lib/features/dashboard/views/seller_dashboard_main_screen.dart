@@ -1,18 +1,24 @@
 // ignore_for_file: unawaited_futures
 
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:snip_fair/core/domain/entities/stylist_stats/last12_month.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
 class SellerDashboardMainScreen extends StatelessWidget {
@@ -110,7 +116,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
                                   text: state.stylistStats.isLoading
                                       ? '...'
                                       : state.stylistStats.hasSuccess
-                                          ? '${state.stylistStats.data!.total?.appointments}'
+                                          ? '${state.stylistStats.data!.today?.appointments}'
                                           : '0',
                                   fontSize: 24,
                                   fontWeight: FontWeight.w600,
@@ -160,29 +166,37 @@ class SellerDashboardMainScreen extends StatelessWidget {
                   ],
                 ),
                 12.verticalSpace,
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    border: Border.all(color: AppColors.grey1),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        text: 'All Bookings',
-                        color: Colors.grey.shade600,
+                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+                  builder: (context, state) {
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.grey1),
                       ),
-                      8.verticalSpace,
-                      const AppText(
-                        text: '0',
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            text: 'All Bookings',
+                            color: Colors.grey.shade600,
+                          ),
+                          8.verticalSpace,
+                          AppText(
+                            text: state.stylistStats.isLoading
+                                ? '...'
+                                : state.stylistStats.hasSuccess
+                                    ? '${state.stylistStats.data!.today?.appointments}'
+                                    : '0',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 12.verticalSpace,
                 BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
@@ -199,6 +213,102 @@ class SellerDashboardMainScreen extends StatelessWidget {
                       data: state.stylistStats.data?.last12Months ?? [],
                     );
                   },
+                ),
+                12.verticalSpace,
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.grey1),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        text: 'Upcoming Appointments',
+                        color: Colors.grey.shade600,
+                      ),
+                      8.verticalSpace,
+                      BlocBuilder<SellerAppointMgtCubit, SellerAppointMgtState>(
+                        builder: (context, state) {
+                          final appointments = state.appointments.data ?? [];
+
+                          final upcomingAppointments = appointments
+                              .where(
+                                (appointment) =>
+                                    AppHelper.isAppointmentUpcoming(
+                                  appointment.appointmentDate!,
+                                ),
+                              )
+                              .toList();
+
+                          if (state.appointments.isLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (upcomingAppointments.isEmpty) {
+                            return const Center(
+                              child: AppText(
+                                text: 'No Upcoming Appointments',
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: upcomingAppointments
+                                .take(3)
+                                .map(
+                                  (appointment) => ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    onTap: () {
+                                      context.router.push(
+                                        SellerAppointmentDetailsRoute(
+                                          appointmentId:
+                                              appointment.id!.toString(),
+                                        ),
+                                      );
+                                    },
+                                    leading: CircleAvatar(
+                                      radius: 24,
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(
+                                        appointment.customer?.avatar
+                                                ?.toString()
+                                                .completeImagePath() ??
+                                            '',
+                                      ),
+                                      child:
+                                          appointment.customer?.avatar == null
+                                              ? ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                  child: SvgPicture.asset(
+                                                    Assets.images.logo,
+                                                  ),
+                                                )
+                                              : null,
+                                    ),
+                                    title: AppText(
+                                      text:
+                                          'Appointment with ${appointment.customer?.name ?? 'Customer'}',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    trailing: AppText(
+                                      text:
+                                          '${(appointment.appointmentDate)} \nat ${TimeOfDay(hour: int.parse(appointment.appointmentTime!.split(':')[0]), minute: int.parse(appointment.appointmentTime!.split(':')[1])).format(context)}',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

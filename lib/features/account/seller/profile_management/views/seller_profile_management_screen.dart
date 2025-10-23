@@ -3,10 +3,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
@@ -399,20 +401,52 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       color: AppColors.grey3,
                                     ),
                                     12.verticalSpace,
-                                    TextButton(
-                                      onPressed: () {},
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                        textStyle: AppTextStyle.body2.copyWith(
-                                          fontWeight: FontWeight.w600,
+                                    BlocListener<SellerProfileMgtCubit,
+                                        SellerProfileMgtState>(
+                                      listenWhen: (previous, current) =>
+                                          previous.deleteAccountState !=
+                                          current.deleteAccountState,
+                                      listener: (context, state) {
+                                        if (state
+                                            .deleteAccountState.hasSuccess) {
+                                          Fluttertoast.showToast(
+                                            msg: 'Account deleted successfully',
+                                          );
+                                          // Navigate to initial route or login screen
+                                          context.read<AppCubit>().onLogout();
+                                        }
+                                      },
+                                      child: TextButton(
+                                        onPressed: () {
+                                          AppHelper.showAppDialog(
+                                            context,
+                                            OnConfirmDialog(
+                                              title: 'Delete Account',
+                                              content:
+                                                  'Are you sure you want to delete your account? This action cannot be undone.',
+                                              onConfirmed: (ctx) {
+                                                context
+                                                    .read<
+                                                        SellerProfileMgtCubit>()
+                                                    .deleteAccount();
+                                              },
+                                            ),
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                          textStyle:
+                                              AppTextStyle.body2.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
+                                        child: const Text('DELETE ACCOUNT'),
                                       ),
-                                      child: const Text('DELETE ACCOUNT'),
                                     ),
                                   ],
                                 ),

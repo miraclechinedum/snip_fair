@@ -62,8 +62,14 @@ class TopStylistCard extends StatelessWidget {
                                 Assets.images.loading.image(
                               fit: BoxFit.cover,
                             ),
-                            errorWidget: (context, url, error) =>
-                                const SizedBox.expand(),
+                            errorWidget: (context, url, error) {
+                              return ColoredBox(
+                                color: Colors.grey.shade200,
+                                child: Center(
+                                    child:
+                                        SvgPicture.asset(Assets.images.logo)),
+                              );
+                            },
                           ),
                         ),
                       ),

@@ -42,6 +42,10 @@ class AppRouter extends RootStackRouter {
           path: '/disputes',
           page: DisputesRoute.page,
         ),
+        AutoRoute(
+          path: '/notifications',
+          page: NotificationsRoute.page,
+        ),
 
         /// Customer Specific Routes
         ///

@@ -541,6 +541,7 @@ class BookingSummary extends StatelessWidget {
                             ),
                             15.verticalSpace,
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppText(
                                   text: state.fetchAppointmentState.data
@@ -1084,11 +1085,11 @@ class SelectTimeWIdget extends StatelessWidget {
                     final endParts = slot.to!.split(':');
                     var start = TimeOfDay(
                       hour: int.parse(startParts[0]),
-                      minute: int.parse(startParts[1]),
+                      minute: int.parse(startParts[1].removeAMPM()),
                     );
                     final end = TimeOfDay(
                       hour: int.parse(endParts[0]),
-                      minute: int.parse(endParts[1]),
+                      minute: int.parse(endParts[1].removeAMPM()),
                     );
 
                     while (start.hour < end.hour ||

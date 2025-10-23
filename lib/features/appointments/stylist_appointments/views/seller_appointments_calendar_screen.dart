@@ -13,6 +13,8 @@ import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 
+enum CalendarViewType { month, week, day }
+
 @RoutePage()
 class SellerAppointmentsCalendarScreen extends StatefulWidget {
   const SellerAppointmentsCalendarScreen({super.key});
@@ -25,6 +27,9 @@ class SellerAppointmentsCalendarScreen extends StatefulWidget {
 class _SellerAppointmentsCalendarScreenState
     extends State<SellerAppointmentsCalendarScreen> {
   final GlobalKey<MonthViewState> _monthViewKey = GlobalKey<MonthViewState>();
+  final GlobalKey<WeekViewState> _weekViewKey = GlobalKey<WeekViewState>();
+  final GlobalKey<DayViewState> _dayViewKey = GlobalKey<DayViewState>();
+  CalendarViewType _currentView = CalendarViewType.month;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,64 +45,195 @@ class _SellerAppointmentsCalendarScreenState
           final controller = EventController<StylistAppointment>()
             ..addAll(events);
 
+          final monthView = MonthView<StylistAppointment>(
+            key: _monthViewKey,
+            borderSize: 0.3,
+            cellAspectRatio: 9 / 16,
+            hideDaysNotInMonth: true,
+            headerBuilder: (date) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        text: '${AppHelper.monthName(date.month)} ${date.year}',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () {
+                        _monthViewKey.currentState?.previousPage();
+                      },
+                    ),
+                    12.horizontalSpace,
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        _monthViewKey.currentState?.nextPage();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+            onCellTap: (events, date) {
+              if (events.isEmpty) return;
+              _showDayEventsBottomSheet(
+                context,
+                events,
+                date,
+              );
+            },
+            onEventTap: (event, date) {
+              _showDayEventsBottomSheet(context, [event], date);
+            },
+            minMonth: DateTime(DateTime.now().year - 1),
+            maxMonth: DateTime(DateTime.now().year + 1, 12, 31),
+          );
+
+          final weekView = WeekView<StylistAppointment>(
+            key: _weekViewKey,
+            weekPageHeaderBuilder: (date, date2) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        text:
+                            '${date.day} ${AppHelper.monthName(date.month)} ${date.year} - ${date2.day} ${AppHelper.monthName(date2.month)} ${date2.year}',
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () {
+                        _weekViewKey.currentState?.previousPage();
+                      },
+                    ),
+                    12.horizontalSpace,
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        _weekViewKey.currentState?.nextPage();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+            onEventTap: (event, date) {
+              _showDayEventsBottomSheet(context, event, date);
+            },
+          );
+
+          final dayView = DayView<StylistAppointment>(
+            key: _dayViewKey,
+            dayTitleBuilder: (date) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        text:
+                            '${date.day} ${AppHelper.monthName(date.month)} ${date.year}',
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () {
+                        _dayViewKey.currentState?.previousPage();
+                      },
+                    ),
+                    12.horizontalSpace,
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        _dayViewKey.currentState?.nextPage();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+            onEventTap: (event, date) {
+              _showDayEventsBottomSheet(context, event, date);
+            },
+          );
+
+          _switcher<T>(
+            CalendarViewType key,
+            Map<CalendarViewType, T> map,
+          ) {
+            return map[key]!;
+          }
+
           return Column(
             children: [
               if (state.calendarAppointments.isLoading)
                 const LinearProgressIndicator(),
+              8.verticalSpace,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    ToggleButtons(
+                        isSelected: [
+                          _currentView == CalendarViewType.month,
+                          _currentView == CalendarViewType.week,
+                          _currentView == CalendarViewType.day,
+                        ],
+                        onPressed: (index) {
+                          setState(() {
+                            _currentView = CalendarViewType.values[index];
+                          });
+                        },
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 8.h),
+                            child: const Text('Month'),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 8.h),
+                            child: const Text('Week'),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 8.h),
+                            child: const Text('Day'),
+                          ),
+                        ]),
+                  ],
+                ),
+              ),
               Expanded(
                 child: CalendarControllerProvider(
                   controller: controller,
-                  child: MonthView<StylistAppointment>(
-                    key: _monthViewKey,
-                    borderSize: 0.3,
-                    cellAspectRatio: 9 / 16,
-                    hideDaysNotInMonth: true,
-                    headerBuilder: (date) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 16,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AppText(
-                                text:
-                                    '${AppHelper.monthName(date.month)} ${date.year}',
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.chevron_left),
-                              onPressed: () {
-                                _monthViewKey.currentState?.previousPage();
-                              },
-                            ),
-                            12.horizontalSpace,
-                            IconButton(
-                              icon: const Icon(Icons.chevron_right),
-                              onPressed: () {
-                                _monthViewKey.currentState?.nextPage();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
+                  child: _switcher<Widget>(
+                    _currentView,
+                    {
+                      CalendarViewType.month: monthView,
+                      CalendarViewType.week: weekView,
+                      CalendarViewType.day: dayView,
                     },
-                    onCellTap: (events, date) {
-                      if (events.isEmpty) return;
-                      _showDayEventsBottomSheet(
-                        context,
-                        events,
-                        date,
-                      );
-                    },
-                    onEventTap: (event, date) {
-                      _showDayEventsBottomSheet(context, [event], date);
-                    },
-                    minMonth: DateTime(DateTime.now().year - 1, 1),
-                    maxMonth: DateTime(DateTime.now().year + 1, 12, 31),
                   ),
                 ),
               ),
@@ -131,6 +267,11 @@ class _SellerAppointmentsCalendarScreenState
         description: desc,
         color: color,
         event: a,
+        titleStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
+        ),
       );
     }).toList();
   }
@@ -180,6 +321,7 @@ class _SellerAppointmentsCalendarScreenState
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

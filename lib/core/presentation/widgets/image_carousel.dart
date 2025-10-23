@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_seller_details_screen.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
@@ -97,7 +98,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
     if (widget.imagePaths.isEmpty) {
       return SizedBox(
         height: widget.height,
-        child: const Center(child: Text('No images')),
+        child: ColoredBox(
+          color: Colors.grey.shade200,
+          child: Center(child: SvgPicture.asset(Assets.images.logo)),
+        ),
       );
     }
 
@@ -135,7 +139,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     hasError = true;
                     return ColoredBox(
                       color: Colors.grey.shade200,
-                      child: const Center(child: Icon(Icons.broken_image)),
+                      child:
+                          Center(child: SvgPicture.asset(Assets.images.logo)),
                     );
                   },
                 ),

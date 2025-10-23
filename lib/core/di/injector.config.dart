@@ -49,6 +49,7 @@ import '../../features/conversations/cubit/conversations_cubit.dart' as _i42;
 import '../../features/disputes/cubit/disputes_cubit.dart' as _i455;
 import '../../features/explore/cubit/explore_cubit.dart' as _i561;
 import '../../features/favorites/cubit/customer_favorites_cubit.dart' as _i200;
+import '../../features/notifications/cubit/notifications_cubit.dart' as _i840;
 import '../../features/stylists/onboard/cubit/stylist_onboard_cubit.dart'
     as _i570;
 import '../../features/stylists/search/cubit/search_cubit.dart' as _i187;
@@ -150,6 +151,8 @@ Future<_i174.GetIt> $initGetIt(
       () => _i34.CustomerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i1025.CustomerProfileMgtCubit>(
       () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i840.NotificationsCubit>(
+      () => _i840.NotificationsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i782.AppCubit>(
       () => _i782.AppCubit(gh<_i990.ProfileRepository>()));
   return getIt;

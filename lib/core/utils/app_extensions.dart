@@ -47,14 +47,14 @@ extension DateFormatter on DateTime? {
     final dateTime = this;
     if (dateTime == null) return '';
     final formatter = DateFormat('dd MMM, yyyy');
-    return formatter.format(dateTime);
+    return formatter.format(dateTime.toLocal());
   }
 
   String toLongDateString() {
     final dateTime = this;
     if (dateTime == null) return '';
     final formatter = DateFormat('EEEE, dd MMMM yyyy, hh:mm a');
-    return formatter.format(dateTime);
+    return formatter.format(dateTime.toLocal());
   }
 }
 

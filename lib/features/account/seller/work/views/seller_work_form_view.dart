@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
@@ -19,6 +20,7 @@ import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
 import 'package:snip_fair/features/account/seller/work/cubit/seller_works_cubit.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
 
 class SellerWorkFormWidget extends StatelessWidget {
   const SellerWorkFormWidget({super.key, this.workItem});
@@ -256,11 +258,14 @@ class SellerWorkFormWidget extends StatelessWidget {
                                             .state.workFilePaths[index]
                                             .completeImagePath(),
                                         fit: BoxFit.cover,
-                                        errorWidget: (context, url, error) =>
-                                            Container(
-                                          color: AppColors.primaryColor
-                                              .withValues(alpha: 0.2),
-                                        ),
+                                        errorWidget: (context, url, error) {
+                                          return ColoredBox(
+                                            color: Colors.grey.shade200,
+                                            child: Center(
+                                                child: SvgPicture.asset(
+                                                    Assets.images.logo)),
+                                          );
+                                        },
                                       ),
                               ),
                               GestureDetector(

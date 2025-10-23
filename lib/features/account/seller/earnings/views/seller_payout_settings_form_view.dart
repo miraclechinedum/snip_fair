@@ -230,14 +230,13 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
               listenWhen: (previous, current) =>
                   previous.updatePayoutSettingState !=
                   current.updatePayoutSettingState,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state.updatePayoutSettingState.hasSuccess) {
                   context.read<SellerProfileMgtCubit>().getProfileDetails(true);
                   Navigator.pop(context);
                 }
 
                 if (state.updatePayoutSettingState.hasError) {
-                  Navigator.pop(context);
                   AppHelper.showAppDialog<void>(
                     context,
                     OnFailDialogContent(

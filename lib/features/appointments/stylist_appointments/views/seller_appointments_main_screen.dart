@@ -103,29 +103,41 @@ class AppointmentCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: appointment.customer?.avatar != null
-                    ? CachedNetworkImageProvider(
-                        appointment.customer!.avatar!
+              GestureDetector(
+                onTap: () {
+                  AppHelper.showImagePreview(
+                    context,
+                    imageUrl: appointment.customer?.avatar != null
+                        ? appointment.customer!.avatar!
                             .toString()
-                            .completeImagePath(),
-                      )
-                    : null,
-                child: appointment.customer?.avatar != null
-                    ? null
-                    : AppText(
-                        text: appointment.customer?.firstName != null &&
-                                appointment.customer?.lastName != null
-                            ? AppHelper.initialsFromName(
-                                appointment.customer!.firstName!,
-                                appointment.customer!.lastName!,
-                              )
-                            : 'N/A',
-                        color: AppColors.grey3,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                            .completeImagePath()
+                        : null,
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: appointment.customer?.avatar != null
+                      ? CachedNetworkImageProvider(
+                          appointment.customer!.avatar!
+                              .toString()
+                              .completeImagePath(),
+                        )
+                      : null,
+                  child: appointment.customer?.avatar != null
+                      ? null
+                      : AppText(
+                          text: appointment.customer?.firstName != null &&
+                                  appointment.customer?.lastName != null
+                              ? AppHelper.initialsFromName(
+                                  appointment.customer!.firstName!,
+                                  appointment.customer!.lastName!,
+                                )
+                              : 'N/A',
+                          color: AppColors.grey3,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                ),
               ),
               8.horizontalSpace,
               Expanded(

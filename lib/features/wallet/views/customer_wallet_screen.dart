@@ -484,7 +484,20 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
                         ),
                         12.horizontalSpace,
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (_amountController.text.isEmpty) {
+                              AppHelper.showSnackBar(context,
+                                  message: 'Please enter an amount');
+                              return;
+                            }
+                            final amount = num.tryParse(_amountController.text);
+                            if (amount == null) {
+                              AppHelper.showSnackBar(context,
+                                  message: 'Please enter a valid amount');
+                              return;
+                            }
+                            _topUpWallet(amount);
+                          },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,

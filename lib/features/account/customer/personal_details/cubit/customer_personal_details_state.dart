@@ -48,7 +48,6 @@ class CustomerPersonalDetailsState extends BaseState {
         firstName,
         lastName,
         phone,
-
       ]) &&
       !updateProfile.isLoading;
 

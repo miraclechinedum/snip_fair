@@ -23,7 +23,7 @@ class CustomerProfileMgtState extends Equatable {
   final ProcessState<CustomerProfileDetails> profileDetails;
   final ProcessState<CustomerStats> customerStats;
   final ProcessState<CustomerWallet> walletState;
-  final ProcessState<List<CustomerTransaction>> transactionsState;
+  final ProcessState<List<UserTransaction>> transactionsState;
   final ProcessState<PayfastPaymentData> initializePaymentState;
   final ProcessState<bool> updateAvatarState;
 
@@ -33,7 +33,7 @@ class CustomerProfileMgtState extends Equatable {
     ProcessState<CustomerProfileDetails>? profileDetails,
     ProcessState<CustomerStats>? customerStats,
     ProcessState<CustomerWallet>? walletState,
-    ProcessState<List<CustomerTransaction>>? transactionsState,
+    ProcessState<List<UserTransaction>>? transactionsState,
     ProcessState<PayfastPaymentData>? initializePaymentState,
     PaginationData? transactionsPaginationData,
     ProcessState<bool>? updateAvatarState,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 /// - shows local notifications when the app is in the foreground
 /// - exposes a broadcast stream so other layers (e.g., ConversationCubit)
 ///   can react to incoming notifications
+/// - handles navigation based on notification type
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -20,6 +22,10 @@ class NotificationService {
 
   final _flnp = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+
+  /// Optional callback to handle navigation when notification is tapped
+  /// Called with the notification data map containing 'type', 'type_identifier', etc.
+  void Function(Map<String, dynamic> data)? onNotificationTap;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -42,7 +48,7 @@ class NotificationService {
     );
 
     // Initialize local notifications
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('ic_launcher');
     const darwinInit = DarwinInitializationSettings();
     const initSettings = InitializationSettings(
       android: androidInit,
@@ -58,8 +64,10 @@ class NotificationService {
         try {
           final map = json.decode(payload) as Map<String, dynamic>;
           _updatesController.add(map);
-        } catch (_) {
-          // ignore malformed payloads
+          // Navigate based on notification type
+          _handleNotificationNavigation(map);
+        } catch (e) {
+          log('Error parsing notification payload: $e');
         }
       },
     );
@@ -80,7 +88,10 @@ class NotificationService {
 
     // Tapped notifications when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      _updatesController.add(_normalize(message));
+      final data = _normalize(message);
+      _updatesController.add(data);
+      // Navigate when notification opened from background
+      _handleNotificationNavigation(data);
     });
 
     // App launched by tapping a notification (terminated state)
@@ -89,11 +100,41 @@ class NotificationService {
     _initialized = true;
   }
 
+  /// Handle navigation based on notification data
+  void _handleNotificationNavigation(Map<String, dynamic> data) {
+    // Check if navigation callback is set
+    if (onNotificationTap == null) {
+      log('NotificationService: onNotificationTap callback not set');
+      return;
+    }
+
+    // Check if it's a silent notification (don't navigate for silent notifications)
+    final silent = data['silent'];
+    if (silent == '1' || silent == 1) {
+      log('NotificationService: Silent notification, skipping navigation');
+      return;
+    }
+
+    // Extract notification type and identifier
+    final type = data['type'] as String?;
+    final typeIdentifier = data['type_identifier'];
+
+    if (type != null && type.isNotEmpty) {
+      log('NotificationService: Navigating for type: $type, identifier: $typeIdentifier');
+      onNotificationTap!(data);
+    } else {
+      log('NotificationService: No type found in notification data');
+    }
+  }
+
   Future<void> _emitInitialMessageIfAny() async {
     try {
       final initial = await FirebaseMessaging.instance.getInitialMessage();
       if (initial != null) {
-        _updatesController.add(_normalize(initial));
+        final data = _normalize(initial);
+        _updatesController.add(data);
+        // Navigate when app opened from terminated state by notification
+        _handleNotificationNavigation(data);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -104,6 +145,7 @@ class NotificationService {
 
   Map<String, dynamic> _normalize(RemoteMessage m) {
     // Merge the notification (title/body) and custom data
+    log('FCM Message Data: ${m.data}');
     return <String, dynamic>{
       'title': m.notification?.title,
       'body': m.notification?.body,
@@ -139,6 +181,23 @@ class NotificationService {
 
   void dispose() {
     _updatesController.close();
+  }
+
+  Future<Map<String, dynamic>> getLastNotificationData() async {
+    // get last notification from updates stream
+    try {
+      final completer = Completer<Map<String, dynamic>>();
+      final sub = updates.listen(completer.complete);
+      final data = await completer.future.timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => <String, dynamic>{},
+      );
+      log('Last Notification Data: $data');
+      await sub.cancel();
+      return data;
+    } catch (_) {
+      return <String, dynamic>{};
+    }
   }
 }
 

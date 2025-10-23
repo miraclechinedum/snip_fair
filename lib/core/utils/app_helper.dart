@@ -2,16 +2,19 @@
 
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../presentation/theme/theme.dart';
@@ -435,5 +438,51 @@ class AppHelper {
       default:
         return '';
     }
+  }
+
+  static void showImagePreview(BuildContext context, {String? imageUrl}) {
+    if (imageUrl == null || imageUrl.isEmpty) return;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: InteractiveViewer(
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.contain,
+              progressIndicatorBuilder: (context, child, loadingProgress) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.totalSize != null
+                        ? (loadingProgress.progress ?? 0) /
+                            loadingProgress.totalSize!
+                        : null,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                );
+              },
+              errorWidget: (context, error, stackTrace) {
+                return ColoredBox(
+                  color: Colors.grey.shade200,
+                  child: Center(child: SvgPicture.asset(Assets.images.logo)),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static bool isAppointmentUpcoming(String date) {
+    final appointmentDate = DateTime.tryParse(date);
+    if (appointmentDate == null) return false;
+
+    final now = DateTime.now();
+    return appointmentDate.isAfter(now);
   }
 }

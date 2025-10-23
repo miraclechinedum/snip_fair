@@ -1,35 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'datum.dart';
+part of 'notification_datum.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-UserTransaction _$UserTransactionFromJson(Map<String, dynamic> json) =>
-    UserTransaction(
+NotificationDatum _$NotificationDatumFromJson(Map<String, dynamic> json) =>
+    NotificationDatum(
       id: (json['id'] as num?)?.toInt(),
       type: json['type'] as String?,
-      amount: (json['amount'] as num?)?.toDouble(),
+      typeIdentifier: json['type_identifier']?.toString(),
+      title: json['title'] as String?,
       description: json['description'] as String?,
-      status: json['status'] as String?,
-      reference: json['reference'] as String?,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
+      priority: json['priority'] as String?,
+      isRead: json['is_read'] as bool?,
     );
 
-Map<String, dynamic> _$UserTransactionToJson(UserTransaction instance) =>
+Map<String, dynamic> _$NotificationDatumToJson(NotificationDatum instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
-      'amount': instance.amount,
+      'type_identifier': instance.typeIdentifier,
+      'title': instance.title,
       'description': instance.description,
-      'status': instance.status,
-      'reference': instance.reference,
       'created_at': instance.createdAt?.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
+      'priority': instance.priority,
+      'is_read': instance.isRead,
     };

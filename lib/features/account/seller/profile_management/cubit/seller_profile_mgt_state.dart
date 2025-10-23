@@ -10,6 +10,7 @@ class SellerProfileMgtState extends Equatable {
     required this.updateBannerState,
     required this.updateLocationSettingsState,
     required this.updateAvailabilityState,
+    required this.deleteAccountState,
   });
 
   const SellerProfileMgtState.initial()
@@ -20,6 +21,7 @@ class SellerProfileMgtState extends Equatable {
         stylistStats = const ProcessState.init(null),
         updateLocationSettingsState = const ProcessState.init(null),
         updateAvailabilityState = const ProcessState.init(null),
+        deleteAccountState = const ProcessState.init(null),
         stylistEarnings = const ProcessState.init(null);
 
   final ProcessState<StylistProfileDetails> profileDetails;
@@ -30,6 +32,7 @@ class SellerProfileMgtState extends Equatable {
   final ProcessState<bool> updateBannerState;
   final ProcessState<bool> updateLocationSettingsState;
   final ProcessState<bool> updateAvailabilityState;
+  final ProcessState<bool> deleteAccountState;
 
   SellerProfileMgtState copyWith({
     ProcessState<StylistProfileDetails>? profileDetails,
@@ -40,6 +43,7 @@ class SellerProfileMgtState extends Equatable {
     ProcessState<StylistEarnings>? stylistEarnings,
     ProcessState<bool>? updateLocationSettingsState,
     ProcessState<bool>? updateAvailabilityState,
+    ProcessState<bool>? deleteAccountState,
   }) {
     return SellerProfileMgtState._(
       profileDetails: profileDetails ?? this.profileDetails,
@@ -52,6 +56,7 @@ class SellerProfileMgtState extends Equatable {
           updateLocationSettingsState ?? this.updateLocationSettingsState,
       updateAvailabilityState:
           updateAvailabilityState ?? this.updateAvailabilityState,
+      deleteAccountState: deleteAccountState ?? this.deleteAccountState,
     );
   }
 
@@ -65,5 +70,6 @@ class SellerProfileMgtState extends Equatable {
         updateBannerState,
         updateLocationSettingsState,
         updateAvailabilityState,
+        deleteAccountState,
       ];
 }

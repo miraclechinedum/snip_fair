@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,13 @@ import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
+import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/services/location_service.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
@@ -29,10 +35,112 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final locationService = getIt<LocationService>();
+  final notificationService = NotificationService.instance;
+
   @override
   void initState() {
     super.initState();
     _checkLocationPermission();
+    _setupNotificationNavigation();
+  }
+
+  void _setupNotificationNavigation() {
+    NotificationService.instance.onNotificationTap =
+        (Map<String, dynamic> data) {
+      final appRouter = getIt<AppRouter>();
+      log('Notification tapped with data: $data');
+
+      // Get AppCubit - it's available through the widget tree at this point
+      final appCubit = context.read<AppCubit>();
+      final state = appCubit.state;
+
+      // Check if user is authenticated
+      if (state.status != AuthStatus.authenticated) {
+        log('User not authenticated, ignoring notification navigation');
+        return;
+      }
+
+      // Extract notification data
+      final type = data['type'] as String?;
+      final typeIdentifier = data['type_identifier'];
+
+      if (type == null || type.isEmpty) {
+        log('Notification type is null or empty');
+        return;
+      }
+
+      // Route based on notification type and user role
+      try {
+        switch (type) {
+          case 'chat':
+          case 'conversation':
+            // Navigate to chat screen
+            if (typeIdentifier != null) {
+              appRouter.push(
+                ConvesationChatRoute(
+                  conversationId: typeIdentifier.toString(),
+                  currentUserId: state.user.id.toString(),
+                ),
+              );
+            }
+            break;
+
+          case 'appointment':
+            // Different routes for stylists vs customers
+            if (typeIdentifier != null) {
+              if (state.isStylist) {
+                appRouter.push(
+                  SellerAppointmentDetailsRoute(
+                    appointmentId: typeIdentifier.toString(),
+                  ),
+                );
+              } else if (state.isCustomer) {
+                // Navigate to customer appointments calendar
+                appRouter.push(UpdateCreateAppointmentRoute(
+                    appointmentId: typeIdentifier.toString()));
+              }
+            }
+            break;
+
+          case 'payment':
+          case 'wallet':
+            // Navigate to wallet (customers only)
+            if (state.isCustomer) {
+              appRouter.push(const CustomerWalletRoute());
+            } else {
+              appRouter.push(const SellerEarningRoute());
+            }
+            break;
+
+          case 'dispute':
+            // Navigate to disputes
+            final token = getIt<LocalKeyStorage>().accessToken;
+            if (token == null) return;
+            final supportUrl =
+                Environment().config.apiHost.replaceAll('api', 'disputes');
+            context.router.pushWidget(
+              SupportWebViewWidget(
+                supportUrl: supportUrl,
+                authToken: token,
+              ),
+            );
+            break;
+
+          case 'notification':
+          case 'general':
+            // Navigate to notifications list
+            appRouter.push(const NotificationsRoute());
+            break;
+
+          default:
+            log('Unknown notification type: $type');
+            // Default: navigate to notifications list
+            appRouter.push(const NotificationsRoute());
+        }
+      } catch (e, stackTrace) {
+        log('Error navigating from notification: $e', stackTrace: stackTrace);
+      }
+    };
   }
 
   Future<void> _checkLocationPermission() async {
@@ -117,10 +225,15 @@ class _MainScreenState extends State<MainScreen> {
                 color: AppColors.primaryColor,
               ),
             ),
-            // IconButton(
-            //   onPressed: () {},
-            //   icon: const Icon(Iconsax.notification),
-            // ),
+            IconButton(
+              onPressed: () {
+                context.router.push(const NotificationsRoute());
+              },
+              icon: const Icon(
+                Iconsax.notification,
+                color: AppColors.primaryColor,
+              ),
+            ),
             12.horizontalSpace,
           ],
         );

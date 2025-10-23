@@ -18,6 +18,7 @@ import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
+import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
 
 @RoutePage()
 class AccountMainScreen extends StatelessWidget {
@@ -99,6 +100,17 @@ class AccountMainScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   context.pushRoute(const SellerEarningRoute());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.money),
+                title: const AppText(
+                  text: 'Payment Methods',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                onTap: () {
+                  context.pushRoute(const SellerPaymentMethodsRoute());
                 },
               ),
               ListTile(
@@ -272,6 +284,24 @@ class AccountMainScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+                  builder: (context, state) {
+                    final profileCompleteness =
+                        state.profileDetails.data?.profileCompleteness;
+
+                    if (profileCompleteness == null) return const SizedBox();
+
+                    final isProfileComplete =
+                        AppHelper.isStylistProfileComplete(profileCompleteness);
+                    if (isProfileComplete) return const SizedBox();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: SellerProfileCompletedCompactView(
+                        profileCompleteness: profileCompleteness,
+                      ),
+                    );
+                  },
+                ),
                 Row(
                   children: [
                     SellerProfileAvatar(
