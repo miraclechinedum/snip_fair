@@ -21,8 +21,8 @@ import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart'
 class SellerAppointmentDetailsScreen extends StatelessWidget
     implements AutoRouteWrapper {
   const SellerAppointmentDetailsScreen({
-    super.key,
     required this.appointmentId,
+    super.key,
   });
 
   final String? appointmentId;
@@ -41,14 +41,16 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
         listener: (context, state) {
           if (state.updateAppointmentState.hasError) {
             AppHelper.showAppDialog(
-                context,
-                OnFailDialogContent(
-                    subtext:
-                        (state.updateAppointmentState.error as RemoteException)
-                                .errorResponse
-                                ?.message ??
-                            '',
-                    onDoneCallback: (_) {}));
+              context,
+              OnFailDialogContent(
+                subtext:
+                    (state.updateAppointmentState.error! as RemoteException)
+                            .errorResponse
+                            ?.message ??
+                        '',
+                onDoneCallback: (_) {},
+              ),
+            );
           }
 
           if (state.updateAppointmentState.hasSuccess) {
@@ -116,8 +118,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 Expanded(
                                   child: AppText(
                                     text: appointment.createdAt
-                                            .toShortDateString() ??
-                                        'N/A',
+                                        .toShortDateString(),
                                     textAlign: TextAlign.end,
                                   ),
                                 ),
@@ -341,15 +342,16 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 Expanded(
                                   child: AppText(
                                     text: TimeOfDay(
-                                                hour: int.parse(appointment
-                                                    .appointmentTime!
-                                                    .split(':')[0]),
-                                                minute: int.parse(appointment
-                                                    .appointmentTime!
-                                                    .split(':')[1]
-                                                    .removeAMPM()))
-                                            .format(context) ??
-                                        'N/A',
+                                      hour: int.parse(
+                                        appointment.appointmentTime!
+                                            .split(':')[0],
+                                      ),
+                                      minute: int.parse(
+                                        appointment.appointmentTime!
+                                            .split(':')[1]
+                                            .removeAMPM(),
+                                      ),
+                                    ).format(context),
                                     textAlign: TextAlign.end,
                                     color: AppColors.black,
                                     fontSize: 16,
@@ -399,7 +401,9 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                               .withOpacity(0.1),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
+                          horizontal: 10,
+                          vertical: 10,
+                        ),
                         child: Center(
                           child: AppText(
                             text: state
@@ -524,16 +528,16 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
 }
 
 class CodeEntryBottomSheet extends StatefulWidget {
-  final String title;
-  final String hint;
-  final Future<void> Function(String code) onSubmit;
-
   const CodeEntryBottomSheet({
-    Key? key,
     required this.title,
     required this.hint,
     required this.onSubmit,
-  }) : super(key: key);
+    super.key,
+  });
+
+  final String title;
+  final String hint;
+  final Future<void> Function(String code) onSubmit;
 
   @override
   State<CodeEntryBottomSheet> createState() => _CodeEntryBottomSheetState();
