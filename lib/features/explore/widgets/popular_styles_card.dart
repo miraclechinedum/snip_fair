@@ -99,6 +99,12 @@ class PopularStyleCard extends StatelessWidget {
                         text: portfolio.title ?? 'N/A',
                         fontWeight: FontWeight.w500,
                       ),
+                      AppText(
+                        text: portfolio.price?.formatAmount() ?? 'N/A',
+                        fontSize: 14,
+                        color: AppColors.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ],
                   ),
                 ),
@@ -108,8 +114,8 @@ class PopularStyleCard extends StatelessWidget {
                   child: CustomButton(
                     title: 'Book Now',
                     onPressed: () {
-                      context.pushRoute(
-                          UpdateCreateAppointmentRoute(portfolio: portfolio));
+                      context.pushRoute(UpdateCreateAppointmentRoute(
+                          portfolioId: portfolio.id.toString()));
                     },
                   ),
                 ),

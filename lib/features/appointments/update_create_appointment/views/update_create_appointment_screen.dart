@@ -8,10 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/working_hour.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
@@ -21,7 +19,6 @@ import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
@@ -36,14 +33,10 @@ class UpdateCreateAppointmentScreen extends StatefulWidget
     super.key,
     this.portfolioId,
     this.appointmentId,
-    this.portfolio,
-    this.appointment,
   });
 
   final String? portfolioId;
   final String? appointmentId;
-  final SellerPortfolio? portfolio;
-  final CustomerAppointment? appointment;
 
   @override
   Widget wrappedRoute(BuildContext context) {
@@ -53,8 +46,6 @@ class UpdateCreateAppointmentScreen extends StatefulWidget
           context,
           portfolioId: portfolioId,
           appointmentId: appointmentId,
-          portfolio: portfolio,
-          appointment: appointment,
         ),
       child: this,
     );
@@ -78,29 +69,17 @@ class _UpdateCreateAppointmentScreenState
                 : 'Book Appointment',
           ),
           body: SafeArea(
-            child: BlocConsumer<UpdateCreateAppointmentCubit,
+            child: BlocListener<UpdateCreateAppointmentCubit,
                 UpdateCreateAppointmentState>(
               listenWhen: (previous, current) =>
-                  previous.updateOrCreateAppointmentState !=
-                  current.updateOrCreateAppointmentState,
+                  previous.fetchAppointmentState !=
+                  current.fetchAppointmentState,
               listener: (context, state) {
-                if (state.updateOrCreateAppointmentState.hasSuccess) {
-                  AppHelper.showSnackBar(
-                    context,
-                    message: widget.appointmentId != null
-                        ? 'Appointment updated successfully'
-                        : 'Appointment created successfully',
-                  );
-                  // context.router.pop();
-                  context.read<CustomerAppointmentsCubit>().getAppointments();
-                  context.read<CustomerProfileMgtCubit>()
-                    ..getWallet()
-                    ..getWalletTransactions();
-                } else if (state.updateOrCreateAppointmentState.hasError) {
+                if (state.fetchAppointmentState.hasError) {
                   AppHelper.showAppDialog<void>(
                     context,
                     OnFailDialogContent(
-                      subtext: (state.updateOrCreateAppointmentState.error!
+                      subtext: (state.fetchAppointmentState.error!
                                   as RemoteException)
                               .errorResponse
                               ?.message ??
@@ -112,38 +91,86 @@ class _UpdateCreateAppointmentScreenState
                   );
                 }
               },
-              buildWhen: (previous, current) =>
-                  previous.fetchPortfolioState != current.fetchPortfolioState ||
-                  previous.fetchAppointmentState !=
-                      current.fetchAppointmentState,
-              builder: (context, state) {
-                if (state.fetchPortfolioState.isLoading ||
-                    state.fetchAppointmentState.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+              child: BlocConsumer<UpdateCreateAppointmentCubit,
+                  UpdateCreateAppointmentState>(
+                listenWhen: (previous, current) =>
+                    previous.updateOrCreateAppointmentState !=
+                    current.updateOrCreateAppointmentState,
+                listener: (context, state) {
+                  if (state.updateOrCreateAppointmentState.hasSuccess) {
+                    AppHelper.showSnackBar(
+                      context,
+                      message: widget.appointmentId != null
+                          ? 'Appointment updated successfully'
+                          : 'Appointment created successfully',
+                    );
+                    // context.router.pop();
+                    context.read<CustomerAppointmentsCubit>().getAppointments();
+                    context.read<CustomerProfileMgtCubit>()
+                      ..getWallet()
+                      ..getWalletTransactions();
+                  } else if (state.updateOrCreateAppointmentState.hasError) {
+                    AppHelper.showAppDialog<void>(
+                      context,
+                      OnFailDialogContent(
+                        subtext: (state.updateOrCreateAppointmentState.error!
+                                    as RemoteException)
+                                .errorResponse
+                                ?.message ??
+                            'Something went wrong, please try again later.',
+                        onDoneCallback: (_) {
+                          context.router.pop();
+                        },
+                      ),
+                    );
+                  }
+                },
+                buildWhen: (previous, current) =>
+                    previous.fetchPortfolioState !=
+                        current.fetchPortfolioState ||
+                    previous.fetchAppointmentState !=
+                        current.fetchAppointmentState ||
+                    previous.updateOrCreateAppointmentState !=
+                        current.updateOrCreateAppointmentState,
+                builder: (context, state) {
+                  if (state.fetchPortfolioState.isLoading ||
+                      state.fetchAppointmentState.isLoading ||
+                      state.updateOrCreateAppointmentState.isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      if (widget.appointmentId != null) {
+                        return context
+                            .read<UpdateCreateAppointmentCubit>()
+                            .fetchAppointmentById(widget.appointmentId!);
+                      }
+                    },
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const AppointmentHeader(),
+                          16.verticalSpace,
+                          if (state.fetchAppointmentState.data == null) ...[
+                            const SelectDateWidget(),
+                            16.verticalSpace,
+                          ],
+                          if (state.fetchAppointmentState.data == null) ...[
+                            const SelectTimeWIdget(),
+                            16.verticalSpace,
+                          ],
+                          buildYourInformationView(),
+                          24.verticalSpace,
+                          const BookingSummary(),
+                        ],
+                      ),
+                    ),
                   );
-                }
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      const AppointmentHeader(),
-                      16.verticalSpace,
-                      if (state.fetchAppointmentState.data == null) ...[
-                        const SelectDateWidget(),
-                        16.verticalSpace,
-                      ],
-                      if (state.fetchAppointmentState.data == null) ...[
-                        const SelectTimeWIdget(),
-                        16.verticalSpace,
-                      ],
-                      buildYourInformationView(),
-                      24.verticalSpace,
-                      const BookingSummary(),
-                    ],
-                  ),
-                );
-              },
+                },
+              ),
             ),
           ),
         );
@@ -838,7 +865,8 @@ class BookingSummary extends StatelessWidget {
                       if (state.rescheduleBookingState.hasSuccess) {
                         context.router.popAndPush(
                           UpdateCreateAppointmentRoute(
-                            portfolio: state.fetchPortfolioState.data,
+                            portfolioId:
+                                state.fetchPortfolioState.data!.id.toString(),
                           ),
                         );
 

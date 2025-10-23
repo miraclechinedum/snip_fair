@@ -7,7 +7,7 @@ class NotificationDatum {
   int? id;
   String? type;
   @JsonKey(name: 'type_identifier')
-  String? typeIdentifier;
+  dynamic? typeIdentifier;
   String? title;
   String? description;
   @JsonKey(name: 'created_at')

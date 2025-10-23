@@ -53,10 +53,11 @@ class NotificationsScreen extends StatelessWidget {
                   }
                   final notifications = state.notificationsListState.data ?? [];
                   if (notifications.isEmpty) {
-                    return const Center(child: Text('No Work Items'));
+                    return const Center(child: Text('No Notifications Items'));
                   }
 
                   return InfiniteList(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     onFetchData: () async {
                       await context
                           .read<NotificationsCubit>()
@@ -81,7 +82,7 @@ class NotificationsScreen extends StatelessWidget {
                                 if (appointmentId != null) {
                                   context.router.push(
                                     SellerAppointmentDetailsRoute(
-                                      appointmentId: appointmentId,
+                                      appointmentId: appointmentId.toString(),
                                     ),
                                   );
                                 } else {
@@ -93,7 +94,7 @@ class NotificationsScreen extends StatelessWidget {
                                 if (appointmentId != null) {
                                   context.router.push(
                                     UpdateCreateAppointmentRoute(
-                                      appointmentId: appointmentId,
+                                      appointmentId: appointmentId.toString(),
                                     ),
                                   );
                                 } else {

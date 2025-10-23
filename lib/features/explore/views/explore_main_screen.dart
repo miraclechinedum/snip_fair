@@ -371,7 +371,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
           ),
           8.verticalSpace,
           SizedBox(
-            height: 200,
+            height: 230,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -470,7 +470,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
         ),
         8.verticalSpace,
         SizedBox(
-          height: 200,
+          height: 220.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),

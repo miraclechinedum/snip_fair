@@ -27,41 +27,10 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     BuildContext context, {
     String? portfolioId,
     String? appointmentId,
-    SellerPortfolio? portfolio,
-    CustomerAppointment? appointment,
   }) {
     this.context = context;
-    if (portfolio != null) {
-      emit(
-        state.copyWith(
-          fetchPortfolioState: ProcessState.success(portfolio),
-        ),
-      );
-      fetchPortfolioById(
-        portfolio.id.toString(),
-      );
-    } else if (portfolioId != null) {
+    if (portfolioId != null) {
       fetchPortfolioById(portfolioId);
-    }
-
-    if (appointment != null) {
-      emit(
-        state.copyWith(
-          fetchAppointmentState: ProcessState.success(appointment),
-        ),
-      );
-      if (appointment.appointmentDateTime != null) {
-        emit(state.copyWith(selectedDate: appointment.appointmentDateTime));
-      }
-      if (appointment.appointmentTime != null) {
-        final parsedTime = TimeOfDay.fromDateTime(
-          DateTime.parse(
-            appointment.appointmentTime!,
-          ),
-        );
-        emit(state.copyWith(selectedTime: parsedTime));
-      }
-      fetchAppointmentById(appointmentId.toString(), silent: true);
     } else if (appointmentId != null) {
       fetchAppointmentById(appointmentId);
     }
@@ -122,6 +91,9 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
           emit(state.copyWith(selectedTime: parsedTime));
         }
         onNotesChanged(data.extra?.toString() ?? '');
+        fetchPortfolioById(
+          data.portfolioId.toString(),
+        );
       },
       failure: (error) {
         if (!silent) {
@@ -199,8 +171,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     final response = await _appointmentRepository.createAppointment(
       portfolioId: state.fetchPortfolioState.data!.id!.toString(),
       date: DateFormat('yyyy-MM-dd').format(state.selectedDate!),
-      time:
-          '${state.selectedTime!.format(context)} ${state.selectedTime!.period.name.toUpperCase()}',
+      time: state.selectedTime!.format(context),
       note: state.notes,
       address: state.address,
     );

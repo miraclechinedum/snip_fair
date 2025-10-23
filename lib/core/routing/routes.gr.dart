@@ -17,12 +17,8 @@ import 'package:snip_fair/core/domain/entities/chat_conversations_list/initiator
     as _i44;
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/recipient.dart'
     as _i43;
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart'
-    as _i48;
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart'
     as _i46;
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart'
-    as _i47;
 import 'package:snip_fair/core/domain/entities/work_list/work_item.dart'
     as _i45;
 import 'package:snip_fair/core/presentation/main_screen.dart' as _i16;
@@ -1132,8 +1128,6 @@ class UpdateCreateAppointmentRoute
     _i41.Key? key,
     String? portfolioId,
     String? appointmentId,
-    _i47.SellerPortfolio? portfolio,
-    _i48.CustomerAppointment? appointment,
     List<_i40.PageRouteInfo>? children,
   }) : super(
           UpdateCreateAppointmentRoute.name,
@@ -1141,8 +1135,6 @@ class UpdateCreateAppointmentRoute
             key: key,
             portfolioId: portfolioId,
             appointmentId: appointmentId,
-            portfolio: portfolio,
-            appointment: appointment,
           ),
           initialChildren: children,
         );
@@ -1160,8 +1152,6 @@ class UpdateCreateAppointmentRoute
           key: args.key,
           portfolioId: args.portfolioId,
           appointmentId: args.appointmentId,
-          portfolio: args.portfolio,
-          appointment: args.appointment,
         ),
       );
     },
@@ -1173,8 +1163,6 @@ class UpdateCreateAppointmentRouteArgs {
     this.key,
     this.portfolioId,
     this.appointmentId,
-    this.portfolio,
-    this.appointment,
   });
 
   final _i41.Key? key;
@@ -1183,13 +1171,9 @@ class UpdateCreateAppointmentRouteArgs {
 
   final String? appointmentId;
 
-  final _i47.SellerPortfolio? portfolio;
-
-  final _i48.CustomerAppointment? appointment;
-
   @override
   String toString() {
-    return 'UpdateCreateAppointmentRouteArgs{key: $key, portfolioId: $portfolioId, appointmentId: $appointmentId, portfolio: $portfolio, appointment: $appointment}';
+    return 'UpdateCreateAppointmentRouteArgs{key: $key, portfolioId: $portfolioId, appointmentId: $appointmentId}';
   }
 
   @override
@@ -1198,18 +1182,12 @@ class UpdateCreateAppointmentRouteArgs {
     if (other is! UpdateCreateAppointmentRouteArgs) return false;
     return key == other.key &&
         portfolioId == other.portfolioId &&
-        appointmentId == other.appointmentId &&
-        portfolio == other.portfolio &&
-        appointment == other.appointment;
+        appointmentId == other.appointmentId;
   }
 
   @override
   int get hashCode =>
-      key.hashCode ^
-      portfolioId.hashCode ^
-      appointmentId.hashCode ^
-      portfolio.hashCode ^
-      appointment.hashCode;
+      key.hashCode ^ portfolioId.hashCode ^ appointmentId.hashCode;
 }
 
 /// generated route for

@@ -21,9 +21,9 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     _chatNotificationsSubscription = null;
     _chatNotificationsSubscription =
         NotificationService.instance.updates.listen((event) {
-      final type = event['notification_type'] as String?;
-      if (type == 'new_message') {
-        final conversationId = event['conversation_id'] as String?;
+      final type = event['type'] as String?;
+      if (type == 'conversation') {
+        final conversationId = event['type_identifier'] as String?;
         if (conversationId != null) {
           fetchChatMessages(conversationId, silent: true);
           fetchConversations(true);

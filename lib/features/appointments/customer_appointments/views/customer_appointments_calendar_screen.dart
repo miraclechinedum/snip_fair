@@ -417,8 +417,8 @@ class DailyAppointmentDetails extends StatelessWidget {
                   Navigator.of(context).pop();
                   context.router.push(
                     UpdateCreateAppointmentRoute(
-                        appointmentId: a.id.toString(),
-                        portfolioId: a.portfolioId.toString()),
+                      appointmentId: a.id.toString(),
+                    ),
                   );
                 },
               );

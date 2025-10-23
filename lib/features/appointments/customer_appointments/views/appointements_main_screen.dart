@@ -248,7 +248,6 @@ class AppointmentCard extends StatelessWidget {
                 context.pushRoute(
                   UpdateCreateAppointmentRoute(
                     appointmentId: appointment.id.toString(),
-                    portfolioId: appointment.portfolioId.toString(),
                   ),
                 );
               },

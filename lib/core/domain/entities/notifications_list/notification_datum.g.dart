@@ -10,7 +10,7 @@ NotificationDatum _$NotificationDatumFromJson(Map<String, dynamic> json) =>
     NotificationDatum(
       id: (json['id'] as num?)?.toInt(),
       type: json['type'] as String?,
-      typeIdentifier: json['type_identifier']?.toString(),
+      typeIdentifier: json['type_identifier'],
       title: json['title'] as String?,
       description: json['description'] as String?,
       createdAt: json['created_at'] == null
