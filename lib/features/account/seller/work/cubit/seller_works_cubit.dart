@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
@@ -166,14 +167,18 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
   }
 
   Future<void> deleteWorkItem(int workId) async {
-    emit(state.copyWith(workCategories: const ProcessState.loading()));
-    final response = await _profileRepository.fetchWorkCategories();
+    Fluttertoast.showToast(msg: 'Deleting work item...');
+    emit(state.copyWith(deleteWorkState: const ProcessState.loading()));
+    final response = await _profileRepository.deleteWork(workId.toString());
     response.when(
       success: (data) {
-        emit(state.copyWith(workCategories: ProcessState.success(data)));
+        Fluttertoast.showToast(msg: 'Work item deleted successfully');
+        emit(state.copyWith(deleteWorkState: const ProcessState.success(true)));
+        getWorkList();
       },
       failure: (error) {
-        emit(state.copyWith(workCategories: ProcessState.error(error)));
+        Fluttertoast.showToast(msg: 'Failed to delete work item: $error');
+        emit(state.copyWith(deleteWorkState: ProcessState.error(error)));
       },
     );
   }

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_paym
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -77,19 +79,11 @@ class AppHelper {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final snackBar = SnackBar(
       behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
       content: Text(
         message,
-        style: AppTextStyle.body2.copyWith(color: const Color(0xffDFBF50)),
+        style: AppTextStyle.body2
+            .copyWith(color: Colors.white, fontWeight: FontWeight.w500),
       ),
-      // action: SnackBarAction(
-      //   label: 'Close',
-      //   disabledTextColor: AppColors.black,
-      //   textColor: AppColors.black,
-      //   onPressed: () {
-      //     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      //   },
-      // ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -265,9 +259,7 @@ class AppHelper {
     if (profileCompleteness.paymentMethod ?? false) {
       percent += 10;
     }
-    if (profileCompleteness.statusApproved ?? false) {
-      percent += 10;
-    }
+
     if (profileCompleteness.locationService != null) {
       percent += 10;
     }
@@ -293,6 +285,10 @@ class AppHelper {
       percent += 10;
     }
     if (profileCompleteness.userBanner ?? false) {
+      percent += 10;
+    }
+
+    if (profileCompleteness.statusApproved ?? false) {
       percent += 10;
     }
     return percent;
@@ -485,4 +481,303 @@ class AppHelper {
     final now = DateTime.now();
     return appointmentDate.isAfter(now);
   }
+
+  /// Checks profile completeness and guides the user to complete missing steps
+  /// Returns true if profile is complete, false if there are steps to complete
+  static bool checkAndNavigateProfileCompletion(
+    BuildContext context,
+    ProfileCompleteness profileCompleteness, {
+    bool showSnackbar = true,
+  }) {
+    // Check each step in order of importance and navigate to the first incomplete one
+
+    if (!(profileCompleteness.userBio ?? false)) {
+      context.router.push(const SellerPersonalDetailsRoute());
+      return false;
+    }
+    if (!(profileCompleteness.address ?? false)) {
+      context.router.push(const SellerPersonalDetailsRoute());
+      return false;
+    }
+    if (!(profileCompleteness.locationService ?? false)) {
+      context.router
+          .push(SellerAvailabilityScheduleRoute(goToLocationSettings: true));
+      return false;
+    }
+    if (!(profileCompleteness.userAvatar ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please upload a profile picture');
+      }
+      if (context.router.current.name == SellerProfileVerificationRoute.name) {
+        return false;
+      }
+      context.router.push(const SellerProfileManagementRoute());
+      return false;
+    }
+    if (!(profileCompleteness.userBanner ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please upload a banner image');
+      }
+      return false;
+    }
+    if (!(profileCompleteness.portfolio ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please add portfolio items');
+      }
+      context.router.push(const SellerPortfolioRoute());
+      return false;
+    }
+    if (!(profileCompleteness.socialLinks ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please add social links');
+      }
+      context.router.push(const SellerProfileVerificationRoute());
+      return false;
+    }
+    if (!(profileCompleteness.paymentMethod ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please add a payment method');
+      }
+      context.router.push(const SellerPaymentMethodsRoute());
+      return false;
+    }
+    if (!(profileCompleteness.works ?? false)) {
+      if (showSnackbar) {
+        showSnackBar(context, message: 'Please upload your past works');
+      }
+      context.router.push(const SellerProfileVerificationRoute());
+      return false;
+    }
+    // if (!(profileCompleteness.statusApproved ?? false)) {
+    //   onNavigate(const SellerProfileVerificationRoute());
+    //   return false;
+    // }
+
+    if (showSnackbar) {
+      showSnackBar(context,
+          message: '✓ Profile is 100% complete! Await verification.');
+    }
+
+    return true;
+  }
+
+  /// Returns the next incomplete step info without navigation
+  static ProfileStepInfo? getNextIncompleteStep(
+    ProfileCompleteness profileCompleteness,
+  ) {
+    if (!(profileCompleteness.userBio ?? false)) {
+      return ProfileStepInfo(
+        title: 'Add Bio',
+        description: 'Tell clients about yourself and your expertise',
+        route: const SellerPersonalDetailsRoute(),
+        priority: 1,
+      );
+    }
+
+    if (!(profileCompleteness.address ?? false)) {
+      return ProfileStepInfo(
+        title: 'Add Address',
+        description: 'Provide your business address',
+        route: const SellerPersonalDetailsRoute(),
+        priority: 2,
+      );
+    }
+
+    if (!(profileCompleteness.locationService ?? false)) {
+      return ProfileStepInfo(
+        title: 'Set Location Service',
+        description: 'Enable location services for your business',
+        route: const SellerPersonalDetailsRoute(),
+        priority: 3,
+      );
+    }
+
+    if (!(profileCompleteness.userAvatar ?? false)) {
+      return ProfileStepInfo(
+        title: 'Upload Profile Picture',
+        description: 'Add a professional profile photo',
+        route: const SellerProfileManagementRoute(),
+        priority: 4,
+      );
+    }
+
+    if (!(profileCompleteness.userBanner ?? false)) {
+      return ProfileStepInfo(
+        title: 'Upload Banner Image',
+        description: 'Add a banner image to your profile',
+        route: const SellerProfileManagementRoute(),
+        priority: 5,
+      );
+    }
+
+    if (!(profileCompleteness.portfolio ?? false)) {
+      return ProfileStepInfo(
+        title: 'Add Portfolio',
+        description: 'Showcase your best work',
+        route: const SellerPortfolioRoute(),
+        priority: 6,
+      );
+    }
+
+    if (!(profileCompleteness.socialLinks ?? false)) {
+      return ProfileStepInfo(
+        title: 'Add Social Links',
+        description: 'Connect your social media accounts',
+        route: const SellerProfileVerificationRoute(),
+        priority: 7,
+      );
+    }
+
+    if (!(profileCompleteness.paymentMethod ?? false)) {
+      return ProfileStepInfo(
+        title: 'Add Payment Method',
+        description: 'Set up how you want to receive payments',
+        route: const SellerPaymentMethodsRoute(),
+        priority: 8,
+      );
+    }
+
+    if (!(profileCompleteness.works ?? false)) {
+      return ProfileStepInfo(
+        title: 'Upload Past Works',
+        description: 'Upload your past works and projects',
+        route: const SellerProfileVerificationRoute(),
+        priority: 9,
+      );
+    }
+
+    // if (!(profileCompleteness.statusApproved ?? false)) {
+    //   return ProfileStepInfo(
+    //     title: 'Complete Verification',
+    //     description: 'Verify your profile to start accepting bookings',
+    //     route: const SellerProfileVerificationRoute(),
+    //     priority: 10,
+    //   );
+    // }
+
+    return null; // Profile is complete
+  }
+
+  /// Gets all incomplete steps
+  static List<ProfileStepInfo> getAllIncompleteSteps(
+    ProfileCompleteness profileCompleteness,
+  ) {
+    final steps = <ProfileStepInfo>[];
+
+    if (!(profileCompleteness.userBio ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Add Bio',
+          description: 'Tell clients about yourself and your expertise',
+          route: const SellerPersonalDetailsRoute(),
+          priority: 1,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.address ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Add Address',
+          description: 'Provide your business address',
+          route: const SellerPersonalDetailsRoute(),
+          priority: 2,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.locationService ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Set Location Service',
+          description: 'Enable location services for your business',
+          route: const SellerPersonalDetailsRoute(),
+          priority: 3,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.userAvatar ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Upload Profile Picture',
+          description: 'Add a professional profile photo',
+          route: const SellerProfileManagementRoute(),
+          priority: 4,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.userBanner ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Upload Banner Image',
+          description: 'Add a banner image to your profile',
+          route: const SellerProfileManagementRoute(),
+          priority: 5,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.portfolio ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Add Portfolio',
+          description: 'Showcase your best work',
+          route: const SellerPortfolioRoute(),
+          priority: 6,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.socialLinks ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Add Social Links',
+          description: 'Connect your social media accounts',
+          route: const SellerProfileVerificationRoute(),
+          priority: 7,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.paymentMethod ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Add Payment Method',
+          description: 'Set up how you want to receive payments',
+          route: const SellerPaymentMethodsRoute(),
+          priority: 8,
+        ),
+      );
+    }
+
+    if (!(profileCompleteness.works ?? false)) {
+      steps.add(
+        ProfileStepInfo(
+          title: 'Upload Past Works',
+          description: 'Upload your past works and projects',
+          route: const SellerProfileVerificationRoute(),
+          priority: 9,
+        ),
+      );
+    }
+
+    return steps;
+  }
+}
+
+/// Profile completion step information
+class ProfileStepInfo {
+  final String title;
+  final String description;
+  final PageRouteInfo route;
+  final int priority;
+
+  ProfileStepInfo({
+    required this.title,
+    required this.description,
+    required this.route,
+    required this.priority,
+  });
 }

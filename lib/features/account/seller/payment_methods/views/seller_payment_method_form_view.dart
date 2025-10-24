@@ -1,15 +1,11 @@
-import 'dart:io';
+// ignore_for_file: use_build_context_synchronously
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pinput/pinput.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
-import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
@@ -21,7 +17,6 @@ import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/payment_methods/cubit/seller_payment_methods_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
 
 class SellerPaymentMethodFormWidget extends StatelessWidget {
   const SellerPaymentMethodFormWidget({super.key, this.paymentMethod});
@@ -194,10 +189,36 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
               listenWhen: (previous, current) =>
                   previous.addPaymentMethodState !=
                   current.addPaymentMethodState,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state.addPaymentMethodState.hasSuccess) {
-                  context.read<SellerProfileMgtCubit>().getProfileDetails();
+                  await context
+                      .read<SellerProfileMgtCubit>()
+                      .getProfileDetails(true);
+
+                  // Optionally do something after refreshing profile details
+                  final profileCompleteness = context
+                      .read<SellerProfileMgtCubit>()
+                      .state
+                      .profileDetails
+                      .data
+                      ?.profileCompleteness;
+
+                  if (profileCompleteness == null) {
+                    Navigator.pop(context);
+                    return;
+                  }
                   Navigator.pop(context);
+
+                  final isComplete =
+                      AppHelper.getAllIncompleteSteps(profileCompleteness)
+                          .isEmpty;
+
+                  if (!isComplete) {
+                    AppHelper.checkAndNavigateProfileCompletion(
+                      context,
+                      profileCompleteness,
+                    );
+                  }
                 }
 
                 if (state.addPaymentMethodState.hasError) {

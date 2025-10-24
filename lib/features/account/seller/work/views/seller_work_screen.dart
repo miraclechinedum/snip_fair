@@ -15,6 +15,7 @@ import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/widgets/image_carousel.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/work/cubit/seller_works_cubit.dart';
@@ -119,9 +120,19 @@ class _SellerWorkScreenState extends State<SellerWorkScreen> {
                     return SellerWorkItemWidget(
                       work: work,
                       onDelete: () {
-                        context
-                            .read<SellerWorksCubit>()
-                            .deleteWorkItem(work.id!);
+                        AppHelper.showAppDialog(
+                          context,
+                          OnConfirmDialog(
+                            title: 'Delete Work ',
+                            content:
+                                'Are you sure you want to delete this work item?',
+                            onConfirmed: (_) {
+                              context
+                                  .read<SellerWorksCubit>()
+                                  .deleteWorkItem(work.id!);
+                            },
+                          ),
+                        );
                       },
                       onEdit: () => SellerWorkFormWidget.show(context, work),
                     );

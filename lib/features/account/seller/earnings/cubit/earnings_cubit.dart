@@ -137,6 +137,7 @@ class EarningsCubit extends Cubit<EarningsState> {
           ),
         );
         getEarnings();
+        fetchTransactions(isInitial: true);
       },
       failure: (error) {
         emit(

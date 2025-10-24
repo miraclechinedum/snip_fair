@@ -35,8 +35,7 @@ class SellerProfileVerificationState extends Equatable {
   bool get canSubmitRequirements =>
       Formz.validate([businessName]) &&
       pastWorksFilePaths.isNotEmpty &&
-      socials.isNotEmpty &&
-      portfolios.isNotEmpty;
+      socials.isNotEmpty;
 
   SellerProfileVerificationState copyWith({
     StringInput? businessName,

@@ -51,10 +51,37 @@ class SellerProfileVerificationScreen extends StatelessWidget
                 SellerProfileVerificationState>(
               listenWhen: (previous, current) =>
                   previous.submitState != current.submitState,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state.submitState.hasSuccess) {
-                  context.pop();
-                  context.read<SellerProfileMgtCubit>().getProfileDetails(true);
+                  await context
+                      .read<SellerProfileMgtCubit>()
+                      .getProfileDetails(true);
+
+                  // Optionally do something after refreshing profile details
+                  final profileCompleteness = context
+                      .read<SellerProfileMgtCubit>()
+                      .state
+                      .profileDetails
+                      .data
+                      ?.profileCompleteness;
+
+                  if (profileCompleteness == null) {
+                    context.pop();
+                    return;
+                  }
+
+                  final isComplete =
+                      AppHelper.getAllIncompleteSteps(profileCompleteness)
+                          .isEmpty;
+
+                  if (!isComplete) {
+                    AppHelper.checkAndNavigateProfileCompletion(
+                      context,
+                      profileCompleteness,
+                    );
+                  } else {
+                    context.pop();
+                  }
                 }
 
                 if (state.submitState.hasError) {
@@ -73,7 +100,8 @@ class SellerProfileVerificationScreen extends StatelessWidget
               child: CustomButton(
                 title: 'Submit Requirements',
                 isLoading: cubit.state.submitState.isLoading,
-                onPressed: cubit.state.canSubmitRequirements
+                onPressed: cubit.state.canSubmitRequirements &&
+                        (profile?.portfolios?.isNotEmpty ?? true)
                     ? cubit.submitRequirements
                     : null,
               ),
@@ -129,12 +157,12 @@ class SellerProfileVerificationScreen extends StatelessWidget
                       ),
                       child: Row(
                         children: [
-                          if (cubit.state.portfolios.isEmpty)
+                          if (profile?.portfolios?.isEmpty ?? true)
                             const AppText(text: 'Portfolio not set up')
                           else
                             const AppText(text: 'Portfolio set up'),
                           const Spacer(),
-                          if (cubit.state.portfolios.isEmpty)
+                          if (profile?.portfolios?.isEmpty ?? true)
                             SizedBox(
                               width: 160.w,
                               child: CustomButton(

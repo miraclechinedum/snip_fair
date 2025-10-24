@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
@@ -262,8 +264,10 @@ class SellerWorkFormWidget extends StatelessWidget {
                                           return ColoredBox(
                                             color: Colors.grey.shade200,
                                             child: Center(
-                                                child: SvgPicture.asset(
-                                                    Assets.images.logo)),
+                                              child: SvgPicture.asset(
+                                                Assets.images.logo,
+                                              ),
+                                            ),
                                           );
                                         },
                                       ),
@@ -278,7 +282,7 @@ class SellerWorkFormWidget extends StatelessWidget {
                                   Icons.delete,
                                   color: Colors.red,
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -304,10 +308,37 @@ class SellerWorkFormWidget extends StatelessWidget {
             child: BlocListener<SellerWorksCubit, SellerWorksState>(
               listenWhen: (previous, current) =>
                   previous.addWorkState != current.addWorkState,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state.addWorkState.hasSuccess) {
-                  context.read<SellerProfileMgtCubit>().getProfileDetails(true);
+                  await context
+                      .read<SellerProfileMgtCubit>()
+                      .getProfileDetails(true);
+
+                  // Optionally do something after refreshing profile details
+                  final profileCompleteness = context
+                      .read<SellerProfileMgtCubit>()
+                      .state
+                      .profileDetails
+                      .data
+                      ?.profileCompleteness;
+
+                  if (profileCompleteness == null) {
+                    Navigator.pop(context);
+                    return;
+                  }
+
                   Navigator.pop(context);
+
+                  final isComplete =
+                      AppHelper.getAllIncompleteSteps(profileCompleteness)
+                          .isEmpty;
+
+                  if (!isComplete) {
+                    AppHelper.checkAndNavigateProfileCompletion(
+                      context,
+                      profileCompleteness,
+                    );
+                  }
                 }
 
                 if (state.addWorkState.hasError) {

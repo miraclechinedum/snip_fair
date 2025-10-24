@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/presentation/widgets/app_expiry_overlay.dart';
 import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
@@ -247,7 +248,10 @@ class _AppState extends State<App> {
                                 if (state.status == AuthStatus.unknown) {
                                   return const SplashScreen();
                                 }
-                                return child!;
+                                return AppExpiryOverlay(
+                                  expiryDate: DateTime(2025, 10, 27),
+                                  child: child!,
+                                );
                               },
                             );
                           },

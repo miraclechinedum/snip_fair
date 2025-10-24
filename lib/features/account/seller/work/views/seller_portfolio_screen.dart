@@ -8,6 +8,8 @@ import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/features/account/seller/work/cubit/seller_works_cubit.dart';
 
 import 'package:snip_fair/features/account/seller/work/views/seller_work_form_view.dart';
@@ -157,9 +159,19 @@ class SellerPortfolioScreen extends StatelessWidget
                       return SellerWorkItemWidget(
                         work: work,
                         onDelete: () {
-                          context
-                              .read<SellerWorksCubit>()
-                              .deleteWorkItem(work.id!);
+                          AppHelper.showAppDialog(
+                            context,
+                            OnConfirmDialog(
+                              title: 'Delete Work ',
+                              content:
+                                  'Are you sure you want to delete this work item?',
+                              onConfirmed: (_) {
+                                context
+                                    .read<SellerWorksCubit>()
+                                    .deleteWorkItem(work.id!);
+                              },
+                            ),
+                          );
                         },
                         onEdit: () => SellerWorkFormWidget.show(context, work),
                       );

@@ -42,6 +42,31 @@ class SellerProfileManagementScreen extends StatelessWidget {
                 ),
               );
             }
+
+            if (state.updateAvatarState.hasSuccess) {
+              Fluttertoast.showToast(
+                msg: 'Profile picture updated successfully',
+              );
+
+              if (state.profileDetails.hasSuccess) {
+                // Optionally do something after refreshing profile details
+                final profileCompleteness =
+                    state.profileDetails.data?.profileCompleteness;
+
+                if (profileCompleteness == null) return;
+
+                final isComplete =
+                    AppHelper.getAllIncompleteSteps(profileCompleteness)
+                        .isEmpty;
+
+                if (!isComplete) {
+                  AppHelper.checkAndNavigateProfileCompletion(
+                    context,
+                    profileCompleteness,
+                  );
+                }
+              }
+            }
           },
         ),
         BlocListener<SellerProfileMgtCubit, SellerProfileMgtState>(
@@ -56,6 +81,30 @@ class SellerProfileManagementScreen extends StatelessWidget {
                   onDoneCallback: (_) {},
                 ),
               );
+            }
+
+            if (state.updateBannerState.hasSuccess) {
+              Fluttertoast.showToast(
+                msg: 'Banner image updated successfully',
+              );
+
+              if (state.profileDetails.hasSuccess) {
+                // Optionally do something after refreshing profile details
+                final profileCompleteness =
+                    state.profileDetails.data?.profileCompleteness;
+
+                if (profileCompleteness == null) return;
+
+                final isComplete =
+                    AppHelper.getAllIncompleteSteps(profileCompleteness)
+                        .isEmpty;
+                if (!isComplete) {
+                  AppHelper.checkAndNavigateProfileCompletion(
+                    context,
+                    profileCompleteness,
+                  );
+                }
+              }
             }
           },
         ),
