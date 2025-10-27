@@ -132,6 +132,7 @@ class _SellerAvailabilityScheduleScreenState
                     );
                   },
                 ),
+                100.verticalSpace,
               ],
             ),
           ),

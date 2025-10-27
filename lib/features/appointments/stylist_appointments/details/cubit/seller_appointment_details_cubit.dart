@@ -122,7 +122,7 @@ class SellerAppointmentDetailsCubit
     final response = await _appointmentRepository.updateStylistAppointment(
       appointmentId,
       verdict: 'confirm',
-      code: confirmCode,
+      code: 'SF-$confirmCode',
     );
 
     response.when(
@@ -158,7 +158,7 @@ class SellerAppointmentDetailsCubit
     final response = await _appointmentRepository.updateStylistAppointment(
       appointmentId,
       verdict: 'complete',
-      code: completeCode,
+      code: 'CP-$completeCode',
     );
 
     response.when(
@@ -169,6 +169,70 @@ class SellerAppointmentDetailsCubit
           ),
         );
 
+        getAppointmentDetails(appointmentId);
+      },
+      failure: (error) {
+        emit(
+          state.copyWith(
+            updateAppointmentState: ProcessState.error(error),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> submitDispute({
+    required List<String> images,
+    required String comment,
+  }) async {
+    final appointmentId =
+        state.fetchAppointmentDetailsState.data?.id.toString() ?? '';
+
+    final response = await _appointmentRepository.disputeStylistAppointment(
+      appointmentId,
+      comment: comment,
+      images: images,
+    );
+
+    await response.when(
+      success: (data) {
+        emit(
+          state.copyWith(
+            updateAppointmentState: const ProcessState.success(true),
+          ),
+        );
+        getAppointmentDetails(appointmentId);
+      },
+      failure: (error) {
+        emit(
+          state.copyWith(
+            updateAppointmentState: ProcessState.error(error),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> submitAppointmentProof({
+    required List<String> images,
+    required String comment,
+  }) async {
+    final appointmentId =
+        state.fetchAppointmentDetailsState.data?.id.toString() ?? '';
+
+    final response = await _appointmentRepository.submitAppointmentProof(
+      appointmentId,
+      comment: comment,
+      images: images,
+    );
+
+    await response.when(
+      success: (data) {
+        emit(
+          state.copyWith(
+            updateAppointmentState: const ProcessState.success(true),
+          ),
+        );
         getAppointmentDetails(appointmentId);
       },
       failure: (error) {

@@ -84,6 +84,18 @@ abstract class AppointmentRepository {
     required List<String> images,
   });
 
+  Future<ApiResult<SimpleResponse>> submitAppointmentProof(
+    String id, {
+    required String comment,
+    required List<String> images,
+  });
+
+  Future<ApiResult<SimpleResponse>> disputeStylistAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  });
+
   Future<ApiResult<SimpleResponse>> reviewCustomerAppointment(
     String id, {
     required int rating,
@@ -258,4 +270,22 @@ class AppointmentRepoImpl implements AppointmentRepository {
     required String verdict,
   }) =>
       _remoteSource.updateCustomerAppointment(id, verdict: verdict);
+
+  @override
+  Future<ApiResult<SimpleResponse>> disputeStylistAppointment(String id,
+          {required String comment, required List<String> images}) =>
+      _remoteSource.disputeStylistAppointment(
+        id,
+        comment: comment,
+        images: images,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> submitAppointmentProof(String id,
+          {required String comment, required List<String> images}) =>
+      _remoteSource.submitAppointmentProof(
+        id,
+        comment: comment,
+        images: images,
+      );
 }

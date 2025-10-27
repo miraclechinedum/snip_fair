@@ -1372,4 +1372,60 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
     });
   }
+
+  @override
+  Future<ApiResult<SimpleResponse>> disputeStylistAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client(isFormDataRequest: true);
+
+      final formData = FormData.fromMap({
+        'comment': comment,
+        for (int i = 0; i < images.length; i++)
+          'images[$i]': await MultipartFile.fromFile(
+            images[i],
+            filename: images[i].split('/').last,
+          ),
+      });
+
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.stylistAppointment}/$id/dispute',
+        data: formData,
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> submitAppointmentProof(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client(isFormDataRequest: true);
+
+      final formData = FormData.fromMap({
+        'comment': comment,
+        for (int i = 0; i < images.length; i++)
+          'images[$i]': await MultipartFile.fromFile(
+            images[i],
+            filename: images[i].split('/').last,
+          ),
+      });
+
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.stylistAppointment}/$id/proof',
+        data: formData,
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
 }

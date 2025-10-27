@@ -11,6 +11,6 @@ final getIt = GetIt.instance;
   asExtension: false, // default
 )
 Future<void> configureDependencies() async {
+  getIt.registerLazySingleton<AppRouter>(AppRouter.new);
   await $initGetIt(getIt);
-  getIt.registerSingleton<AppRouter>(AppRouter());
 }

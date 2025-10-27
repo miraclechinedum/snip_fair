@@ -185,10 +185,9 @@ class _AppState extends State<App> {
                                   case AuthStatus.unknown:
                                     break;
                                   case AuthStatus.unAuthenticated:
-                                    _appRouter.pushAndPopUntil(
-                                      const LandingRoute(),
-                                      predicate: (route) => false,
-                                    );
+                                    _appRouter
+                                        .replaceAll([const LandingRoute()]);
+
                                   case AuthStatus.authenticated:
                                     if (state.user.emailVerifiedAt == null) {
                                       _appRouter.push(
@@ -238,10 +237,7 @@ class _AppState extends State<App> {
                                         ..getWalletTransactions();
                                     }
 
-                                    _appRouter.pushAndPopUntil(
-                                      const MainRoute(),
-                                      predicate: (route) => false,
-                                    );
+                                    _appRouter.replaceAll([const MainRoute()]);
                                 }
                               },
                               builder: (context, state) {
@@ -249,7 +245,7 @@ class _AppState extends State<App> {
                                   return const SplashScreen();
                                 }
                                 return AppExpiryOverlay(
-                                  expiryDate: DateTime(2025, 10, 27),
+                                  expiryDate: DateTime(2025, 10, 29),
                                   child: child!,
                                 );
                               },

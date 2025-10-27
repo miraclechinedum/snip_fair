@@ -15,6 +15,7 @@ import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 
 @RoutePage()
@@ -456,7 +457,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                   showCodeEntryBottomSheet(
                                     context,
                                     title: 'Enter Verification Code',
-                                    hint: 'SF-XXXXXX',
+                                    hint: 'XXXXXX',
                                     onSubmit: cubit.confirmAppointment,
                                   );
                                 },
@@ -471,7 +472,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                   showCodeEntryBottomSheet(
                                     context,
                                     title: 'Enter Completion Code',
-                                    hint: 'CP-XXXXXX',
+                                    hint: 'XXXXXX',
                                     onSubmit: cubit.completeAppointment,
                                   );
                                 },
@@ -502,6 +503,34 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                               },
                               gradient: null,
                               background: const Color(0xff374757),
+                            ),
+                            12.verticalSpace,
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  AppHelper.showCustomModalBottomSheet<void>(
+                                    context: context,
+                                    modal: SubmitDisputeBottomSheet(
+                                      onSubmit: (comment, images) {
+                                        return context
+                                            .read<
+                                                SellerAppointmentDetailsCubit>()
+                                            .submitDispute(
+                                              images: images,
+                                              comment: comment,
+                                            );
+                                      },
+                                    ),
+                                    isDarkMode: false,
+                                  );
+                                },
+                                child: const AppText(
+                                  text: 'Report dispute with this Appointment',
+                                  textAlign: TextAlign.center,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue,
+                                ),
+                              ),
                             ),
                           ],
                         ),

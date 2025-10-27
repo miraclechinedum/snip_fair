@@ -572,7 +572,9 @@ class BookingSummary extends StatelessWidget {
                               children: [
                                 AppText(
                                   text: state.fetchAppointmentState.data
-                                          ?.appointmentCode ??
+                                          ?.appointmentCode
+                                          .pickNumber()
+                                          .toString() ??
                                       '',
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -583,7 +585,9 @@ class BookingSummary extends StatelessWidget {
                                   onTap: () => AppHelper.copyToClipboard(
                                     context,
                                     state.fetchAppointmentState.data
-                                            ?.appointmentCode ??
+                                            ?.appointmentCode
+                                            .pickNumber()
+                                            .toString() ??
                                         '',
                                   ),
                                   child: const Icon(
@@ -655,7 +659,9 @@ class BookingSummary extends StatelessWidget {
                               children: [
                                 AppText(
                                   text: state.fetchAppointmentState.data
-                                          ?.completionCode ??
+                                          ?.completionCode
+                                          .pickNumber()
+                                          .toString() ??
                                       '',
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -666,7 +672,9 @@ class BookingSummary extends StatelessWidget {
                                   onTap: () => AppHelper.copyToClipboard(
                                     context,
                                     state.fetchAppointmentState.data
-                                            ?.completionCode ??
+                                            ?.completionCode
+                                            .pickNumber()
+                                            .toString() ??
                                         '',
                                   ),
                                   child: const Icon(

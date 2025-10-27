@@ -313,10 +313,8 @@ class CustomPhoneTextField extends StatelessWidget {
               PhoneValidator.validMobile(context),
             ],
           ),
-          countrySelectorNavigator: const CountrySelectorNavigator.page(),
           onChanged: onInputChanged,
           countryButtonStyle: const CountryButtonStyle(
-            showIsoCode: false,
             flagSize: 16,
           ),
           style: AppTextStyle.body1.copyWith(
@@ -455,7 +453,10 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
             displayAllSuggestionWhenTap: true,
             isMultiSelectDropdown: false,
             textFieldConfiguration: TextFieldConfiguration(
-              autofocus: false,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) {
+                _selectedAddress(GeoPlace(address: value, lat: 0, lng: 0));
+              },
               decoration:
                   AppColors.inputDecoration.copyWith(hintText: widget.hintText),
             ),
