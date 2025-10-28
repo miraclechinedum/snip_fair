@@ -552,14 +552,14 @@ class SellerAddNewWorkRoute extends _i40.PageRouteInfo<void> {
 class SellerAppointmentDetailsRoute
     extends _i40.PageRouteInfo<SellerAppointmentDetailsRouteArgs> {
   SellerAppointmentDetailsRoute({
-    _i41.Key? key,
     required String? appointmentId,
+    _i41.Key? key,
     List<_i40.PageRouteInfo>? children,
   }) : super(
           SellerAppointmentDetailsRoute.name,
           args: SellerAppointmentDetailsRouteArgs(
-            key: key,
             appointmentId: appointmentId,
+            key: key,
           ),
           initialChildren: children,
         );
@@ -572,8 +572,8 @@ class SellerAppointmentDetailsRoute
       final args = data.argsAs<SellerAppointmentDetailsRouteArgs>();
       return _i40.WrappedRoute(
         child: _i20.SellerAppointmentDetailsScreen(
-          key: args.key,
           appointmentId: args.appointmentId,
+          key: args.key,
         ),
       );
     },
@@ -582,28 +582,28 @@ class SellerAppointmentDetailsRoute
 
 class SellerAppointmentDetailsRouteArgs {
   const SellerAppointmentDetailsRouteArgs({
-    this.key,
     required this.appointmentId,
+    this.key,
   });
-
-  final _i41.Key? key;
 
   final String? appointmentId;
 
+  final _i41.Key? key;
+
   @override
   String toString() {
-    return 'SellerAppointmentDetailsRouteArgs{key: $key, appointmentId: $appointmentId}';
+    return 'SellerAppointmentDetailsRouteArgs{appointmentId: $appointmentId, key: $key}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! SellerAppointmentDetailsRouteArgs) return false;
-    return key == other.key && appointmentId == other.appointmentId;
+    return appointmentId == other.appointmentId && key == other.key;
   }
 
   @override
-  int get hashCode => key.hashCode ^ appointmentId.hashCode;
+  int get hashCode => appointmentId.hashCode ^ key.hashCode;
 }
 
 /// generated route for

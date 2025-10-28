@@ -440,6 +440,13 @@ class BookingSummary extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 fontSize: 16.sp,
               ),
+              if (state.fetchAppointmentState.hasSuccess)
+                AppText(
+                  text:
+                      'Booking ID: ${state.fetchAppointmentState.data?.bookingId}',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.sp,
+                ),
               const Divider(),
               8.verticalSpace,
               Row(

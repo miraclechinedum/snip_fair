@@ -1446,6 +1446,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           'device_name': device,
         },
       );
+
       return ApiResult.success(data: LoginResponse.fromJson(result.data!));
     });
   }

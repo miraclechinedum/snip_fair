@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ErrorResponse {
   @JsonKey(name: 'status')
-  String? get status;
+  bool? get status;
   @JsonKey(name: 'message')
   String? get message;
   @JsonKey(name: 'errors')
@@ -60,7 +60,7 @@ abstract mixin class $ErrorResponseCopyWith<$Res> {
       _$ErrorResponseCopyWithImpl;
   @useResult
   $Res call(
-      {@JsonKey(name: 'status') String? status,
+      {@JsonKey(name: 'status') bool? status,
       @JsonKey(name: 'message') String? message,
       @JsonKey(name: 'errors') Map<String, dynamic>? errors});
 }
@@ -86,7 +86,7 @@ class _$ErrorResponseCopyWithImpl<$Res>
       status: freezed == status
           ? _self.status
           : status // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as bool?,
       message: freezed == message
           ? _self.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -191,7 +191,7 @@ extension ErrorResponsePatterns on ErrorResponse {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            @JsonKey(name: 'status') String? status,
+            @JsonKey(name: 'status') bool? status,
             @JsonKey(name: 'message') String? message,
             @JsonKey(name: 'errors') Map<String, dynamic>? errors)?
         $default, {
@@ -222,7 +222,7 @@ extension ErrorResponsePatterns on ErrorResponse {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            @JsonKey(name: 'status') String? status,
+            @JsonKey(name: 'status') bool? status,
             @JsonKey(name: 'message') String? message,
             @JsonKey(name: 'errors') Map<String, dynamic>? errors)
         $default,
@@ -249,7 +249,7 @@ extension ErrorResponsePatterns on ErrorResponse {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            @JsonKey(name: 'status') String? status,
+            @JsonKey(name: 'status') bool? status,
             @JsonKey(name: 'message') String? message,
             @JsonKey(name: 'errors') Map<String, dynamic>? errors)?
         $default,
@@ -278,7 +278,7 @@ class _ErrorResponse extends ErrorResponse {
 
   @override
   @JsonKey(name: 'status')
-  final String? status;
+  final bool? status;
   @override
   @JsonKey(name: 'message')
   final String? message;
@@ -338,7 +338,7 @@ abstract mixin class _$ErrorResponseCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'status') String? status,
+      {@JsonKey(name: 'status') bool? status,
       @JsonKey(name: 'message') String? message,
       @JsonKey(name: 'errors') Map<String, dynamic>? errors});
 }
@@ -364,7 +364,7 @@ class __$ErrorResponseCopyWithImpl<$Res>
       status: freezed == status
           ? _self.status
           : status // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as bool?,
       message: freezed == message
           ? _self.message
           : message // ignore: cast_nullable_to_non_nullable

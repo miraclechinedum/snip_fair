@@ -746,7 +746,7 @@ class SubmitProofBottomSheet extends StatefulWidget {
 
 class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
   String _comment = '';
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   bool _isSubmitting = false;
 
   Future<void> _handleSubmit() async {

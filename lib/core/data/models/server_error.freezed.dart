@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$ServerError {
-  String get status;
+  bool get status;
   String get message;
   Map<String, dynamic> get errors;
 
@@ -51,7 +51,7 @@ abstract mixin class $ServerErrorCopyWith<$Res> {
           ServerError value, $Res Function(ServerError) _then) =
       _$ServerErrorCopyWithImpl;
   @useResult
-  $Res call({String status, String message, Map<String, dynamic> errors});
+  $Res call({bool status, String message, Map<String, dynamic> errors});
 }
 
 /// @nodoc
@@ -74,7 +74,7 @@ class _$ServerErrorCopyWithImpl<$Res> implements $ServerErrorCopyWith<$Res> {
       status: null == status
           ? _self.status
           : status // ignore: cast_nullable_to_non_nullable
-              as String,
+              as bool,
       message: null == message
           ? _self.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -178,8 +178,7 @@ extension ServerErrorPatterns on ServerError {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            String status, String message, Map<String, dynamic> errors)?
+    TResult Function(bool status, String message, Map<String, dynamic> errors)?
         $default, {
     required TResult orElse(),
   }) {
@@ -207,7 +206,7 @@ extension ServerErrorPatterns on ServerError {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String status, String message, Map<String, dynamic> errors)
+    TResult Function(bool status, String message, Map<String, dynamic> errors)
         $default,
   ) {
     final _that = this;
@@ -231,8 +230,7 @@ extension ServerErrorPatterns on ServerError {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            String status, String message, Map<String, dynamic> errors)?
+    TResult? Function(bool status, String message, Map<String, dynamic> errors)?
         $default,
   ) {
     final _that = this;
@@ -249,7 +247,7 @@ extension ServerErrorPatterns on ServerError {
 
 class _ServerError extends ServerError {
   const _ServerError(
-      {this.status = '',
+      {this.status = false,
       this.message = '',
       final Map<String, dynamic> errors = const {}})
       : _errors = errors,
@@ -257,7 +255,7 @@ class _ServerError extends ServerError {
 
   @override
   @JsonKey()
-  final String status;
+  final bool status;
   @override
   @JsonKey()
   final String message;
@@ -306,7 +304,7 @@ abstract mixin class _$ServerErrorCopyWith<$Res>
       __$ServerErrorCopyWithImpl;
   @override
   @useResult
-  $Res call({String status, String message, Map<String, dynamic> errors});
+  $Res call({bool status, String message, Map<String, dynamic> errors});
 }
 
 /// @nodoc
@@ -329,7 +327,7 @@ class __$ServerErrorCopyWithImpl<$Res> implements _$ServerErrorCopyWith<$Res> {
       status: null == status
           ? _self.status
           : status // ignore: cast_nullable_to_non_nullable
-              as String,
+              as bool,
       message: null == message
           ? _self.message
           : message // ignore: cast_nullable_to_non_nullable

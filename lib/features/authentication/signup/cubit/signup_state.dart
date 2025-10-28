@@ -9,6 +9,7 @@ class SignupState extends BaseState {
     required this.password,
     required this.confirmPassword,
     required this.signUpResult,
+    required this.googleLoginResult,
     required this.acceptTerms,
     required this.showPassword,
     super.exception,
@@ -25,6 +26,7 @@ class SignupState extends BaseState {
           firstName: const StringInput.pure(),
           lastName: const StringInput.pure(),
           phone: const PhoneInput.pure(),
+          googleLoginResult: const ProcessState.init(null), 
           acceptTerms: false,
           showPassword: false,
         );
@@ -36,6 +38,7 @@ class SignupState extends BaseState {
   final PasswordInput password;
   final ConfirmPasswordInput confirmPassword;
   final ProcessState<LoginResponse> signUpResult;
+  final ProcessState<LoginResponse> googleLoginResult;
   final bool acceptTerms;
   final bool showPassword;
 
@@ -60,6 +63,7 @@ class SignupState extends BaseState {
     PasswordInput? password,
     ProcessState<LoginResponse>? signUpResult,
     ConfirmPasswordInput? confirmPassword,
+    ProcessState<LoginResponse>? googleLoginResult,
     bool? acceptTerms,
     bool? showPassword,
     Exception? exception,
@@ -71,6 +75,7 @@ class SignupState extends BaseState {
       phone: phone ?? this.phone,
       email: email ?? this.email,
       password: password ?? this.password,
+      googleLoginResult: googleLoginResult ?? this.googleLoginResult,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       signUpResult: signUpResult ?? this.signUpResult,
       acceptTerms: acceptTerms ?? this.acceptTerms,
@@ -88,6 +93,7 @@ class SignupState extends BaseState {
         email,
         password,
         showPassword,
+        googleLoginResult,
         confirmPassword,
         signUpResult,
         acceptTerms,

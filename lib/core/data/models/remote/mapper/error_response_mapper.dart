@@ -11,7 +11,7 @@ class ErrorResponseMapper
   @override
   ServerError mapToEntity(ErrorResponse? data) {
     return ServerError(
-      status: data?.status ?? '',
+      status: data?.status ?? false,
       message: data?.message ?? '',
       errors: data?.errors ?? {},
     );

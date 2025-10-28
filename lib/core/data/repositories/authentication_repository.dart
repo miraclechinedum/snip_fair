@@ -89,13 +89,27 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
   }
 
   @override
-  Future<ApiResult<LoginResponse>> loginWithGoogle(
-          {required String accessToken,
-          required String role,
-          required String device}) =>
-      _remoteSource.loginWithGoogle(
-        accessToken: accessToken,
-        role: role,
-        device: device,
-      );
+  Future<ApiResult<LoginResponse>> loginWithGoogle({
+    required String accessToken,
+    required String role,
+    required String device,
+  }) async {
+    final result = await _remoteSource.loginWithGoogle(
+      accessToken: accessToken,
+      role: role,
+      device: device,
+    );
+
+    return result.map(
+      success: (data) {
+        if (data.data.user != null) {
+          _localKeyStorage
+            ..saveCurrentUser(data.data.user!)
+            ..saveAccessToken(data.data.token!);
+        }
+        return data;
+      },
+      failure: (f) => f,
+    );
+  }
 }

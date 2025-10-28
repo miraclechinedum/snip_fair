@@ -68,11 +68,7 @@ class LoginCubit extends BaseCubit<LoginState> {
 
   Future<void> _initializeGoogleSignIn() async {
     try {
-      await _googleSignIn.initialize(
-          clientId:
-              '93247050443-p33nrtciphrksd5nj2moms95aqtfo939.apps.googleusercontent.com',
-          serverClientId:
-              '441775479731-jr325a94foktmtqh5ujqpfcffmh9rv79.apps.googleusercontent.com');
+      await _googleSignIn.initialize();
       _isGoogleSignInInitialized = true;
     } catch (e) {
       print('Error initializing Google Sign-In: $e');

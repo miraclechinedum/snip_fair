@@ -33,14 +33,32 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
   Widget buildPage(BuildContext context) {
     final cubit = context.read<LoginCubit>();
     final appState = context.watch<AppCubit>().state;
-    return BlocListener<LoginCubit, LoginState>(
-      listenWhen: (previous, current) =>
-          previous.loginResult != current.loginResult,
-      listener: (context, state) {
-        if (state.loginResult.hasSuccess) {
-          context.read<AppCubit>().onLogin();
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<LoginCubit, LoginState>(
+          listenWhen: (previous, current) =>
+              previous.loginResult != current.loginResult,
+          listener: (context, state) {
+            if (state.loginResult.hasSuccess) {
+              context.read<AppCubit>().onLogin();
+            }
+          },
+        ),
+        BlocListener<LoginCubit, LoginState>(
+          listenWhen: (previous, current) =>
+              previous.googleLoginResult != current.googleLoginResult,
+          listener: (context, state) {
+            if (state.googleLoginResult.hasError) {
+              final error = state.googleLoginResult.error;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Google Sign-In failed: ${error.toString()}'),
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: KeyboardDismisser(
         child: Scaffold(
           appBar: const CustomAppBar(),
@@ -150,12 +168,24 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                             style: AuthButtonStyle(
                               iconType: AuthIconType.secondary,
                               buttonType: AuthButtonType.secondary,
+                              buttonColor: AppColors.white,
+                              iconBackground: AppColors.white,
+                              elevation: 2,
+                              borderRadius: 8.r,
+                              height: 50.h,
+                              width: double.infinity,
+                              textStyle: TextStyle(
+                                fontSize: 16.sp,
+                                color: AppColors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         );
-                       
                       },
                     ),
+                    12.verticalSpace,
+                    Divider(),
                     12.verticalSpace,
                     if (appState.platformSettings?.allowRegistrationCustomers ??
                         false)

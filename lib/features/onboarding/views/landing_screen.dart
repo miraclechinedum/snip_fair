@@ -28,12 +28,12 @@ class _LandingScreenState extends State<LandingScreen> {
         'https://snipfair.com/videos/horizontal.mp4',
       ), // Replace with your video's URL
     )..initialize().then((_) {
-        // setState(() {
-        //   _controller
-        //     ..play()
-        //     ..setLooping(true) // Loop the video
-        //     ..setVolume(0); // Play silently in the background
-        // });
+        setState(() {
+          _controller
+            ..play()
+            ..setLooping(true) // Loop the video
+            ..setVolume(0); // Play silently in the background
+        });
       });
   }
 

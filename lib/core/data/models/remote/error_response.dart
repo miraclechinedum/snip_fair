@@ -7,7 +7,7 @@ part 'error_response.g.dart';
 @freezed
 sealed class ErrorResponse extends BaseRemoteData with _$ErrorResponse {
   factory ErrorResponse({
-    @JsonKey(name: 'status') String? status,
+    @JsonKey(name: 'status') bool? status,
     @JsonKey(name: 'message') String? message,
     @JsonKey(name: 'errors') Map<String, dynamic>? errors,
   }) = _ErrorResponse;

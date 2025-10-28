@@ -1,3 +1,4 @@
+import 'package:auth_buttons/auth_buttons.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
@@ -35,9 +37,10 @@ class SignupScreen extends BaseStatelessPage<SignupCubit>
           previous.signUpResult != current.signUpResult,
       listener: (context, state) {
         if (state.signUpResult.hasSuccess) {
-          context.pushRoute(
-            VerifyEmailRoute(email: state.email.value, asStylist: asStylist),
-          );
+          // context.pushRoute(
+          //   VerifyEmailRoute(email: state.email.value, asStylist: asStylist),
+          // );
+          context.read<AppCubit>().onLogin();
         }
       },
       child: KeyboardDismisser(
@@ -276,6 +279,37 @@ class SignupScreen extends BaseStatelessPage<SignupCubit>
                           ],
                         ),
                       ),
+                    ),
+                    12.verticalSpace,
+                    const Divider(),
+                    12.verticalSpace,
+                    BlocBuilder<SignupCubit, SignupState>(
+                      builder: (context, state) {
+                        return Center(
+                          child: GoogleAuthButton(
+                            isLoading: state.signUpResult.isLoading,
+                            onPressed: () {
+                              cubit.loginWithGoogle(isStylist: asStylist);
+                            },
+                            themeMode: ThemeMode.light,
+                            style: AuthButtonStyle(
+                              iconType: AuthIconType.secondary,
+                              buttonType: AuthButtonType.secondary,
+                              buttonColor: AppColors.white,
+                              iconBackground: AppColors.white,
+                              elevation: 2,
+                              borderRadius: 8.r,
+                              height: 50.h,
+                              width: double.infinity,
+                              textStyle: TextStyle(
+                                fontSize: 16.sp,
+                                color: AppColors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     12.verticalSpace,
                   ],

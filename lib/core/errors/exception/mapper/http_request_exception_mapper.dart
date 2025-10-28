@@ -50,7 +50,7 @@ class HttpRequestExceptionMapper extends ExceptionMapper<RemoteException> {
             } catch (e) {
               return RemoteException.serverError(
                 exception.response!.statusCode,
-                const ServerError(message: 'An error occured'),
+                const ServerError(message: 'An errorfrrr occured'),
               );
             }
           } else {

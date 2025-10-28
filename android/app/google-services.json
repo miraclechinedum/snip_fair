@@ -12,7 +12,28 @@
           "package_name": "com.snipfair.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "93247050443-9simcd3dukhs698huvk82sutk1apj04g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.snipfair.app",
+            "certificate_hash": "8c7df62d5bd779aefc9d60efd961ffef8b2b428e"
+          }
+        },
+        {
+          "client_id": "93247050443-p33nrtciphrksd5nj2moms95aqtfo939.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.snipfair.app",
+            "certificate_hash": "b7fb208944e34ff6db57204ff98b2955882f5768"
+          }
+        },
+        {
+          "client_id": "93247050443-n06sohp6bhdjs9rvchqe89drjgiis0o2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB5oM9nH6xwC2OTzN6l3NtMROnO7ING-Hc"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "93247050443-n06sohp6bhdjs9rvchqe89drjgiis0o2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "93247050443-dof3ctb9ith2vsp2mdvhsri90g9u6lt1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.snipfair.app"
+              }
+            }
+          ]
         }
       }
     }

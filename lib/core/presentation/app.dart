@@ -264,7 +264,7 @@ class _AppState extends State<App> {
                                   return const SplashScreen();
                                 }
                                 return AppExpiryOverlay(
-                                  expiryDate: DateTime(2025, 10, 29),
+                                  expiryDate: DateTime(2025, 10, 30),
                                   child: child!,
                                 );
                               },

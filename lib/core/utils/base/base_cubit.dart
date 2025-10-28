@@ -74,23 +74,5 @@ abstract class BaseCubit<S extends BaseState> extends Cubit<S> {
           }
         }
     }
-
-    // data.when(
-    //   success: (data) {
-    //     if (!isClosed) doOnSuccess?.call(data);
-    //     if (showLoading && !isClosed) {
-    //       emit(state.copyWith(isLoading: false) as S);
-    //     }
-    //   },
-    //   failure: (error) {
-    //     if (!isClosed) doOnError?.call(error);
-    //     if (showError && !isClosed) {
-    //       emit(state.copyWith(exception: error) as S);
-    //     }
-    //     if (showLoading && !isClosed) {
-    //       emit(state.copyWith(isLoading: false) as S);
-    //     }
-    //   },
-    // );
   }
 }
