@@ -146,6 +146,12 @@ class _UpdateCreateAppointmentScreenState
                         return context
                             .read<UpdateCreateAppointmentCubit>()
                             .fetchAppointmentById(widget.appointmentId!);
+                      } else if (state.fetchAppointmentState.hasSuccess) {
+                        return context
+                            .read<UpdateCreateAppointmentCubit>()
+                            .fetchAppointmentById(state
+                                .fetchAppointmentState.data!.id
+                                .toString());
                       }
                     },
                     child: SingleChildScrollView(
@@ -1141,6 +1147,8 @@ class SelectTimeWIdget extends StatelessWidget {
                     }
                   }
 
+                  final localizations = MaterialLocalizations.of(context);
+
                   return SizedBox(
                     width: 600,
                     child: GridView.count(
@@ -1176,7 +1184,8 @@ class SelectTimeWIdget extends StatelessWidget {
                             ),
                             child: Center(
                               child: AppText(
-                                text: availableTimes[index].format(context),
+                                text: localizations
+                                    .formatTimeOfDay(availableTimes[index]),
                                 color: isSelected
                                     ? AppColors.white
                                     : AppColors.black,

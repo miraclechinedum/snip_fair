@@ -6,6 +6,7 @@ class LoginState extends BaseState {
     required this.password,
     required this.loginResult,
     required this.showPassword,
+    required this.googleLoginResult,
     super.exception,
     super.isLoading,
   });
@@ -15,6 +16,7 @@ class LoginState extends BaseState {
           email: const EmailInput.pure(),
           password: const PasswordInput.pure(),
           loginResult: const ProcessState.init(null),
+          googleLoginResult: const ProcessState.init(null),
           showPassword: false,
         );
 
@@ -22,6 +24,7 @@ class LoginState extends BaseState {
   final PasswordInput password;
   final bool showPassword;
   final ProcessState<LoginResponse> loginResult;
+  final ProcessState<LoginResponse> googleLoginResult;
 
   bool get canLogin =>
       Formz.validate([email, password]) && !loginResult.isLoading;
@@ -31,14 +34,17 @@ class LoginState extends BaseState {
     EmailInput? email,
     PasswordInput? password,
     ProcessState<LoginResponse>? loginResult,
+    ProcessState<LoginResponse>? googleLoginResult,
     bool? showPassword,
     Exception? exception,
     bool? isLoading,
+
   }) {
     return LoginState._(
       email: email ?? this.email,
       password: password ?? this.password,
       loginResult: loginResult ?? this.loginResult,
+      googleLoginResult: googleLoginResult ?? this.googleLoginResult,
       showPassword: showPassword ?? this.showPassword,
       exception: exception ?? this.exception,
       isLoading: isLoading ?? this.isLoading,
@@ -50,6 +56,7 @@ class LoginState extends BaseState {
         email,
         password,
         loginResult,
+        googleLoginResult,
         showPassword,
         exception,
         isLoading,

@@ -320,20 +320,9 @@ class _ImageTakerWidgetState extends State<ImageTakerWidget> {
               height: 100,
               child: _file != null
                   ? Center(
-                      child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.file(
-                          _file!,
-                          height: 50,
-                        ),
-                        8.verticalSpace,
-                        Flexible(
-                            child: AppText(
-                          text: _file!.path.split('/').last,
-                          textAlign: TextAlign.center,
-                        )),
-                      ],
+                      child: Image.file(
+                      _file!,
+                      height: 100,
                     ))
                   : Center(
                       child: Column(

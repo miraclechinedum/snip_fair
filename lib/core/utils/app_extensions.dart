@@ -167,7 +167,7 @@ extension StatusCodeMapper on String? {
       case 'rescheduled':
         return Colors.red;
       case 'escalated':
-        return Colors.purple;
+        return Colors.red;
       default:
         return Colors.grey;
     }

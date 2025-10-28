@@ -51,6 +51,7 @@ import 'package:snip_fair/core/utils/utils.dart';
 class AuthPath {
   // Auth
   static const login = '/login';
+  static const loginWithGoogle = '/login/google';
   static const registerCustomer = '/register/customer';
   static const registerStylist = '/register/stylist';
   static const forgotPassword = '/forgot-password';
@@ -1426,6 +1427,26 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       return ApiResult.success(
         data: SimpleResponse.fromJson({}),
       );
+    });
+  }
+
+  @override
+  Future<ApiResult<LoginResponse>> loginWithGoogle({
+    required String accessToken,
+    required String role,
+    required String device,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client(requireAuth: false);
+      final result = await client.post<Map<String, dynamic>>(
+        AuthPath.loginWithGoogle,
+        data: {
+          'access_token': accessToken,
+          'role': role,
+          'device_name': device,
+        },
+      );
+      return ApiResult.success(data: LoginResponse.fromJson(result.data!));
     });
   }
 }

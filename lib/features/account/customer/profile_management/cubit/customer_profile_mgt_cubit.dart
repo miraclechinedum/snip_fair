@@ -224,4 +224,8 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
     final result = await ImagePicker().pickImage(source: ImageSource.gallery);
     return result?.path;
   }
+
+  void onLogout() {
+    emit(const CustomerProfileMgtState.initial());
+  }
 }

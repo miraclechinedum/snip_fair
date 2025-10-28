@@ -74,4 +74,8 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       },
     );
   }
+
+  void onLogout() {
+    emit(NotificationsState.initial());
+  }
 }

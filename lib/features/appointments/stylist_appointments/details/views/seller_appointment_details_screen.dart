@@ -9,14 +9,17 @@ import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart';
 import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/stylists/onboard/views/seller_business_id_verify.dart';
 
 @RoutePage()
 class SellerAppointmentDetailsScreen extends StatelessWidget
@@ -342,17 +345,20 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 100.horizontalSpace,
                                 Expanded(
                                   child: AppText(
-                                    text: TimeOfDay(
-                                      hour: int.parse(
-                                        appointment.appointmentTime!
-                                            .split(':')[0],
+                                    text: AppHelper.timeOfDayToString(
+                                      context,
+                                      TimeOfDay(
+                                        hour: int.parse(
+                                          appointment.appointmentTime!
+                                              .split(':')[0],
+                                        ),
+                                        minute: int.parse(
+                                          appointment.appointmentTime!
+                                              .split(':')[1]
+                                              .removeAMPM(),
+                                        ),
                                       ),
-                                      minute: int.parse(
-                                        appointment.appointmentTime!
-                                            .split(':')[1]
-                                            .removeAMPM(),
-                                      ),
-                                    ).format(context),
+                                    ),
                                     textAlign: TextAlign.end,
                                     color: AppColors.black,
                                     fontSize: 16,
@@ -474,6 +480,30 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                     title: 'Enter Completion Code',
                                     hint: 'XXXXXX',
                                     onSubmit: cubit.completeAppointment,
+                                  );
+                                },
+                              ),
+                              12.verticalSpace,
+                            ],
+                            if (state.fetchAppointmentDetailsState.data!.status
+                                .isCompletedStatus) ...[
+                              CustomButton(
+                                title: 'Upload Proof of Completion',
+                                onPressed: () {
+                                  AppHelper.showCustomModalBottomSheet<void>(
+                                    context: context,
+                                    modal: SubmitProofBottomSheet(
+                                      onSubmit: (comment, images) {
+                                        return context
+                                            .read<
+                                                SellerAppointmentDetailsCubit>()
+                                            .submitAppointmentProof(
+                                              images: images,
+                                              comment: comment,
+                                            );
+                                      },
+                                    ),
+                                    isDarkMode: false,
                                   );
                                 },
                               ),
@@ -700,4 +730,139 @@ Future<bool?> showCodeEntryBottomSheet(
       onSubmit: onSubmit,
     ),
   );
+}
+
+class SubmitProofBottomSheet extends StatefulWidget {
+  const SubmitProofBottomSheet({
+    required this.onSubmit,
+    super.key,
+  });
+
+  final Future<void> Function(String comment, List<String> imagePaths) onSubmit;
+
+  @override
+  State<SubmitProofBottomSheet> createState() => _SubmitProofBottomSheetState();
+}
+
+class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
+  String _comment = '';
+  List<String> _imagePaths = [];
+  bool _isSubmitting = false;
+
+  Future<void> _handleSubmit() async {
+    if (_comment.trim().isEmpty && _imagePaths.isEmpty) {
+      AppHelper.showSnackBar(
+        context,
+        message: 'Please provide a comment or attach at least one image',
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await widget.onSubmit(_comment.trim(), _imagePaths);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      AppHelper.showSnackBar(
+        context,
+        message: 'Failed to submit proof. Please try again.',
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Widget _buildPickedList() {
+    if (_imagePaths.isEmpty) {
+      return const AppText(
+        text: 'No images attached',
+        color: AppColors.grey3,
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _imagePaths.map((p) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              const Icon(Icons.image, size: 18, color: AppColors.grey3),
+              8.horizontalSpace,
+              Expanded(
+                child: AppText(
+                  text: p.split(RegExp(r'[\\/]').toString()).isNotEmpty
+                      ? p.split('/').last
+                      : p,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() => _imagePaths.remove(p));
+                },
+                child: const Icon(Icons.close, size: 18, color: Colors.red),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          const ModalPill(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const AppText(
+                  text: 'Submit Proof of Completion',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                12.verticalSpace,
+                CustomTextField(
+                  label: 'Comment',
+                  onChanged: (v) => _comment = v,
+                  maxLines: 5,
+                ),
+                12.verticalSpace,
+                ImageTakerWidget(
+                  label: 'Attach a photo',
+                  onSelected: (image) {
+                    setState(() {
+                      _imagePaths
+                        ..clear()
+                        ..add(image);
+                    });
+                  },
+                ),
+                12.verticalSpace,
+                _buildPickedList(),
+                16.verticalSpace,
+                CustomButton(
+                  title: 'Submit Proof',
+                  isLoading: _isSubmitting,
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                ),
+                12.verticalSpace,
+                CustomButton(
+                  title: 'Cancel',
+                  onPressed: () => Navigator.of(context).pop(false),
+                  gradient: null,
+                  background: const Color(0xff374757),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

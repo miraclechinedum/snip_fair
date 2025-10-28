@@ -658,6 +658,12 @@ class AppHelper {
     return null; // Profile is complete
   }
 
+  static String timeOfDayToString(BuildContext context, TimeOfDay timeOfDay) {
+    final localizations = MaterialLocalizations.of(context);
+
+    return localizations.formatTimeOfDay(timeOfDay);
+  }
+
   /// Gets all incomplete steps
   static List<ProfileStepInfo> getAllIncompleteSteps(
     ProfileCompleteness profileCompleteness,

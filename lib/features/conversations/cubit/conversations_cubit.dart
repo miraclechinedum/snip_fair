@@ -274,6 +274,16 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     _isPollingFetchInProgress = false;
   }
 
+  void onLogout() {
+    stopPollingMessages();
+    clearChatMessages();
+    emit(
+      state.copyWith(
+        conversationsState: const ProcessState.success([]),
+      ),
+    );
+  }
+
   @override
   Future<void> close() {
     _chatNotificationsSubscription?.cancel();

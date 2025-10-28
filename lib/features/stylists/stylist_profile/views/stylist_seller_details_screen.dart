@@ -246,9 +246,9 @@ class StylistSellerDetailsScreen extends StatelessWidget
                   return Container(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 60,
+                        vertical: 40.h,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

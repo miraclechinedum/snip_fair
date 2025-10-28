@@ -187,6 +187,25 @@ class _AppState extends State<App> {
                                   case AuthStatus.unAuthenticated:
                                     _appRouter
                                         .replaceAll([const LandingRoute()]);
+                                    context
+                                        .read<SellerProfileMgtCubit>()
+                                        .onLogout();
+                                    context
+                                        .read<CustomerProfileMgtCubit>()
+                                        .onLogout();
+                                    context
+                                        .read<ConversationsCubit>()
+                                        .onLogout();
+                                    context
+                                        .read<CustomerAppointmentsCubit>()
+                                        .onLogout();
+                                    context
+                                        .read<SellerAppointMgtCubit>()
+                                        .onLogout();
+                                    context
+                                        .read<NotificationsCubit>()
+                                        .onLogout();
+                                    break;
 
                                   case AuthStatus.authenticated:
                                     if (state.user.emailVerifiedAt == null) {

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
@@ -196,6 +197,7 @@ class SellerAppointmentDetailsCubit
 
     await response.when(
       success: (data) {
+        Fluttertoast.showToast(msg: 'Dispute submitted successfully');
         emit(
           state.copyWith(
             updateAppointmentState: const ProcessState.success(true),
@@ -204,6 +206,7 @@ class SellerAppointmentDetailsCubit
         getAppointmentDetails(appointmentId);
       },
       failure: (error) {
+        Fluttertoast.showToast(msg: 'Failed to submit dispute');
         emit(
           state.copyWith(
             updateAppointmentState: ProcessState.error(error),
@@ -228,14 +231,16 @@ class SellerAppointmentDetailsCubit
 
     await response.when(
       success: (data) {
+        Fluttertoast.showToast(msg: 'Proof submitted successfully');
         emit(
           state.copyWith(
             updateAppointmentState: const ProcessState.success(true),
           ),
         );
-        getAppointmentDetails(appointmentId);
+        // getAppointmentDetails(appointmentId);
       },
       failure: (error) {
+        Fluttertoast.showToast(msg: 'Failed to submit proof');
         emit(
           state.copyWith(
             updateAppointmentState: ProcessState.error(error),

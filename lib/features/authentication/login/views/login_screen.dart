@@ -1,3 +1,4 @@
+import 'package:auth_buttons/auth_buttons.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -134,6 +135,25 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                           isLoading: state.loginResult.isLoading,
                           onPressed: state.canLogin ? cubit.login : null,
                         );
+                      },
+                    ),
+                    12.verticalSpace,
+                    BlocBuilder<LoginCubit, LoginState>(
+                      builder: (context, state) {
+                        return Center(
+                          child: GoogleAuthButton(
+                            isLoading: state.loginResult.isLoading,
+                            onPressed: () {
+                              cubit.loginWithGoogle(isStylist: isStylist);
+                            },
+                            themeMode: ThemeMode.light,
+                            style: AuthButtonStyle(
+                              iconType: AuthIconType.secondary,
+                              buttonType: AuthButtonType.secondary,
+                            ),
+                          ),
+                        );
+                       
                       },
                     ),
                     12.verticalSpace,

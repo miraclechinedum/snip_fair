@@ -110,7 +110,9 @@ class CustomTextField extends StatelessWidget {
           keyboardType: inputType,
           initialValue: initialText,
           readOnly: readOnly,
+          
           inputFormatters: inputFormatters,
+          
           //autovalidateMode: AutovalidateMode.always,
           textCapitalization: textCapitalization ?? TextCapitalization.none,
           textInputAction: textInputAction,

@@ -32,7 +32,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         BlocListener<SellerProfileMgtCubit, SellerProfileMgtState>(
           listenWhen: (previous, current) =>
               previous.updateAvatarState != current.updateAvatarState,
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.updateAvatarState.hasError) {
               AppHelper.showAppDialog<void>(
                 context,
@@ -47,6 +47,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
               Fluttertoast.showToast(
                 msg: 'Profile picture updated successfully',
               );
+              await context.read<SellerProfileMgtCubit>().getProfileDetails();
 
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
@@ -72,7 +73,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         BlocListener<SellerProfileMgtCubit, SellerProfileMgtState>(
           listenWhen: (previous, current) =>
               previous.updateBannerState != current.updateBannerState,
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.updateBannerState.hasError) {
               AppHelper.showAppDialog<void>(
                 context,
@@ -87,7 +88,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
               Fluttertoast.showToast(
                 msg: 'Banner image updated successfully',
               );
-
+              await context.read<SellerProfileMgtCubit>().getProfileDetails();
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
                 final profileCompleteness =
@@ -524,7 +525,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
       sliver: SliverAppBar(
         foregroundColor: Colors.white,
         backgroundColor: AppColors.primaryColor,
-        expandedHeight: 310,
+        expandedHeight: 330.h,
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         title: innerBoxIsScrolled

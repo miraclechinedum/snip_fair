@@ -14,6 +14,11 @@ abstract class AuthenticationRepository {
   Future<ApiResult<SimpleResponse>> forgotPassowrd(String email);
   Future<ApiResult<SimpleResponse>> resendVerificationEmail(String email);
   Future<ApiResult<SimpleResponse>> verifyEmail(String otp);
+  Future<ApiResult<LoginResponse>> loginWithGoogle({
+    required String accessToken,
+    required String role,
+    required String device,
+  });
 }
 
 @Injectable(as: AuthenticationRepository)
@@ -82,4 +87,15 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
       failure: (f) => f,
     );
   }
+
+  @override
+  Future<ApiResult<LoginResponse>> loginWithGoogle(
+          {required String accessToken,
+          required String role,
+          required String device}) =>
+      _remoteSource.loginWithGoogle(
+        accessToken: accessToken,
+        role: role,
+        device: device,
+      );
 }

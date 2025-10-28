@@ -49,6 +49,7 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
                     'You have successfully verified your email address. Proceed to complete your application',
                 buttonText: 'Complete Registration',
                 onDoneCallback: (ctx) {
+                  context.pop();
                   context.read<AppCubit>().onLogin();
                 },
               ),

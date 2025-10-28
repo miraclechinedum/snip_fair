@@ -107,4 +107,8 @@ class SellerAppointMgtCubit extends Cubit<SellerAppointMgtState> {
       },
     );
   }
+
+  void onLogout() {
+    emit(const SellerAppointMgtState.initial());
+  }
 }

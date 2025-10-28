@@ -105,4 +105,8 @@ class CustomerAppointmentsCubit extends Cubit<CustomerAppointmentsState> {
       },
     );
   }
+
+  void onLogout() {
+    emit(const CustomerAppointmentsState.initial());
+  }
 }

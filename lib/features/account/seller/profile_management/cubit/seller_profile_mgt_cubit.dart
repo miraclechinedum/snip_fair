@@ -212,4 +212,8 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
       },
     );
   }
+
+  void onLogout() {
+    emit(const SellerProfileMgtState.initial());
+  }
 }

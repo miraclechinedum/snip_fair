@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart' show BuildContext, TimeOfDay;
+import 'package:flutter/material.dart'
+    show BuildContext, MaterialLocalizations, TimeOfDay;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
@@ -168,10 +169,11 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
         updateOrCreateAppointmentState: const ProcessState.loading(),
       ),
     );
+    final localizations = MaterialLocalizations.of(context);
     final response = await _appointmentRepository.createAppointment(
       portfolioId: state.fetchPortfolioState.data!.id!.toString(),
       date: DateFormat('yyyy-MM-dd').format(state.selectedDate!),
-      time: state.selectedTime!.format(context),
+      time: localizations.formatTimeOfDay(state.selectedTime!),
       note: state.notes,
       address: state.address,
     );
