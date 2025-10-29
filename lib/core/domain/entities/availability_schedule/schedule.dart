@@ -7,7 +7,7 @@ part 'schedule.g.dart';
 class Schedule {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   String? day;
   bool? available;
   @JsonKey(name: 'created_at')

@@ -8,7 +8,7 @@ part of 'preferences.dart';
 
 Preferences _$PreferencesFromJson(Map<String, dynamic> json) => Preferences(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: json['user_id'],
       preferredTime: json['preferred_time'] as String?,
       preferredStylist: json['preferred_stylist'] as String?,
       autoRebooking: json['auto_rebooking'] as bool?,

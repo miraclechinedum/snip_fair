@@ -9,6 +9,7 @@ class CustomerProfileMgtState extends Equatable {
     required this.initializePaymentState,
     required this.transactionsPaginationData,
     required this.updateAvatarState,
+    required this.deleteAccountState,
   });
 
   const CustomerProfileMgtState.initial()
@@ -18,6 +19,7 @@ class CustomerProfileMgtState extends Equatable {
         transactionsState = const ProcessState.init(null),
         transactionsPaginationData = const PaginationData(),
         updateAvatarState = const ProcessState.init(null),
+        deleteAccountState = const ProcessState.init(null),
         initializePaymentState = const ProcessState.init(null);
 
   final ProcessState<CustomerProfileDetails> profileDetails;
@@ -26,6 +28,7 @@ class CustomerProfileMgtState extends Equatable {
   final ProcessState<List<UserTransaction>> transactionsState;
   final ProcessState<PayfastPaymentData> initializePaymentState;
   final ProcessState<bool> updateAvatarState;
+  final ProcessState<bool> deleteAccountState;
 
   final PaginationData transactionsPaginationData;
 
@@ -37,6 +40,7 @@ class CustomerProfileMgtState extends Equatable {
     ProcessState<PayfastPaymentData>? initializePaymentState,
     PaginationData? transactionsPaginationData,
     ProcessState<bool>? updateAvatarState,
+    ProcessState<bool>? deleteAccountState,
   }) {
     return CustomerProfileMgtState._(
       profileDetails: profileDetails ?? this.profileDetails,
@@ -48,6 +52,7 @@ class CustomerProfileMgtState extends Equatable {
       transactionsPaginationData:
           transactionsPaginationData ?? this.transactionsPaginationData,
       updateAvatarState: updateAvatarState ?? this.updateAvatarState,
+      deleteAccountState: deleteAccountState ?? this.deleteAccountState,
     );
   }
 
@@ -60,5 +65,6 @@ class CustomerProfileMgtState extends Equatable {
         initializePaymentState,
         transactionsPaginationData,
         updateAvatarState,
+        deleteAccountState,
       ];
 }

@@ -6,7 +6,7 @@ part 'customer_profile.g.dart';
 class CustomerProfile {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   @JsonKey(name: 'billing_name')
   String? billingName;
   @JsonKey(name: 'billing_email')

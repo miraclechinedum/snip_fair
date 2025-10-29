@@ -9,9 +9,9 @@ class Proof {
   List<String>? mediaUrls;
   String? comment;
   @JsonKey(name: 'appointment_id')
-  int? appointmentId;
+  dynamic appointmentId;
   @JsonKey(name: 'user_id')
-  int? userId;
+  dynamic userId;
   @JsonKey(name: 'deleted_at')
   dynamic deletedAt;
   @JsonKey(name: 'created_at')

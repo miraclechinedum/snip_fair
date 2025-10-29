@@ -9,7 +9,7 @@ part of 'location_service.dart';
 LocationService _$LocationServiceFromJson(Map<String, dynamic> json) =>
     LocationService(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: json['user_id'],
       latitude: json['latitude'] as String?,
       longitude: json['longitude'] as String?,
       locationAccuracy: json['location_accuracy'] as String?,

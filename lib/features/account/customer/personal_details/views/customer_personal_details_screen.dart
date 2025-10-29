@@ -3,17 +3,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/customer.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
@@ -124,7 +128,7 @@ class CustomerPersonalDetailsScreen
                       return CustomTextField(
                         label: 'First Name',
                         hint: 'Enter your first name',
-                        initialText: currentProfile.user!.firstName!,
+                        initialText: currentProfile.user?.firstName,
                         isRequired: true,
                         onChanged: cubit.onFirstNameChanged,
                         isError: firstName.isNotValid,
@@ -142,7 +146,7 @@ class CustomerPersonalDetailsScreen
                       return CustomTextField(
                         label: 'Last Name',
                         hint: 'Enter your last name',
-                        initialText: currentProfile.user!.lastName!,
+                        initialText: currentProfile.user?.lastName,
                         isRequired: true,
                         onChanged: cubit.onLastNameChanged,
                         isError: lastName.isNotValid,
@@ -156,17 +160,20 @@ class CustomerPersonalDetailsScreen
                     hint: 'example@gmail.com',
                     isRequired: true,
                     readOnly: true,
-                    initialText: currentProfile.user!.email!,
+                    initialText: currentProfile.user?.email,
                   ),
                   16.verticalSpace,
                   CustomPhoneTextField(
                     label: 'Phone',
                     isRequired: true,
                     dialCode: '+27',
-                    initialPhone:
-                        PhoneNumber.parse(currentProfile.user!.phone!),
-                    controller:
-                        TextEditingController(text: currentProfile.user!.phone),
+                    initialPhone: currentProfile.user?.phone != null &&
+                            currentProfile.user!.phone!.isNotEmpty
+                        ? PhoneNumber.parse(currentProfile.user?.phone ?? '')
+                        : null,
+                    controller: TextEditingController(
+                      text: currentProfile.user?.phone ?? '',
+                    ),
                     onInputChanged: (phone) =>
                         cubit.onPhoneChanged(phone.international),
                   ),
@@ -186,11 +193,13 @@ class CustomerPersonalDetailsScreen
                         label: 'Location',
                         hintText: 'Search for address',
                         isError: address.isNotValid,
-                        initialPlace: GeoPlace(
-                          address: currentProfile.user!.country!,
-                          lat: 0,
-                          lng: 0,
-                        ),
+                        initialPlace: currentProfile.user?.country != null
+                            ? GeoPlace(
+                                address: currentProfile.user!.country!,
+                                lat: 0,
+                                lng: 0,
+                              )
+                            : null,
                         descriptionText: address.displayError?.message,
                       );
                     },
@@ -228,6 +237,52 @@ class CustomerPersonalDetailsScreen
                     },
                   ),
                   12.verticalSpace,
+                  Center(
+                    child: BlocListener<CustomerProfileMgtCubit,
+                        CustomerProfileMgtState>(
+                      listenWhen: (previous, current) =>
+                          previous.deleteAccountState !=
+                          current.deleteAccountState,
+                      listener: (context, state) {
+                        if (state.deleteAccountState.hasSuccess) {
+                          Fluttertoast.showToast(
+                            msg: 'Account deleted successfully',
+                          );
+                          // Navigate to initial route or login screen
+                          context.read<AppCubit>().onLogout();
+                        }
+                      },
+                      child: TextButton(
+                        onPressed: () {
+                          AppHelper.showAppDialog(
+                            context,
+                            OnConfirmDialog(
+                              title: 'Delete Account',
+                              content:
+                                  'Are you sure you want to delete your account? This action cannot be undone.',
+                              onConfirmed: (ctx) {
+                                context
+                                    .read<CustomerProfileMgtCubit>()
+                                    .deleteAccount();
+                              },
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          textStyle: AppTextStyle.body2.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          minimumSize: Size.fromHeight(40.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('DELETE ACCOUNT'),
+                      ),
+                    ),
+                  ),
                   12.verticalSpace,
                 ],
               ),

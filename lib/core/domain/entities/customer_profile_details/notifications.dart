@@ -6,7 +6,7 @@ part 'notifications.g.dart';
 class Notifications {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   @JsonKey(name: 'booking_confirmation')
   bool? bookingConfirmation;
   @JsonKey(name: 'appointment_reminders')

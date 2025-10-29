@@ -6,7 +6,7 @@ part 'location_service.g.dart';
 class LocationService {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   String? latitude;
   String? longitude;
   @JsonKey(name: 'location_accuracy')

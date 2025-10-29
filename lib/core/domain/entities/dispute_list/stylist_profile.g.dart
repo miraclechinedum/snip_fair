@@ -9,7 +9,7 @@ part of 'stylist_profile.dart';
 StylistProfile _$StylistProfileFromJson(Map<String, dynamic> json) =>
     StylistProfile(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: json['user_id']?.toString(),
       businessName: json['business_name'] as String?,
       yearsOfExperience: (json['years_of_experience'] as num?)?.toInt(),
       identificationId: json['identification_id'] as String?,

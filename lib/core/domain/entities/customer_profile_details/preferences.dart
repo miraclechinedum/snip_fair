@@ -6,7 +6,7 @@ part 'preferences.g.dart';
 class Preferences {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   @JsonKey(name: 'preferred_time')
   String? preferredTime;
   @JsonKey(name: 'preferred_stylist')

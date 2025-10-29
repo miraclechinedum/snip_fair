@@ -12,8 +12,8 @@ Proof _$ProofFromJson(Map<String, dynamic> json) => Proof(
           ?.map((e) => e as String)
           .toList(),
       comment: json['comment'] as String?,
-      appointmentId: (json['appointment_id'] as num?)?.toInt(),
-      userId: (json['user_id'] as num?)?.toInt(),
+      appointmentId: json['appointment_id'] ,
+      userId: json['user_id'],
       deletedAt: json['deleted_at'],
       createdAt: json['created_at'] == null
           ? null

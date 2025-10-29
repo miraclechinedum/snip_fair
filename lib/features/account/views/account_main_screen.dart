@@ -137,6 +137,17 @@ class AccountMainScreen extends StatelessWidget {
               ),
             ] else ...[
               ListTile(
+                leading: const Icon(Iconsax.personalcard),
+                title: const AppText(
+                  text: 'Account',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                onTap: () {
+                  context.router.push(const CustomerPersonalDetailsRoute());
+                },
+              ),
+              ListTile(
                 leading: const Icon(Iconsax.password_check),
                 title: const AppText(
                   text: 'Change password',

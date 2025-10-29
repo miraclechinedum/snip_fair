@@ -8,7 +8,7 @@ part 'stylist_profile.g.dart';
 class StylistProfile {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   @JsonKey(name: 'business_name')
   String? businessName;
   @JsonKey(name: 'years_of_experience')

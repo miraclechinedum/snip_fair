@@ -9,7 +9,7 @@ part of 'customer_profile.dart';
 CustomerProfile _$CustomerProfileFromJson(Map<String, dynamic> json) =>
     CustomerProfile(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: json['user_id'],
       billingName: json['billing_name'] as String?,
       billingEmail: json['billing_email'] as String?,
       billingCity: json['billing_city'],

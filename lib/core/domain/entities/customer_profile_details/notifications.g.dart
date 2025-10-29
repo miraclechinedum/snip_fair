@@ -9,7 +9,7 @@ part of 'notifications.dart';
 Notifications _$NotificationsFromJson(Map<String, dynamic> json) =>
     Notifications(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: json['user_id'],
       bookingConfirmation: json['booking_confirmation'] as bool?,
       appointmentReminders: json['appointment_reminders'] as bool?,
       favoriteStylistUpdate: json['favorite_stylist_update'] as bool?,

@@ -6,10 +6,10 @@ part 'portfolio.g.dart';
 class Portfolio {
   int? id;
   @JsonKey(name: 'user_id')
-  String? userId;
+  dynamic userId;
   String? title;
   @JsonKey(name: 'category_id')
-  String? categoryId;
+  dynamic categoryId;
   double? price;
   String? duration;
   String? description;
