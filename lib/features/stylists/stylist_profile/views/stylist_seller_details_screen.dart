@@ -7,12 +7,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
-import 'package:snip_fair/core/presentation/app.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
 import 'package:snip_fair/features/stylists/stylist_profile/cubit/stylist_seller_details_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
@@ -27,12 +25,14 @@ class StylistSellerDetailsScreen extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     final tabs = <String>[
+      'About',
       'Services & Pricing',
       'Portfolio & Work Samples',
       'Recent Client Reviews',
     ];
 
     final tabViews = [
+      const AboutView(),
       const ServicesListView(),
       const PortfolioView(),
       const ReviewsView(),
@@ -133,10 +133,12 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             null) {
                           return;
                         }
-                        AppHelper.showImagePreview(context,
-                            imageUrl: state
-                                .sellerDetails.data!.stylistProfile!.banner!
-                                .completeImagePath());
+                        AppHelper.showImagePreview(
+                          context,
+                          imageUrl: state
+                              .sellerDetails.data!.stylistProfile!.banner!
+                              .completeImagePath(),
+                        );
                       },
                       child: CachedNetworkImage(
                         imageUrl: state
@@ -150,7 +152,8 @@ class StylistSellerDetailsScreen extends StatelessWidget
                           return ColoredBox(
                             color: Colors.grey.shade200,
                             child: Center(
-                                child: SvgPicture.asset(Assets.images.logo)),
+                              child: SvgPicture.asset(Assets.images.logo),
+                            ),
                           );
                         },
                         placeholder: (context, url) =>
@@ -178,9 +181,11 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                   null) {
                                 return;
                               }
-                              AppHelper.showImagePreview(context,
-                                  imageUrl: state.sellerDetails.data!.avatar!
-                                      .completeImagePath());
+                              AppHelper.showImagePreview(
+                                context,
+                                imageUrl: state.sellerDetails.data!.avatar!
+                                    .completeImagePath(),
+                              );
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 500),
@@ -223,18 +228,16 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               ),
                             ),
                           ),
-                          // SizedBox(
-                          //   height: 30,
-                          //   width: 120,
-                          //   child: CustomButton(
-                          //     onPressed: () {},
-                          //     title: 'More info',
-                          //     gradient: null,
-                          //     background:
-                          //         AppColors.primaryColor.withValues(alpha: .1),
-                          //     textColor: AppColors.primaryColor,
-                          //   ),
-                          // ),
+                          LikeItemWidget(
+                            onLikePressed: () => context
+                                .read<StylistSellerDetailsCubit>()
+                                .likeStylist(
+                                  state.sellerDetails.data!.stylistProfile!.id
+                                      .toString(),
+                                ),
+                            isLiked:
+                                state.sellerDetails.data?.favourite ?? false,
+                          ),
                         ],
                       ),
                     ),
@@ -248,7 +251,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 40.h,
+                        vertical: 50.h,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +332,6 @@ class StylistSellerDetailsScreen extends StatelessWidget
                           SizedBox(
                             height: 60.h,
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Expanded(
                                   child: Column(
@@ -463,6 +465,200 @@ class StylistSellerDetailsScreen extends StatelessWidget
       create: (context) =>
           getIt<StylistSellerDetailsCubit>()..init(seller: seller, id: id),
       child: this,
+    );
+  }
+}
+
+class AboutView extends StatelessWidget {
+  const AboutView();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<StylistSellerDetailsCubit>().state;
+    if (state.sellePortfolio.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return CustomScrollView(
+      key: const PageStorageKey<String>('about'),
+      slivers: <Widget>[
+        SliverOverlapInjector(
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+            context,
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.grey1),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        text:
+                            'About ${state.sellerDetails.data?.firstName ?? 'N/A'}',
+                        fontWeight: FontWeight.w600,
+                      ),
+                      8.verticalSpace,
+                      AppText(
+                        text: state.sellerDetails.data?.bio ??
+                            'No about available',
+                        fontSize: 14,
+                        color: AppColors.blackShade1,
+                      ),
+                      12.verticalSpace,
+                      const AppText(
+                        text: 'Specialties',
+                        fontWeight: FontWeight.w600,
+                      ),
+                      8.verticalSpace,
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: state.sellerDetails.data?.categories
+                                ?.map(
+                                  (tag) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryColor
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: AppText(
+                                      text: tag.name ?? 'N/A',
+                                      fontSize: 12,
+                                      color: AppColors.primaryColor,
+                                    ),
+                                  ),
+                                )
+                                .toList() ??
+                            [],
+                      ),
+                      12.verticalSpace,
+                      const AppText(
+                        text: 'Education & Certifications',
+                        fontWeight: FontWeight.w600,
+                      ),
+                      8.verticalSpace,
+                      AppText(
+                        text: state.sellerDetails.data?.stylistCertifications
+                                ?.map((cert) => cert ?? 'N/A')
+                                .join(', ') ??
+                            'No education or certifications available',
+                        fontSize: 14,
+                        color: AppColors.blackShade1,
+                      ),
+                    ],
+                  ),
+                ),
+                12.verticalSpace,
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.grey1),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AppText(
+                        text: 'Working Hours & Availability',
+                        fontWeight: FontWeight.w600,
+                      ),
+                      8.verticalSpace,
+                      const Divider(),
+                      ...List.generate(
+                        state.sellerDetails.data?.workingHours?.length ?? 0,
+                        (index) {
+                          final workingHour =
+                              state.sellerDetails.data?.workingHours?[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                AppText(
+                                  text: workingHour?.day
+                                          .capitalizeFirstLetter() ??
+                                      'N/A',
+                                  fontSize: 14,
+                                  color: AppColors.black,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                const Spacer(),
+                                AppText(
+                                  text: workingHour?.slots?.isEmpty ?? false
+                                      ? 'Closed'
+                                      : AppHelper.fromStartToEndTimeFromSlots(
+                                          context,
+                                          workingHour?.slots ?? [],
+                                        ),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.blackShade1,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                12.verticalSpace,
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.grey1),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AppText(
+                        text: 'Customer Care',
+                        fontWeight: FontWeight.w600,
+                      ),
+                      8.verticalSpace,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.mail_outline,
+                            color: AppColors.grey3,
+                            size: 18,
+                          ),
+                          5.horizontalSpace,
+                          const AppText(text: 'support@snipfair.com'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -698,7 +894,7 @@ class ServicesListView extends StatelessWidget {
                 vertical: 8,
               ),
               sliver: SliverFixedExtentList(
-                itemExtent: 220.0.h,
+                itemExtent: 230.0.h,
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final service = services[index];
@@ -706,83 +902,6 @@ class ServicesListView extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: PopularStyleCard(portfolio: service),
                     );
-                    // return Container(
-                    //   margin: const EdgeInsets.symmetric(vertical: 5),
-                    //   decoration: BoxDecoration(
-                    //     borderRadius: BorderRadius.circular(12),
-                    //     color: Colors.white,
-                    //     boxShadow: AppColors.defaultBoxShadow,
-                    //   ),
-                    //   padding: const EdgeInsets.symmetric(
-                    //     horizontal: 16,
-                    //     vertical: 10,
-                    //   ),
-                    //   child: Row(
-                    //     children: [
-                    //       Expanded(
-                    //         child: Column(
-                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                    //           children: [
-                    //             AppText(
-                    //               text: service.title ?? 'N/A',
-                    //               maxLines: 1,
-                    //               fontSize: 16,
-                    //               fontWeight: FontWeight.bold,
-                    //             ),
-                    //             AppText(
-                    //               text: service.description ?? 'N/A',
-                    //               fontSize: 12,
-                    //               maxLines: 1,
-                    //             ),
-                    //             Text.rich(
-                    //               TextSpan(
-                    //                 children: [
-                    //                   const WidgetSpan(
-                    //                     child: Icon(
-                    //                       Icons.timelapse,
-                    //                       color: Colors.grey,
-                    //                       size: 15,
-                    //                     ),
-                    //                   ),
-                    //                   TextSpan(
-                    //                     text: ' ${service.duration ?? 'N/A'}',
-                    //                     style: AppTextStyle.caption,
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       Column(
-                    //         crossAxisAlignment: CrossAxisAlignment.end,
-                    //         children: [
-                    //           AppText(
-                    //             text: service.price?.formatAmount() ?? 'R0',
-                    //             color: AppColors.primaryColor,
-                    //             fontSize: 18,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //           const Spacer(),
-                    //           SizedBox(
-                    //             width: 120.w,
-                    //             height: 30.h,
-                    //             child: CustomButton(
-                    //               title: 'Book Now',
-                    //               onPressed: () {
-                    //                 context.pushRoute(
-                    //                   UpdateCreateAppointmentRoute(
-                    //                     portfolio: service,
-                    //                   ),
-                    //                 );
-                    //               },
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ],
-                    //   ),
-                    // );
                   },
                   childCount: services.length,
                 ),

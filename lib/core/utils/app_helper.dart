@@ -12,6 +12,7 @@ import 'package:flutter_svg/svg.dart';
 
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
@@ -770,6 +771,55 @@ class AppHelper {
     }
 
     return steps;
+  }
+
+  static String fromStartToEndTimeFromSlots(
+      BuildContext context, List<Slot> slots) {
+    if (slots.isEmpty) return '';
+    final startTimes =
+        slots.map((slot) => slot.from).whereType<String>().toList();
+    final endTimes = slots.map((slot) => slot.to).whereType<String>().toList();
+
+    if (startTimes.isEmpty || endTimes.isEmpty) return '';
+
+    // Parse times and find earliest start and latest end
+    final parsedStartTimes = startTimes
+        .map((time) => TimeOfDay(
+              hour: int.parse(time.split(':')[0]),
+              minute: int.parse(time.split(':')[1]),
+            ))
+        .toList();
+
+    final parsedEndTimes = endTimes
+        .map((time) => TimeOfDay(
+              hour: int.parse(time.split(':')[0]),
+              minute: int.parse(time.split(':')[1]),
+            ))
+        .toList();
+
+    // Find earliest start time
+    var earliestStart = parsedStartTimes.first;
+    for (final time in parsedStartTimes) {
+      if (time.hour < earliestStart.hour ||
+          (time.hour == earliestStart.hour &&
+              time.minute < earliestStart.minute)) {
+        earliestStart = time;
+      }
+    }
+
+    // Find latest end time
+    var latestEnd = parsedEndTimes.first;
+    for (final time in parsedEndTimes) {
+      if (time.hour > latestEnd.hour ||
+          (time.hour == latestEnd.hour && time.minute > latestEnd.minute)) {
+        latestEnd = time;
+      }
+    }
+
+    final startStr = timeOfDayToString(context, earliestStart);
+    final endStr = timeOfDayToString(context, latestEnd);
+
+    return '$startStr - $endStr';
   }
 }
 

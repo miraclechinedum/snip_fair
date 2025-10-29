@@ -4,11 +4,11 @@ part 'total_withdrawn.g.dart';
 
 @JsonSerializable()
 class TotalWithdrawn {
-  int? value;
+  dynamic? value;
   @JsonKey(name: 'current_period')
-  int? currentPeriod;
+  dynamic? currentPeriod;
   @JsonKey(name: 'change_percentage')
-  int? changePercentage;
+  dynamic? changePercentage;
   @JsonKey(name: 'change_text')
   String? changeText;
   @JsonKey(name: 'is_positive')

@@ -8,9 +8,9 @@ part of 'total_withdrawn.dart';
 
 TotalWithdrawn _$TotalWithdrawnFromJson(Map<String, dynamic> json) =>
     TotalWithdrawn(
-      value: (json['value'] as num?)?.toInt(),
-      currentPeriod: (json['current_period'] as num?)?.toInt(),
-      changePercentage: (json['change_percentage'] as num?)?.toInt(),
+      value: json['value'],
+      currentPeriod: json['current_period'],
+      changePercentage: json['change_percentage'],
       changeText: json['change_text'] as String?,
       isPositive: json['is_positive'] as bool?,
     );
