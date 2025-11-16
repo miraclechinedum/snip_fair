@@ -15,8 +15,14 @@ import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 import '../../features/account/change_password/cubit/change_password_cubit.dart'
     as _i902;
+import '../../features/account/customer/billing_info/cubit/customer_billing_info_cubit.dart'
+    as _i18;
+import '../../features/account/customer/notification_settings/cubit/customer_notif_settings_cubit.dart'
+    as _i818;
 import '../../features/account/customer/personal_details/cubit/customer_personal_details_cubit.dart'
     as _i34;
+import '../../features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart'
+    as _i475;
 import '../../features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart'
     as _i1025;
 import '../../features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart'
@@ -147,10 +153,16 @@ Future<_i174.GetIt> $initGetIt(
       () => _i485.SellerPaymentMethodsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i902.ChangePasswordCubit>(
       () => _i902.ChangePasswordCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i475.CustomerPrefsSettingsCubit>(
+      () => _i475.CustomerPrefsSettingsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i34.CustomerPersonalDetailsCubit>(
       () => _i34.CustomerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i818.CustomerNotifSettingsCubit>(
+      () => _i818.CustomerNotifSettingsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i1025.CustomerProfileMgtCubit>(
       () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i18.CustomerBillingInfoCubit>(
+      () => _i18.CustomerBillingInfoCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i840.NotificationsCubit>(
       () => _i840.NotificationsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i782.AppCubit>(

@@ -168,123 +168,7 @@ class SellerEarningScreen extends StatelessWidget implements AutoRouteWrapper {
             child: TabBarView(
               children: [
                 OverviewWidget(cubit: cubit),
-                RefreshIndicator(
-                  onRefresh: () async {
-                    await cubit.fetchTransactions(isInitial: true);
-                  },
-                  child: InfiniteList(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: EdgeInsets.only(bottom: 50),
-                    emptyBuilder: (context) => const Center(
-                      child: AppText(
-                        text: 'No transactions found',
-                      ),
-                    ),
-                    centerEmpty: true,
-                    centerLoading: true,
-                    onFetchData: () {
-                      cubit.fetchTransactions();
-                    },
-                    hasReachedMax:
-                        cubit.state.transactionsPaginationData.hasReachedMax,
-                    loadingBuilder: (context) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    isLoading: cubit.state.transactionsState.isLoading ||
-                        cubit.state.transactionsPaginationData.isLoadingMore,
-                    itemCount: cubit.state.transactionsState.data?.length ?? 0,
-                    separatorBuilder: (context, index) => 8.verticalSpace,
-                    itemBuilder: (context, index) {
-                      final transaction =
-                          cubit.state.transactionsState.data![index];
-                      return ListTile(
-                        // contentPadding: EdgeInsets.zero,
-                        leading: transaction.type == 'topup'
-                            ? const Icon(
-                                Iconsax.arrow_right_1,
-                                color: Colors.green,
-                              )
-                            : transaction.type == 'refund'
-                                ? const Icon(
-                                    Iconsax.refresh_circle,
-                                    color: Colors.green,
-                                  )
-                                : transaction.type == 'payment'
-                                    ? const Icon(
-                                        Iconsax.arrow_left,
-                                        color: Colors.red,
-                                      )
-                                    : const Icon(Iconsax.bank),
-                        title: AppText(
-                          text: transaction.description ?? 'N/A',
-                          fontWeight: FontWeight.w600,
-                        ),
-                        subtitle: AppText(
-                          text: transaction.createdAt != null
-                              ? transaction.createdAt!
-                                  .toLocal()
-                                  .toLongDateString()
-                              : 'N/A',
-                          color: AppColors.grey3,
-                          fontSize: 12,
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            AppText(
-                              text:
-                                  '${transaction.type == 'topup' || transaction.type == 'refund' || transaction.type == 'other' ? '+' : '-'}${transaction.amount?.formatAmount() ?? 'R0.00'}',
-                              fontWeight: FontWeight.w600,
-                              color: transaction.type == 'topup' ||
-                                      transaction.type == 'refund' ||
-                                      transaction.type == 'other'
-                                  ? Colors.green
-                                  : transaction.type == 'payment'
-                                      ? Colors.red
-                                      : AppColors.primaryColor,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: transaction.status == 'approved' ||
-                                        transaction.status == 'completed'
-                                    ? Colors.green.withValues(alpha: 0.2)
-                                    : transaction.status == 'pending' ||
-                                            transaction.status == 'processing'
-                                        ? AppColors.contentColorOrange
-                                            .withValues(alpha: 0.2)
-                                        : AppColors.contentColorRed
-                                            .withValues(alpha: 0.2),
-                                // Adjust colors as needed
-                                // color: AppColors.grey2,
-                                // Adjust colors as needed
-
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              child: AppText(
-                                text: transaction.status ?? 'N/A',
-                                color: transaction.status == 'approved' ||
-                                        transaction.status == 'completed'
-                                    ? Colors.green
-                                    : transaction.status == 'pending' ||
-                                            transaction.status == 'processing'
-                                        ? AppColors.contentColorOrange
-                                        : AppColors.contentColorRed,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                TransactionsWidget(cubit: cubit),
               ],
             ),
           ),
@@ -300,6 +184,253 @@ class SellerEarningScreen extends StatelessWidget implements AutoRouteWrapper {
         ..getEarnings()
         ..getPaymentMethods(),
       child: this,
+    );
+  }
+}
+
+class TransactionsWidget extends StatefulWidget {
+  const TransactionsWidget({
+    super.key,
+    required this.cubit,
+  });
+
+  final EarningsCubit cubit;
+
+  @override
+  State<TransactionsWidget> createState() => _TransactionsWidgetState();
+}
+
+class _TransactionsWidgetState extends State<TransactionsWidget> {
+  final statuses = [
+    'all',
+    'pending',
+    'processing',
+    'approved',
+    'holding',
+    'completed',
+    'declined',
+    'reversed',
+    'failed',
+  ];
+
+  String searchQuery = '';
+  String selectedStatus = 'all';
+
+  @override
+  Widget build(BuildContext context) {
+    final transactions = widget.cubit.state.transactionsState.data ?? [];
+    final filteredTransactions = transactions.where((transaction) {
+      final matchesStatus = selectedStatus == 'all' ||
+          (transaction.status != null &&
+              transaction.status!.toLowerCase() == selectedStatus);
+      final matchesSearch = searchQuery.isEmpty ||
+          (transaction.description != null &&
+              transaction.description!
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase())) ||
+          (transaction.reference != null &&
+              transaction.reference!
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase()));
+      return matchesStatus && matchesSearch;
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: CustomTextField(
+                    hint: 'Search Transactions',
+                    prefixIcon: const Icon(Icons.search),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              8.horizontalSpace,
+              SizedBox(
+                width: 150,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: DropdownButtonFormField<String>(
+                    decoration: AppColors.inputDecoration.copyWith(
+                      labelText: 'Filter',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 14,
+                      ),
+                    ),
+                    isExpanded: true,
+                    initialValue: selectedStatus,
+                    style: AppTextStyle.body1.copyWith(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                    items: statuses
+                        .map(
+                          (status) => DropdownMenuItem<String>(
+                            value: status,
+                            child: Text(
+                              status[0].toUpperCase() + status.substring(1),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedStatus = value!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await widget.cubit.fetchTransactions(isInitial: true);
+            },
+            child: InfiniteList(
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: true,
+              padding: EdgeInsets.only(bottom: 50),
+              emptyBuilder: (context) => const Center(
+                child: AppText(
+                  text: 'No transactions found',
+                ),
+              ),
+              centerEmpty: true,
+              centerLoading: true,
+              onFetchData: () {
+                widget.cubit.fetchTransactions();
+              },
+              hasReachedMax:
+                  widget.cubit.state.transactionsPaginationData.hasReachedMax,
+              loadingBuilder: (context) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              isLoading: widget.cubit.state.transactionsState.isLoading ||
+                  widget.cubit.state.transactionsPaginationData.isLoadingMore,
+              itemCount: filteredTransactions.length,
+              separatorBuilder: (context, index) => 8.verticalSpace,
+              itemBuilder: (context, index) {
+                final transaction = filteredTransactions[index];
+                return ListTile(
+                  // contentPadding: EdgeInsets.zero,
+                  leading: transaction.type == 'earning' ||
+                          transaction.type == 'other'
+                      ? const Icon(
+                          Iconsax.arrow_right_1,
+                          color: Colors.green,
+                        )
+                      : transaction.type == 'refund'
+                          ? const Icon(
+                              Iconsax.refresh_circle,
+                              color: Colors.green,
+                            )
+                          : transaction.type == 'withdraw'
+                              ? const Icon(
+                                  Iconsax.arrow_left,
+                                  color: Colors.red,
+                                )
+                              : const Icon(Iconsax.bank),
+                  title: AppText(
+                    text: transaction.description ?? 'N/A',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  subtitle: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: AppColors.grey3,
+                        fontSize: 12.sp,
+                      ),
+                      children: [
+                        TextSpan(
+                            text: 'Ref: ${transaction.reference}',
+                            style: const TextStyle(
+                              color: AppColors.black,
+                              fontSize: 12,
+                            )),
+                        const TextSpan(text: '\n'),
+                        TextSpan(
+                          text: transaction.createdAt != null
+                              ? transaction.createdAt!
+                                  .toLocal()
+                                  .toLongDateString()
+                              : 'N/A',
+                        ),
+                      ],
+                    ),
+                  ),
+                  isThreeLine: true,
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      AppText(
+                        text:
+                            '${transaction.type == 'topup' || transaction.type == 'refund' || transaction.type == 'other' ? '+' : '-'}${transaction.amount?.formatAmount() ?? 'R0.00'}',
+                        fontWeight: FontWeight.w600,
+                        color: transaction.type == 'topup' ||
+                                transaction.type == 'refund' ||
+                                transaction.type == 'other'
+                            ? Colors.green
+                            : transaction.type == 'payment'
+                                ? Colors.red
+                                : AppColors.primaryColor,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: transaction.status == 'approved' ||
+                                  transaction.status == 'completed'
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : transaction.status == 'pending' ||
+                                      transaction.status == 'processing'
+                                  ? AppColors.contentColorOrange
+                                      .withValues(alpha: 0.2)
+                                  : AppColors.contentColorRed
+                                      .withValues(alpha: 0.2),
+                          // Adjust colors as needed
+                          // color: AppColors.grey2,
+                          // Adjust colors as needed
+
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: AppText(
+                          text: transaction.status ?? 'N/A',
+                          color: transaction.status == 'approved' ||
+                                  transaction.status == 'completed'
+                              ? Colors.green
+                              : transaction.status == 'pending' ||
+                                      transaction.status == 'processing'
+                                  ? AppColors.contentColorOrange
+                                  : AppColors.contentColorRed,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -58,7 +58,6 @@ class StylistSellerDetailsScreen extends StatelessWidget
                 children: List.generate(tabs.length, (index) {
                   return SafeArea(
                     top: false,
-                    bottom: false,
                     child: Builder(
                       builder: (BuildContext context) {
                         return tabViews[index];
@@ -889,24 +888,24 @@ class ServicesListView extends StatelessWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              sliver: SliverFixedExtentList(
-                itemExtent: 230.0.h,
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                sliver: SliverList.separated(
+                  separatorBuilder: (context, index) => 10.verticalSpace,
+                  itemBuilder: (context, index) {
                     final service = services[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: PopularStyleCard(portfolio: service),
+                      child: PopularStyleCard(
+                        portfolio: service,
+                        showFullDescription: true,
+                      ),
                     );
                   },
-                  childCount: services.length,
-                ),
-              ),
-            ),
+                  itemCount: services.length,
+                )),
           ],
         );
       },

@@ -158,7 +158,8 @@ class _AppState extends State<App> {
                   create: (context) => getIt<NotificationsCubit>()
                     ..fetchNotifications(
                       isInitial: true,
-                    ),
+                    )
+                    ..startListeningForNotifications(),
                   child: CalendarControllerProvider(
                     controller: EventController(),
                     child: ScreenUtilInit(
@@ -264,7 +265,7 @@ class _AppState extends State<App> {
                                   return const SplashScreen();
                                 }
                                 return AppExpiryOverlay(
-                                  expiryDate: DateTime(2025, 10, 30),
+                                  expiryDate: DateTime(2025, 11, 20),
                                   child: child!,
                                 );
                               },

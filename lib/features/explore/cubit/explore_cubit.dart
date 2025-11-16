@@ -21,7 +21,7 @@ class ExploreCubit extends Cubit<ExploreState> {
     emit(state.copyWith(topRated: const ProcessState.loading()));
     final response = await _appointmentRepository.customerFetchStylists(
       perPage: '10',
-      sort: '-average_rating',
+      topRated: true,
     );
     response.when(
       success: (data) {

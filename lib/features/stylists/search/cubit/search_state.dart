@@ -1,5 +1,22 @@
 part of 'search_cubit.dart';
 
+enum SortOption {
+  distance,
+  lowestPrice,
+  highestPrice,
+  likesCount,
+  bookingsCount,
+}
+
+enum PriceRangeFilter {
+  all,
+  below50,
+  from50To100,
+  from101To150,
+  from150To200,
+  above200,
+}
+
 class SearchState extends Equatable {
   factory SearchState.initial() {
     return const SearchState._(
@@ -8,6 +25,11 @@ class SearchState extends Equatable {
       searchQuery: '',
       selectedCategory: null,
       categories: ProcessState.init(null),
+      sortOption: SortOption.distance,
+      highestRated: false,
+      online: false,
+      lowestPriceFlag: false,
+      priceRange: PriceRangeFilter.all,
     );
   }
 
@@ -17,12 +39,42 @@ class SearchState extends Equatable {
     required this.searchQuery,
     required this.categories,
     required this.selectedCategory,
+    required this.sortOption,
+    required this.highestRated,
+    required this.online,
+    required this.lowestPriceFlag,
+    required this.priceRange,
   });
   final ProcessState<StylistList> stylists;
   final ProcessState<List<SellerPortfolio>> services;
   final ProcessState<List<WorkCategory>> categories;
   final WorkCategory? selectedCategory;
   final String searchQuery;
+  final SortOption sortOption;
+  final bool highestRated;
+  final bool online;
+  final bool lowestPriceFlag;
+  final PriceRangeFilter? priceRange;
+
+  String? get minPrice => switch (priceRange) {
+        PriceRangeFilter.below50 => '0',
+        PriceRangeFilter.from50To100 => '50',
+        PriceRangeFilter.from101To150 => '101',
+        PriceRangeFilter.from150To200 => '150',
+        PriceRangeFilter.above200 => '200',
+        PriceRangeFilter.all => null,
+        null => null,
+      };
+
+  String? get maxPrice => switch (priceRange) {
+        PriceRangeFilter.below50 => '49',
+        PriceRangeFilter.from50To100 => '100',
+        PriceRangeFilter.from101To150 => '150',
+        PriceRangeFilter.from150To200 => '200',
+        PriceRangeFilter.above200 => null,
+        PriceRangeFilter.all => null,
+        null => null,
+      };
 
   SearchState copyWith({
     ProcessState<StylistList>? stylists,
@@ -30,6 +82,11 @@ class SearchState extends Equatable {
     String? searchQuery,
     ProcessState<List<WorkCategory>>? categories,
     WorkCategory? selectedCategory,
+    SortOption? sortOption,
+    bool? highestRated,
+    bool? online,
+    bool? lowestPriceFlag,
+    PriceRangeFilter? priceRange,
   }) {
     return SearchState._(
       stylists: stylists ?? this.stylists,
@@ -37,6 +94,11 @@ class SearchState extends Equatable {
       searchQuery: searchQuery ?? this.searchQuery,
       categories: categories ?? this.categories,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      sortOption: sortOption ?? this.sortOption,
+      highestRated: highestRated ?? this.highestRated,
+      online: online ?? this.online,
+      lowestPriceFlag: lowestPriceFlag ?? this.lowestPriceFlag,
+      priceRange: priceRange ?? this.priceRange,
     );
   }
 
@@ -47,5 +109,10 @@ class SearchState extends Equatable {
         searchQuery,
         categories,
         selectedCategory,
+        sortOption,
+        highestRated,
+        online,
+        lowestPriceFlag,
+        priceRange,
       ];
 }

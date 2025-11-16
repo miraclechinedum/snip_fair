@@ -116,7 +116,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
                                   text: state.stylistStats.isLoading
                                       ? '...'
                                       : state.stylistStats.hasSuccess
-                                          ? '${state.stylistStats.data!.today?.appointments}'
+                                          ? '${state.stylistStats.data!.total?.activeAppointments}'
                                           : '0',
                                   fontSize: 24,
                                   fontWeight: FontWeight.w600,
@@ -188,29 +188,13 @@ class SellerDashboardMainScreen extends StatelessWidget {
                             text: state.stylistStats.isLoading
                                 ? '...'
                                 : state.stylistStats.hasSuccess
-                                    ? '${state.stylistStats.data!.today?.appointments}'
+                                    ? '${state.stylistStats.data!.total?.appointments}'
                                     : '0',
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-                12.verticalSpace,
-                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
-                  builder: (context, state) {
-                    return BookingTrendsWidget(
-                      data: state.stylistStats.data?.last12Months ?? [],
-                    );
-                  },
-                ),
-                12.verticalSpace,
-                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
-                  builder: (context, state) {
-                    return AppointmentTrendsWidget(
-                      data: state.stylistStats.data?.last12Months ?? [],
                     );
                   },
                 ),
@@ -310,6 +294,23 @@ class SellerDashboardMainScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                12.verticalSpace,
+                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+                  builder: (context, state) {
+                    return BookingTrendsWidget(
+                      data: state.stylistStats.data?.last12Months ?? [],
+                    );
+                  },
+                ),
+                12.verticalSpace,
+                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+                  builder: (context, state) {
+                    return AppointmentTrendsWidget(
+                      data: state.stylistStats.data?.last12Months ?? [],
+                    );
+                  },
+                ),
+                12.verticalSpace,
               ],
             ),
           ),

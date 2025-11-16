@@ -18,10 +18,12 @@ class PopularStyleCard extends StatelessWidget {
     super.key,
     required this.portfolio,
     this.onLikePressed,
+    this.showFullDescription = false,
   });
 
   final SellerPortfolio portfolio;
   final Future<bool?> Function()? onLikePressed;
+  final bool showFullDescription;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +90,7 @@ class PopularStyleCard extends StatelessWidget {
           8.verticalSpace,
           Container(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 8.horizontalSpace,
                 Expanded(
@@ -97,27 +99,40 @@ class PopularStyleCard extends StatelessWidget {
                     children: [
                       AppText(
                         text: portfolio.title ?? 'N/A',
-                        fontWeight: FontWeight.w500,
-                      ),
-                      AppText(
-                        text: portfolio.price?.formatAmount() ?? 'N/A',
-                        fontSize: 14,
-                        color: AppColors.primaryColor,
                         fontWeight: FontWeight.w600,
+                      ),
+                      // if (!showFullDescription)
+                      AppText(
+                        text: portfolio.description ?? 'N/A',
+                        maxLines: showFullDescription ? null : 2,
+                        fontSize: 12,
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 30,
-                  width: 120.w,
-                  child: CustomButton(
-                    title: 'Book Now',
-                    onPressed: () {
-                      context.pushRoute(UpdateCreateAppointmentRoute(
-                          portfolioId: portfolio.id.toString()));
-                    },
-                  ),
+                8.horizontalSpace,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    AppText(
+                      text: portfolio.price?.formatAmount() ?? 'N/A',
+                      fontSize: 14,
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    10.verticalSpace,
+                    SizedBox(
+                      height: 30,
+                      width: 120.w,
+                      child: CustomButton(
+                        title: 'Book Now',
+                        onPressed: () {
+                          context.pushRoute(UpdateCreateAppointmentRoute(
+                              portfolioId: portfolio.id.toString()));
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

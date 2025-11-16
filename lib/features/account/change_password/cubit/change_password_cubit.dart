@@ -19,7 +19,7 @@ class ChangePasswordCubit extends BaseCubit<ChangePasswordState> {
   void onCurrentPassChanged(String value) {
     emit(
       state.copyWith(
-        currentPassword: PasswordInput.dirty(value: value.trim()),
+        currentPassword: StringInput.dirty( value.trim()),
       ),
     );
   }

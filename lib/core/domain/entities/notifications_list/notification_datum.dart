@@ -1,13 +1,13 @@
 import 'package:json_annotation/json_annotation.dart';
 
 part 'notification_datum.g.dart';
-  
+
 @JsonSerializable()
 class NotificationDatum {
   int? id;
   String? type;
   @JsonKey(name: 'type_identifier')
-  dynamic? typeIdentifier;
+  dynamic typeIdentifier;
   String? title;
   String? description;
   @JsonKey(name: 'created_at')
@@ -27,7 +27,8 @@ class NotificationDatum {
     this.isRead,
   });
 
-  factory NotificationDatum.fromJson(Map<String, dynamic> json) => _$NotificationDatumFromJson(json);
+  factory NotificationDatum.fromJson(Map<String, dynamic> json) =>
+      _$NotificationDatumFromJson(json);
 
   Map<String, dynamic> toJson() => _$NotificationDatumToJson(this);
 }

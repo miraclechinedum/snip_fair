@@ -51,4 +51,37 @@ class Notifications {
   }
 
   Map<String, dynamic> toJson() => _$NotificationsToJson(this);
+
+  Notifications copyWith({
+    int? id,
+    dynamic? userId,
+    bool? bookingConfirmation,
+    bool? appointmentReminders,
+    bool? favoriteStylistUpdate,
+    bool? promotionsOffers,
+    bool? reviewReminders,
+    bool? paymentConfirmations,
+    bool? emailNotifications,
+    bool? pushNotifications,
+    bool? smsNotifications,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Notifications(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      bookingConfirmation: bookingConfirmation ?? this.bookingConfirmation,
+      appointmentReminders: appointmentReminders ?? this.appointmentReminders,
+      favoriteStylistUpdate:
+          favoriteStylistUpdate ?? this.favoriteStylistUpdate,
+      promotionsOffers: promotionsOffers ?? this.promotionsOffers,
+      reviewReminders: reviewReminders ?? this.reviewReminders,
+      paymentConfirmations: paymentConfirmations ?? this.paymentConfirmations,
+      emailNotifications: emailNotifications ?? this.emailNotifications,
+      pushNotifications: pushNotifications ?? this.pushNotifications,
+      smsNotifications: smsNotifications ?? this.smsNotifications,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

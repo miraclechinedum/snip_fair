@@ -72,24 +72,54 @@ class DefaultStylistCard extends StatelessWidget {
                   Positioned(
                     left: 8,
                     top: 8,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      child: Row(
-                        children: [
-                          AppText(
-                            text: '${seller.distance?.round() ?? 0}Km',
-                            fontSize: 10,
-                            color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: seller.availability?.availability
+                                        ?.contains('Later') ??
+                                    false
+                                ? Colors.red
+                                : Colors.amber.shade600,
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                        ],
-                      ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          child: Row(
+                            children: [
+                              AppText(
+                                text: '${seller.availability?.availability}',
+                                fontSize: 10,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                        5.verticalSpace,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          child: Row(
+                            children: [
+                              AppText(
+                                text: '${seller.distance?.round() ?? 0}Km',
+                                fontSize: 10,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Positioned(

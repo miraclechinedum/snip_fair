@@ -8,7 +8,7 @@ part of 'schedule.dart';
 
 Schedule _$ScheduleFromJson(Map<String, dynamic> json) => Schedule(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] ,
+      userId: json['user_id'],
       day: json['day'] as String?,
       available: json['available'] as bool?,
       createdAt: json['created_at'] == null

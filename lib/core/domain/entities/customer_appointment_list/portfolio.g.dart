@@ -8,7 +8,7 @@ part of 'portfolio.dart';
 
 Portfolio _$PortfolioFromJson(Map<String, dynamic> json) => Portfolio(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] ,
+      userId: json['user_id'],
       title: json['title'] as String?,
       categoryId: json['category_id'] as String?,
       price: (json['price'] as num?)?.toDouble(),

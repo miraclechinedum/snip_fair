@@ -48,9 +48,9 @@ class _SellerAvailabilityScheduleScreenState
   void initState() {
     super.initState();
     scrollController = ScrollController();
-    if (widget.goToLocationSettings) {
-      _scrollToBottom();
-    }
+    // if (widget.goToLocationSettings) {
+    //   _scrollToBottom();
+    // }
   }
 
   void _scrollToBottom() {
@@ -78,6 +78,18 @@ class _SellerAvailabilityScheduleScreenState
               children: [
                 if (cubit.state.schedules.isLoading)
                   const LinearProgressIndicator(),
+                12.verticalSpace,
+                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+                  builder: (context, state) {
+                    return LocationSettings(
+                      address: state.profileDetails.data?.user?.country,
+                      useLocation: state.profileDetails.data?.user?.useLocation,
+                    );
+                  },
+                ),
+                12.verticalSpace,
+                const Divider(),
+                12.verticalSpace,
                 ...List.generate(scheduleDays.length, (index) {
                   final day = scheduleDays[index];
                   return DayAvailabilityWidget(
@@ -120,17 +132,6 @@ class _SellerAvailabilityScheduleScreenState
                       cubit.submitAvailability();
                     },
                   ),
-                ),
-                12.verticalSpace,
-                const Divider(),
-                12.verticalSpace,
-                BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
-                  builder: (context, state) {
-                    return LocationSettings(
-                      address: state.profileDetails.data?.user?.country,
-                      useLocation: state.profileDetails.data?.user?.useLocation,
-                    );
-                  },
                 ),
                 100.verticalSpace,
               ],

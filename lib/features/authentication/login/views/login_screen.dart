@@ -105,7 +105,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                       },
                       builder: (context, showPassword) {
                         return BlocSelector<LoginCubit, LoginState,
-                            PasswordInput>(
+                            StringInput>(
                           selector: (state) {
                             return state.password;
                           },

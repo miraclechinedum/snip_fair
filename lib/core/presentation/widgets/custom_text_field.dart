@@ -110,9 +110,9 @@ class CustomTextField extends StatelessWidget {
           keyboardType: inputType,
           initialValue: initialText,
           readOnly: readOnly,
-          
+
           inputFormatters: inputFormatters,
-          
+
           //autovalidateMode: AutovalidateMode.always,
           textCapitalization: textCapitalization ?? TextCapitalization.none,
           textInputAction: textInputAction,
@@ -439,29 +439,56 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
                 borderRadius: BorderRadius.circular(8),
                 side: BorderSide(color: AppColors.grey1),
               ),
-              trailing: CloseButton(
-                onPressed: () {
-                  if (widget.readOnly) return;
-                  setState(() {
-                    _geoPlace = null;
-                    widget.onSelected.call(_geoPlace);
-                  });
-                },
-              ),
+              trailing: widget.readOnly
+                  ? null
+                  : CloseButton(
+                      onPressed: () {
+                        if (widget.readOnly) return;
+                        setState(() {
+                          _geoPlace = null;
+                          widget.onSelected.call(_geoPlace);
+                        });
+                      },
+                    ),
             ),
           )
         else
           DropDownSearchField<GeoPlace>(
             displayAllSuggestionWhenTap: true,
             isMultiSelectDropdown: false,
-            textFieldConfiguration: TextFieldConfiguration(
-              textInputAction: TextInputAction.done,
-              onSubmitted: (value) {
-                _selectedAddress(GeoPlace(address: value, lat: 0, lng: 0));
-              },
-              decoration:
-                  AppColors.inputDecoration.copyWith(hintText: widget.hintText),
-            ),
+            textFieldConfiguration: (() {
+              String lastTyped = '';
+              int changeId = 0;
+
+              void selectIfValid() {
+                final t = lastTyped.trim();
+                if (t.isNotEmpty) {
+                  _selectedAddress(GeoPlace(address: t, lat: 0, lng: 0));
+                }
+              }
+
+              return TextFieldConfiguration(
+                textInputAction: TextInputAction.done,
+                onChanged: (v) {
+                  lastTyped = v;
+                  // final int current = ++changeId;
+                  // Future.delayed(const Duration(milliseconds: 800), () {
+                  //   if (current == changeId) {
+                  //     selectIfValid();
+                  //   }
+                  // });
+                },
+                onEditingComplete: selectIfValid,
+                onTapOutside: (_) => selectIfValid(),
+                onSubmitted: (value) {
+                  lastTyped = value;
+                  selectIfValid();
+                },
+                decoration: AppColors.inputDecoration.copyWith(
+                  hintText: widget.hintText,
+                ),
+              );
+            })(),
             suggestionsCallback: (pattern) async {
               if (pattern.isEmpty) return [];
               return getIt<LocationService>().placeSearch(pattern);

@@ -53,6 +53,30 @@ class AppRouter extends RootStackRouter {
           path: '/customer-profile-details',
           page: CustomerPersonalDetailsRoute.page,
         ),
+        AutoRoute(
+          path: '/customer-profile-management',
+          page: CustomerProfileMgtRoute.page,
+        ),
+
+        AutoRoute(
+          path: '/customer-billing-info',
+          page: CustomerBillingInfoRoute.page,
+        ),
+
+        AutoRoute(
+          path: '/customer-preferences',
+          page: CustomerPreferencesRoute.page,
+        ),
+
+        AutoRoute(
+          path: '/customer-notification-settings',
+          page: CustomerNotifSettingsRoute.page,
+        ),
+
+        AutoRoute(
+          path: '/customer-payment-history',
+          page: CustomerPaymentHistoryRoute.page,
+        ),
 
         AutoRoute(
           path: '/customer-wallet',

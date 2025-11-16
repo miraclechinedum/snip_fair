@@ -52,4 +52,39 @@ class Preferences {
   }
 
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);
+
+  Preferences copyWith({
+    int? id,
+    dynamic? userId,
+    String? preferredTime,
+    String? preferredStylist,
+    bool? autoRebooking,
+    bool? enableMobileAppointment,
+    bool? emailReminders,
+    bool? smsReminders,
+    bool? phoneReminders,
+    String? language,
+    String? currency,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? useLocation,
+  }) {
+    return Preferences(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      preferredTime: preferredTime ?? this.preferredTime,
+      preferredStylist: preferredStylist ?? this.preferredStylist,
+      autoRebooking: autoRebooking ?? this.autoRebooking,
+      enableMobileAppointment:
+          enableMobileAppointment ?? this.enableMobileAppointment,
+      emailReminders: emailReminders ?? this.emailReminders,
+      smsReminders: smsReminders ?? this.smsReminders,
+      phoneReminders: phoneReminders ?? this.phoneReminders,
+      language: language ?? this.language,
+      currency: currency ?? this.currency,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      useLocation: useLocation ?? this.useLocation,
+    );
+  }
 }

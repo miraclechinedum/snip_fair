@@ -10,7 +10,7 @@ Portfolio _$PortfolioFromJson(Map<String, dynamic> json) => Portfolio(
       id: (json['id'] as num?)?.toInt(),
       userId: json['user_id'],
       title: json['title'] as String?,
-      categoryId: json['category_id'] ,
+      categoryId: json['category_id'],
       price: (json['price'] as num?)?.toDouble(),
       duration: json['duration'] as String?,
       description: json['description'] as String?,

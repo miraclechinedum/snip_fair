@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
-import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
@@ -36,20 +35,45 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
             ),
             child: Column(
               children: [
-                TextField(
-                  onChanged: (value) {
-                    context.read<SearchCubit>().search(value);
-                  },
-                  decoration: AppColors.inputDecoration.copyWith(
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.grey2,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          context.read<SearchCubit>().search(value);
+                        },
+                        decoration: AppColors.inputDecoration.copyWith(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.grey2,
+                          ),
+                          hintText: 'Search for stylists or services',
+                          hintStyle: AppTextStyle.body2.copyWith(
+                            color: AppColors.grey2,
+                          ),
+                        ),
+                      ),
                     ),
-                    hintText: 'Search for stylists or services',
-                    hintStyle: AppTextStyle.body2.copyWith(
-                      color: AppColors.grey2,
+                    10.horizontalSpace,
+                    GestureDetector(
+                      onTap: () => _showFilterSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.grey1,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.filter_list,
+                          color: AppColors.black,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 10.verticalSpace,
                 SizedBox(
@@ -147,18 +171,18 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BlocBuilder<SearchCubit, SearchState>(
-                        buildWhen: (previous, current) =>
-                            previous.services != current.services,
-                        builder: (context, state) {
-                          return buildServices(
-                            label: 'Services',
-                            portfolios: state.services.data ?? [],
-                            isLoading: state.services.isLoading,
-                          );
-                        },
-                      ),
-                      12.verticalSpace,
+                      // BlocBuilder<SearchCubit, SearchState>(
+                      //   buildWhen: (previous, current) =>
+                      //       previous.services != current.services,
+                      //   builder: (context, state) {
+                      //     return buildServices(
+                      //       label: 'Services',
+                      //       portfolios: state.services.data ?? [],
+                      //       isLoading: state.services.isLoading,
+                      //     );
+                      //   },
+                      // ),
+                      // 12.verticalSpace,
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -211,6 +235,21 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
           ),
         ],
       ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context) {
+    final cubit = context.read<SearchCubit>();
+    final state = context.read<SearchCubit>().state;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return FilterSheet(state: state, cubit: cubit);
+      },
     );
   }
 
@@ -366,6 +405,222 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
         ..fetchCategories()
         ..search(''),
       child: this,
+    );
+  }
+}
+
+class FilterSheet extends StatelessWidget {
+  const FilterSheet({
+    super.key,
+    required this.state,
+    required this.cubit,
+  });
+
+  final SearchState state;
+  final SearchCubit cubit;
+
+  @override
+  Widget build(BuildContext context) {
+    var selectedSort = state.sortOption;
+    var selectedRange = state.priceRange;
+    var highestRated = state.highestRated;
+    var online = state.online;
+    var lowestPriceFlag = state.lowestPriceFlag;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: StatefulBuilder(
+        builder: (ctx, setModalState) {
+          void apply() {
+            cubit
+              ..setSortOption(selectedSort)
+              ..setPriceRange(selectedRange)
+              ..toggleHighestRated(highestRated)
+              ..toggleOnline(online)
+              ..toggleLowestPriceFlag(lowestPriceFlag);
+
+            cubit.search(cubit.state.searchQuery);
+            Navigator.of(ctx).pop();
+          }
+
+          void clear() {
+            selectedSort = SortOption.distance;
+            selectedRange = PriceRangeFilter.all;
+            highestRated = false;
+            online = false;
+            lowestPriceFlag = false;
+            setModalState(() {});
+          }
+
+          Widget radio(SortOption opt, String label) {
+            return RadioListTile<SortOption>(
+              value: opt,
+              title: Text(label),
+              activeColor: AppColors.primaryColor,
+            );
+          }
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          'Sort & Filters',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                            onPressed: clear, child: const Text('Clear')),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('Sort by',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    RadioGroup<SortOption>(
+                        groupValue: selectedSort,
+                        onChanged: (v) {
+                          setModalState(() {
+                            selectedSort = v!;
+                          });
+                          print('CHanges $selectedSort');
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            radio(SortOption.distance, 'Distance'),
+                            radio(SortOption.bookingsCount, 'Bookings count'),
+                            radio(SortOption.likesCount, 'Likes count'),
+                            radio(SortOption.lowestPrice, 'Lowest price'),
+                            radio(SortOption.highestPrice, 'Highest price'),
+                          ],
+                        )),
+                    const SizedBox(height: 12),
+                    const Divider(
+                      thickness: 0.5,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('Price range',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ChoiceChip(
+                          label: const Text('Below 50'),
+                          selected: selectedRange == PriceRangeFilter.below50,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.below50;
+                            setModalState(() {});
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('50 - 100'),
+                          selected:
+                              selectedRange == PriceRangeFilter.from50To100,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.from50To100;
+                            setModalState(() {});
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('101 - 150'),
+                          selected:
+                              selectedRange == PriceRangeFilter.from101To150,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.from101To150;
+                            setModalState(() {});
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('150 - 200'),
+                          selected:
+                              selectedRange == PriceRangeFilter.from150To200,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.from150To200;
+                            setModalState(() {});
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('200 and above'),
+                          selected: selectedRange == PriceRangeFilter.above200,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.above200;
+                            setModalState(() {});
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('Any'),
+                          selected: selectedRange == PriceRangeFilter.all,
+                          onSelected: (_) {
+                            selectedRange = PriceRangeFilter.all;
+                            setModalState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(
+                      thickness: 0.5,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('Quick filters',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    SwitchListTile(
+                      value: highestRated,
+                      onChanged: (v) => setModalState(() => highestRated = v),
+                      title: const Text('Highest rating'),
+                    ),
+                    SwitchListTile(
+                      value: online,
+                      onChanged: (v) => setModalState(() => online = v),
+                      title: const Text('Online'),
+                    ),
+                    SwitchListTile(
+                      value: lowestPriceFlag,
+                      onChanged: (v) =>
+                          setModalState(() => lowestPriceFlag = v),
+                      title: const Text('Lowest price'),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: apply,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Apply'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

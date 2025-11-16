@@ -12,6 +12,7 @@ import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
 import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
 import 'package:snip_fair/core/utils/input/confirm_passowrd_input.dart';
 import 'package:snip_fair/core/utils/input/password_input.dart';
+import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/features/account/change_password/cubit/change_password_cubit.dart';
 
 @RoutePage()
@@ -55,7 +56,7 @@ class ChangePasswordScreen extends BaseStatelessPage<ChangePasswordCubit>
                       },
                       builder: (context, showPassword) {
                         return BlocSelector<ChangePasswordCubit,
-                            ChangePasswordState, PasswordInput>(
+                            ChangePasswordState, StringInput>(
                           selector: (state) {
                             return state.currentPassword;
                           },

@@ -7,6 +7,8 @@ import 'package:snip_fair/core/domain/entities/bank/bank.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
 import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
@@ -226,6 +228,26 @@ abstract class ProfileRepository {
     String? page,
     int? perPage,
   });
+
+  Future<ApiResult<SimpleResponse>> markNotificationAsRead(
+    String notificationId,
+  );
+
+  Future<ApiResult<SimpleResponse>> updateCustomerBillingInfo({
+    required String name,
+    required String email,
+    required String city,
+    required String zipCode,
+    required String location,
+  });
+
+  Future<ApiResult<SimpleResponse>> updateCustomerPreferences(
+    Preferences prefs,
+  );
+
+  Future<ApiResult<SimpleResponse>> updateCustomerNotificationSettings(
+    Notifications prefs,
+  );
 }
 
 @Injectable(as: ProfileRepository)
@@ -631,4 +653,38 @@ class ProfileRepoImpl implements ProfileRepository {
         page: page,
         perPage: perPage,
       );
+
+  @override
+  Future<ApiResult<SimpleResponse>> markNotificationAsRead(
+    String notificationId,
+  ) =>
+      _remoteSource.markNotificationAsRead(notificationId);
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerBillingInfo({
+    required String name,
+    required String email,
+    required String city,
+    required String zipCode,
+    required String location,
+  }) =>
+      _remoteSource.updateCustomerBillingInfo(
+        name: name,
+        email: email,
+        city: city,
+        zipCode: zipCode,
+        location: location,
+      );
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerNotificationSettings(
+    Notifications prefs,
+  ) =>
+      _remoteSource.updateCustomerNotificationSettings(prefs);
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerPreferences(
+    Preferences prefs,
+  ) =>
+      _remoteSource.updateCustomerPreferences(prefs);
 }

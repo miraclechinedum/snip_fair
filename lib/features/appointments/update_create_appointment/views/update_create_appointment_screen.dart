@@ -17,6 +17,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
@@ -46,7 +47,15 @@ class UpdateCreateAppointmentScreen extends StatefulWidget
           context,
           portfolioId: portfolioId,
           appointmentId: appointmentId,
-        ),
+        )
+        ..onAddressChanged(context
+                .read<CustomerProfileMgtCubit>()
+                .state
+                .profileDetails
+                .data
+                ?.user
+                ?.country ??
+            ''),
       child: this,
     );
   }
@@ -62,58 +71,25 @@ class _UpdateCreateAppointmentScreenState
   Widget build(BuildContext context) {
     return BlocBuilder<CustomerProfileMgtCubit, CustomerProfileMgtState>(
       builder: (context, state) {
-        final view = Scaffold(
-          appBar: CustomAppBar(
-            title: widget.appointmentId != null
-                ? 'Update Appointment'
-                : 'Book Appointment',
-          ),
-          body: SafeArea(
-            child: BlocListener<UpdateCreateAppointmentCubit,
-                UpdateCreateAppointmentState>(
-              listenWhen: (previous, current) =>
-                  previous.fetchAppointmentState !=
-                  current.fetchAppointmentState,
-              listener: (context, state) {
-                if (state.fetchAppointmentState.hasError) {
-                  AppHelper.showAppDialog<void>(
-                    context,
-                    OnFailDialogContent(
-                      subtext: (state.fetchAppointmentState.error!
-                                  as RemoteException)
-                              .errorResponse
-                              ?.message ??
-                          'Something went wrong, please try again later.',
-                      onDoneCallback: (_) {
-                        context.router.pop();
-                      },
-                    ),
-                  );
-                }
-              },
-              child: BlocConsumer<UpdateCreateAppointmentCubit,
+        final view = KeyboardDismisser(
+          child: Scaffold(
+            appBar: CustomAppBar(
+              title: widget.appointmentId != null
+                  ? 'Update Appointment'
+                  : 'Book Appointment',
+            ),
+            body: SafeArea(
+              child: BlocListener<UpdateCreateAppointmentCubit,
                   UpdateCreateAppointmentState>(
                 listenWhen: (previous, current) =>
-                    previous.updateOrCreateAppointmentState !=
-                    current.updateOrCreateAppointmentState,
+                    previous.fetchAppointmentState !=
+                    current.fetchAppointmentState,
                 listener: (context, state) {
-                  if (state.updateOrCreateAppointmentState.hasSuccess) {
-                    AppHelper.showSnackBar(
-                      context,
-                      message: widget.appointmentId != null
-                          ? 'Appointment updated successfully'
-                          : 'Appointment created successfully',
-                    );
-                    // context.router.pop();
-                    context.read<CustomerAppointmentsCubit>().getAppointments();
-                    context.read<CustomerProfileMgtCubit>()
-                      ..getWallet()
-                      ..getWalletTransactions();
-                  } else if (state.updateOrCreateAppointmentState.hasError) {
+                  if (state.fetchAppointmentState.hasError) {
                     AppHelper.showAppDialog<void>(
                       context,
                       OnFailDialogContent(
-                        subtext: (state.updateOrCreateAppointmentState.error!
+                        subtext: (state.fetchAppointmentState.error!
                                     as RemoteException)
                                 .errorResponse
                                 ?.message ??
@@ -125,57 +101,94 @@ class _UpdateCreateAppointmentScreenState
                     );
                   }
                 },
-                buildWhen: (previous, current) =>
-                    previous.fetchPortfolioState !=
-                        current.fetchPortfolioState ||
-                    previous.fetchAppointmentState !=
-                        current.fetchAppointmentState ||
-                    previous.updateOrCreateAppointmentState !=
-                        current.updateOrCreateAppointmentState,
-                builder: (context, state) {
-                  if (state.fetchPortfolioState.isLoading ||
-                      state.fetchAppointmentState.isLoading ||
-                      state.updateOrCreateAppointmentState.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      if (widget.appointmentId != null) {
-                        return context
-                            .read<UpdateCreateAppointmentCubit>()
-                            .fetchAppointmentById(widget.appointmentId!);
-                      } else if (state.fetchAppointmentState.hasSuccess) {
-                        return context
-                            .read<UpdateCreateAppointmentCubit>()
-                            .fetchAppointmentById(state
-                                .fetchAppointmentState.data!.id
-                                .toString());
-                      }
-                    },
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          const AppointmentHeader(),
-                          16.verticalSpace,
-                          if (state.fetchAppointmentState.data == null) ...[
-                            const SelectDateWidget(),
+                child: BlocConsumer<UpdateCreateAppointmentCubit,
+                    UpdateCreateAppointmentState>(
+                  listenWhen: (previous, current) =>
+                      previous.updateOrCreateAppointmentState !=
+                      current.updateOrCreateAppointmentState,
+                  listener: (context, state) {
+                    if (state.updateOrCreateAppointmentState.hasSuccess) {
+                      AppHelper.showSnackBar(
+                        context,
+                        message: widget.appointmentId != null
+                            ? 'Appointment updated successfully'
+                            : 'Appointment created successfully',
+                      );
+                      // context.router.pop();
+                      context
+                          .read<CustomerAppointmentsCubit>()
+                          .getAppointments();
+                      context.read<CustomerProfileMgtCubit>()
+                        ..getWallet()
+                        ..getWalletTransactions();
+                    } else if (state.updateOrCreateAppointmentState.hasError) {
+                      AppHelper.showAppDialog<void>(
+                        context,
+                        OnFailDialogContent(
+                          subtext: (state.updateOrCreateAppointmentState.error!
+                                      as RemoteException)
+                                  .errorResponse
+                                  ?.message ??
+                              'Something went wrong, please try again later.',
+                          onDoneCallback: (_) {
+                            context.router.pop();
+                          },
+                        ),
+                      );
+                    }
+                  },
+                  buildWhen: (previous, current) =>
+                      previous.fetchPortfolioState !=
+                          current.fetchPortfolioState ||
+                      previous.fetchAppointmentState !=
+                          current.fetchAppointmentState ||
+                      previous.updateOrCreateAppointmentState !=
+                          current.updateOrCreateAppointmentState,
+                  builder: (context, state) {
+                    if (state.fetchPortfolioState.isLoading ||
+                        state.fetchAppointmentState.isLoading ||
+                        state.updateOrCreateAppointmentState.isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        if (widget.appointmentId != null) {
+                          return context
+                              .read<UpdateCreateAppointmentCubit>()
+                              .fetchAppointmentById(widget.appointmentId!);
+                        } else if (state.fetchAppointmentState.hasSuccess) {
+                          return context
+                              .read<UpdateCreateAppointmentCubit>()
+                              .fetchAppointmentById(state
+                                  .fetchAppointmentState.data!.id
+                                  .toString());
+                        }
+                      },
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const AppointmentHeader(),
                             16.verticalSpace,
+                            if (state.fetchAppointmentState.data == null) ...[
+                              const SelectDateWidget(),
+                              16.verticalSpace,
+                            ],
+                            if (state.fetchAppointmentState.data == null) ...[
+                              const SelectTimeWIdget(),
+                              16.verticalSpace,
+                            ],
+                            buildYourInformationView(),
+                            24.verticalSpace,
+                            const BookingSummary(),
                           ],
-                          if (state.fetchAppointmentState.data == null) ...[
-                            const SelectTimeWIdget(),
-                            16.verticalSpace,
-                          ],
-                          buildYourInformationView(),
-                          24.verticalSpace,
-                          const BookingSummary(),
-                        ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -201,10 +214,8 @@ class _UpdateCreateAppointmentScreenState
     );
   }
 
-  BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>
-      buildYourInformationView() {
-    return BlocBuilder<UpdateCreateAppointmentCubit,
-        UpdateCreateAppointmentState>(
+  Widget buildYourInformationView() {
+    return BlocBuilder<CustomerProfileMgtCubit, CustomerProfileMgtState>(
       builder: (context, state) {
         return Container(
           decoration: BoxDecoration(
@@ -228,47 +239,87 @@ class _UpdateCreateAppointmentScreenState
               CustomTextField(
                 label: 'Full Name',
                 isRequired: true,
-                initialText: state.fetchPortfolioState.data?.user?.name ?? '',
+                initialText: state.profileDetails.data?.user?.name ?? '',
                 readOnly: true,
               ),
               12.verticalSpace,
               CustomTextField(
                 label: 'Email',
                 isRequired: true,
-                initialText: state.fetchPortfolioState.data?.user?.email ?? '',
+                initialText: state.profileDetails.data?.user?.email ?? '',
                 readOnly: true,
               ),
               12.verticalSpace,
-              CustomPlaceSearchField(
-                label: 'Location',
-                onSelected: (place) {
-                  if (place == null) return;
-                  context
-                      .read<UpdateCreateAppointmentCubit>()
-                      .onAddressChanged(place.address);
+              BlocBuilder<UpdateCreateAppointmentCubit,
+                  UpdateCreateAppointmentState>(
+                builder: (context, appointState) {
+                  if (appointState.fetchAppointmentState.hasSuccess) {
+                    return CustomPlaceSearchField(
+                      label: 'Location',
+                      onSelected: (place) {
+                        if (place == null) return;
+                        context
+                            .read<UpdateCreateAppointmentCubit>()
+                            .onAddressChanged(place.address);
+                      },
+                      readOnly: appointState.fetchAppointmentState
+                          .hasSuccess, // make readOnly if update
+                      initialPlace: appointState
+                                  .fetchAppointmentState.data?.serviceNotes !=
+                              null
+                          ? GeoPlace(
+                              address: appointState
+                                  .fetchAppointmentState.data!.serviceNotes!,
+                              lat: 0,
+                              lng: 0,
+                            )
+                          : GeoPlace(
+                              address:
+                                  state.profileDetails.data!.user!.country!,
+                              lat: 0,
+                              lng: 0,
+                            ),
+                    );
+                  }
+                  return CustomPlaceSearchField(
+                    label: 'Location',
+                    onSelected: (place) {
+                      if (place == null) return;
+                      context
+                          .read<UpdateCreateAppointmentCubit>()
+                          .onAddressChanged(place.address);
+                    },
+                    readOnly: appointState.fetchAppointmentState
+                        .hasSuccess, // make readOnly if update
+                    initialPlace: state.profileDetails.data?.user?.country !=
+                            null
+                        ? GeoPlace(
+                            address: state.profileDetails.data!.user!.country!,
+                            lat: 0,
+                            lng: 0,
+                          )
+                        : null,
+                  );
                 },
-                readOnly: state.fetchAppointmentState.hasSuccess,
-                initialPlace: state.fetchPortfolioState.data?.user?.country !=
-                        null
-                    ? GeoPlace(
-                        address: state.fetchPortfolioState.data!.user!.country!,
-                        lat: 0,
-                        lng: 0,
-                      )
-                    : null,
               ),
               12.verticalSpace,
-              CustomTextField(
-                label: 'Special Requests or Notes (Optional)',
-                onChanged: (value) {
-                  context
-                      .read<UpdateCreateAppointmentCubit>()
-                      .onNotesChanged(value);
+              BlocBuilder<UpdateCreateAppointmentCubit,
+                  UpdateCreateAppointmentState>(
+                builder: (context, state) {
+                  return CustomTextField(
+                    label: 'Special Requests or Notes (Optional)',
+                    onChanged: (value) {
+                      context
+                          .read<UpdateCreateAppointmentCubit>()
+                          .onNotesChanged(value);
+                    },
+                    readOnly: state.fetchAppointmentState.hasSuccess,
+                    initialText:
+                        state.fetchAppointmentState.data?.extra?.toString() ??
+                            '',
+                    maxLines: 4,
+                  );
                 },
-                readOnly: state.fetchAppointmentState.hasSuccess,
-                initialText:
-                    state.fetchAppointmentState.data?.extra?.toString() ?? '',
-                maxLines: 4,
               ),
             ],
           ),
@@ -586,7 +637,8 @@ class BookingSummary extends StatelessWidget {
                                 AppText(
                                   text: state.fetchAppointmentState.data
                                           ?.appointmentCode
-                                          .pickNumber()
+                                          ?.split('-')
+                                          .last
                                           .toString() ??
                                       '',
                                   fontSize: 22,
@@ -673,7 +725,8 @@ class BookingSummary extends StatelessWidget {
                                 AppText(
                                   text: state.fetchAppointmentState.data
                                           ?.completionCode
-                                          .pickNumber()
+                                          ?.split('-')
+                                          .last
                                           .toString() ??
                                       '',
                                   fontSize: 22,
@@ -1436,7 +1489,7 @@ class PaymentSummaryWidget extends StatelessWidget {
                             text: 'Service Price',
                           ),
                           AppText(
-                            text: '${servicePrice.formatAmount()}',
+                            text: servicePrice.formatAmount(),
                             fontWeight: FontWeight.w600,
                           ),
                         ],
@@ -1463,8 +1516,9 @@ class PaymentSummaryWidget extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                           AppText(
-                            text:
-                                '\$${(servicePrice - walletBalance).clamp(0, servicePrice).toStringAsFixed(2)}',
+                            text: (servicePrice - walletBalance)
+                                .clamp(0, servicePrice)
+                                .formatAmount(),
                             fontWeight: FontWeight.w600,
                             color: Colors.blue,
                           ),

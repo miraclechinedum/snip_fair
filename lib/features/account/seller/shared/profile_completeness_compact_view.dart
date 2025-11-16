@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -10,6 +11,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
 class SellerProfileCompletedCompactView extends StatelessWidget {
   const SellerProfileCompletedCompactView({
@@ -23,6 +25,7 @@ class SellerProfileCompletedCompactView extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        context.read<SellerProfileMgtCubit>().getProfileDetails();
         AppHelper.showCustomModalBottomSheet<void>(
           context: context,
           modal: SellerProfileCompletenessFullView(
@@ -97,6 +100,9 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final complete =
+        AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
+
     return SafeArea(
       child: Column(
         children: [
@@ -251,17 +257,34 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
               ],
             ),
             padding: const EdgeInsets.all(16),
-            child: CustomButton(
-              title: 'Complete verification',
-              onPressed: () {
-                Navigator.pop(context);
-                final router = AutoRouter.of(context);
-                if (router.current.name ==
-                    SellerProfileVerificationRoute.name) {
-                  return;
-                }
-                context.router.push(
-                  const SellerProfileVerificationRoute(),
+            child: BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
+              builder: (context, state) {
+                return CustomButton(
+                  title: state.profileDetails.data?.user?.stylistProfile
+                              ?.status ==
+                          'unverified'
+                      ? 'Complete verification'
+                      : 'Verification ${state.profileDetails.data?.user?.stylistProfile?.status.capitalizeFirstLetter()}',
+                  isLoading: state.profileDetails.isLoading,
+                  onPressed: () {
+                    if (state.profileDetails.data?.user?.stylistProfile
+                            ?.status ==
+                        'unverified') {
+                      Navigator.pop(context);
+
+                      AppHelper.checkAndNavigateProfileCompletion(
+                        context,
+                        profileCompleteness,
+                      );
+                    } else {
+                      Navigator.pop(context);
+                      AppHelper.showSnackBar(
+                        context,
+                        message:
+                            'Your profile verification is ${state.profileDetails.data?.user?.stylistProfile?.status}.',
+                      );
+                    }
+                  },
                 );
               },
             ),

@@ -14,14 +14,14 @@ class LoginState extends BaseState {
   LoginState.initial()
       : this._(
           email: const EmailInput.pure(),
-          password: const PasswordInput.pure(),
+          password: const StringInput.pure(),
           loginResult: const ProcessState.init(null),
           googleLoginResult: const ProcessState.init(null),
           showPassword: false,
         );
 
   final EmailInput email;
-  final PasswordInput password;
+  final StringInput password;
   final bool showPassword;
   final ProcessState<LoginResponse> loginResult;
   final ProcessState<LoginResponse> googleLoginResult;
@@ -32,7 +32,7 @@ class LoginState extends BaseState {
   @override
   LoginState copyWith({
     EmailInput? email,
-    PasswordInput? password,
+    StringInput? password,
     ProcessState<LoginResponse>? loginResult,
     ProcessState<LoginResponse>? googleLoginResult,
     bool? showPassword,

@@ -40,6 +40,12 @@ abstract class AppointmentRepository {
     String? perPage,
     String? sort,
     bool? favourite,
+    bool? topRated,
+    bool? online,
+    bool? highestRated,
+    bool? lowestPrice,
+    String? minPrice,
+    String? maxPrice,
   });
 
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id);
@@ -163,6 +169,12 @@ class AppointmentRepoImpl implements AppointmentRepository {
     String? perPage,
     String? sort,
     bool? favourite,
+    bool? topRated,
+    bool? online,
+    bool? highestRated,
+    bool? lowestPrice,
+    String? minPrice,
+    String? maxPrice,
   }) =>
       _remoteSource.customerFetchStylists(
         query: query,
@@ -171,6 +183,12 @@ class AppointmentRepoImpl implements AppointmentRepository {
         perPage: perPage,
         sort: sort,
         favourite: favourite,
+        topRated: topRated,
+        online: online,
+        highestRated: highestRated,
+        lowestPrice: lowestPrice,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
       );
 
   @override

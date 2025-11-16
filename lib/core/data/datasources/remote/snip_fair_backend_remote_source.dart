@@ -20,6 +20,8 @@ import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_li
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
 import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
@@ -67,6 +69,9 @@ class AuthPath {
   static const portfolio = '/customer/portfolio';
   static const toggleLike = '/like/toggle';
   static const customerAppointment = '/customer/appointment';
+  static const customerPreferences = '/customer/preferences';
+  static const customerBilling = '/customer/billing';
+  static const customerNotificationSettings = '/customer/notification/settings';
 
   // Chats
   static const conversations = '/conversations';
@@ -917,6 +922,12 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? perPage,
     String? sort,
     bool? favourite,
+    bool? topRated,
+    bool? online,
+    bool? highestRated,
+    bool? lowestPrice,
+    String? minPrice,
+    String? maxPrice,
   }) {
     return run(() async {
       final client = _clientWithRetry();
@@ -929,6 +940,12 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           if (perPage != null) 'per_page': perPage,
           if (sort != null) 'sort': sort,
           if (favourite != null) 'favourite': favourite,
+          if (topRated != null) 'top_rated': topRated,
+          if (online != null) 'online': online,
+          if (highestRated != null) 'highest_rated': highestRated,
+          if (lowestPrice != null) 'lowest_price': lowestPrice,
+          if (minPrice != null) 'min_price': minPrice,
+          if (maxPrice != null) 'max_price': maxPrice,
         },
       );
       return ApiResult.success(
@@ -1448,6 +1465,96 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
 
       return ApiResult.success(data: LoginResponse.fromJson(result.data!));
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> markNotificationAsRead(
+    String notificationId,
+  ) async {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        '${AuthPath.user}/notifications/$notificationId/read',
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerBillingInfo({
+    required String name,
+    required String email,
+    required String city,
+    required String zipCode,
+    required String location,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        AuthPath.customerBilling,
+        queryParameters: {
+          '_method': 'PATCH',
+        },
+        data: {
+          'billing_name': name,
+          'billing_email': email,
+          'billing_city': city,
+          'billing_zip': zipCode,
+          'billing_location': location,
+        },
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerNotificationSettings(
+    Notifications prefs,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        AuthPath.customerNotificationSettings,
+        queryParameters: {
+          '_method': 'PATCH',
+        },
+        data: prefs.toJson()
+          ..remove('updatedAt')
+          ..remove('createdAt')
+          ..remove('_id')
+          ..remove('user_id'),
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<SimpleResponse>> updateCustomerPreferences(
+    Preferences prefs,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      await client.post<Map<String, dynamic>>(
+        AuthPath.customerPreferences,
+        queryParameters: {
+          '_method': 'PATCH',
+        },
+        data: prefs.toJson()
+          ..remove('updatedAt')
+          ..remove('createdAt')
+          ..remove('_id')
+          ..remove('user_id'),
+      );
+      return ApiResult.success(
+        data: SimpleResponse.fromJson({}),
+      );
     });
   }
 }

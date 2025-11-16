@@ -1,9 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
 import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/pagination_data.dart';
 
@@ -15,6 +17,12 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       : super(NotificationsState.initial());
 
   final ProfileRepository _profileRepository;
+
+  void startListeningForNotifications() {
+    NotificationService.instance.updates.listen((event) {
+      fetchNotifications(isInitial: true);
+    });
+  }
 
   Future<void> fetchNotifications({bool isInitial = false}) async {
     if (isInitial) {
@@ -77,5 +85,19 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
   void onLogout() {
     emit(NotificationsState.initial());
+  }
+
+  Future<void> markNotificationAsRead(int id) async {
+    final response =
+        await _profileRepository.markNotificationAsRead(id.toString());
+    response.when(
+      success: (data) {
+        // Optionally handle success response
+        Fluttertoast.showToast(msg: 'Notification marked as read');
+      },
+      failure: (error) {
+        // Optionally handle error response
+      },
+    );
   }
 }

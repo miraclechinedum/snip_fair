@@ -13,6 +13,7 @@ import 'package:snip_fair/core/utils/base/base_state.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
 import 'package:snip_fair/core/utils/input/password_input.dart';
+import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 
 part 'login_state.dart';
@@ -30,7 +31,7 @@ class LoginCubit extends BaseCubit<LoginState> {
   }
 
   void onPasswordChanged(String value) {
-    emit(state.copyWith(password: PasswordInput.dirty(value: value.trim())));
+    emit(state.copyWith(password: StringInput.dirty( value.trim())));
   }
 
   void onTogglePassword() {

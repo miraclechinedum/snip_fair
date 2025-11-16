@@ -335,8 +335,8 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
                 Expanded(
                   child: CustomTextField(
                     textController: socailLinkController,
-                    label: 'Your Url',
-                    hint: 'https://',
+                    label: 'Social Handle',
+                    hint: '',
                     isRequired: true,
                     onChanged: cubit.onSocialUrlChanged,
                     isError: cubit.state.socialLink.isNotValid,

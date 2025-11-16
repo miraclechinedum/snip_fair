@@ -556,7 +556,7 @@ class AppHelper {
 
     if (showSnackbar) {
       showSnackBar(context,
-          message: '✓ Profile is 100% complete! Await verification.');
+          message: '✓ Profile setup is 100% complete! Await verification.');
     }
 
     return true;

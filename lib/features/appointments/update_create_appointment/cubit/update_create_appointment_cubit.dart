@@ -51,7 +51,6 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
       success: (data) {
         emit(state.copyWith(fetchPortfolioState: ProcessState.success(data)));
         _fetchStylistDetailsById(data.userId.toString());
-        onAddressChanged(data.user?.country ?? '');
       },
       failure: (error) {
         if (!silent) {
@@ -154,12 +153,10 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
   }
 
   void onAddressChanged(String address) {
-    if (state.fetchAppointmentState.hasSuccess) return;
     emit(state.copyWith(address: address));
   }
 
   void onNotesChanged(String notes) {
-    if (state.fetchAppointmentState.hasSuccess) return;
     emit(state.copyWith(notes: notes));
   }
 

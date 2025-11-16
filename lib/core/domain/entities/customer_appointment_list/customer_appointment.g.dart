@@ -29,7 +29,7 @@ CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) =>
       appointmentDate: json['appointment_date'] as String?,
       appointmentTime: json['appointment_time'] as String?,
       stylistNote: json['stylist_note'],
-      serviceNotes: json['service_notes'],
+      serviceNotes: json['service_notes'] as String?,
       completedAt: json['completed_at'],
       appointmentDateTime: json['appointment_date_time'] == null
           ? null
@@ -40,6 +40,9 @@ CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) =>
       portfolio: json['portfolio'] == null
           ? null
           : Portfolio.fromJson(json['portfolio'] as Map<String, dynamic>),
+      customer: json['customer'] == null
+          ? null
+          : Customer.fromJson(json['customer'] as Map<String, dynamic>),
       distanceFromStylist: json['distance_from_stylist'] as String?,
     );
 
@@ -68,5 +71,6 @@ Map<String, dynamic> _$CustomerAppointmentToJson(
       'appointment_date_time': instance.appointmentDateTime?.toIso8601String(),
       'stylist': instance.stylist,
       'portfolio': instance.portfolio,
+      'customer': instance.customer,
       'distance_from_stylist': instance.distanceFromStylist,
     };

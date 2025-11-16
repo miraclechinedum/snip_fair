@@ -23,6 +23,7 @@ import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
@@ -227,6 +228,9 @@ class _MainScreenState extends State<MainScreen> {
             ),
             IconButton(
               onPressed: () {
+                context
+                    .read<NotificationsCubit>()
+                    .fetchNotifications(isInitial: true);
                 context.router.push(const NotificationsRoute());
               },
               icon: const Icon(

@@ -11,6 +11,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.shrinkAppBar = false,
     this.elevation = false,
     this.onBackPressed,
+    this.actions,
 
     // ignore: avoid_field_initializers_in_const_classes
   }) : preferredSize = const Size.fromHeight(50);
@@ -20,6 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool shrinkAppBar;
   final bool elevation;
   final void Function()? onBackPressed;
+  final List<Widget>? actions;
 
   @override
   final Size preferredSize;
@@ -79,6 +81,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primaryColor,
+                  ),
+                ),
+              if (actions != null)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: actions!,
                   ),
                 ),
             ],

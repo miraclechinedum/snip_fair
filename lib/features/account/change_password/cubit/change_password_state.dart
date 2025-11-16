@@ -13,7 +13,7 @@ class ChangePasswordState extends BaseState {
 
   const ChangePasswordState.initial()
       : this._(
-          currentPassword: const PasswordInput.pure(),
+          currentPassword: const StringInput.pure(),
           newPassword: const PasswordInput.pure(),
           confirmNewPassword:
               const ConfirmPasswordInput.pure(PasswordInput.pure()),
@@ -21,7 +21,7 @@ class ChangePasswordState extends BaseState {
           showPassword: false,
         );
 
-  final PasswordInput currentPassword;
+  final StringInput currentPassword;
   final PasswordInput newPassword;
   final ConfirmPasswordInput confirmNewPassword;
   final bool showPassword;
@@ -33,7 +33,7 @@ class ChangePasswordState extends BaseState {
 
   @override
   ChangePasswordState copyWith({
-    PasswordInput? currentPassword,
+    StringInput? currentPassword,
     PasswordInput? newPassword,
     ConfirmPasswordInput? confirmNewPassword,
     ProcessState<bool>? chagePasswordState,

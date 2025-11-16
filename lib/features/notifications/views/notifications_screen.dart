@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
@@ -21,8 +23,6 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isStylist =
-        context.select<AppCubit, bool>((AppCubit bloc) => bloc.state.isStylist);
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Notifications',
@@ -36,7 +36,6 @@ class NotificationsScreen extends StatelessWidget {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height -
@@ -56,118 +55,199 @@ class NotificationsScreen extends StatelessWidget {
                     return const Center(child: Text('No Notifications Items'));
                   }
 
-                  return InfiniteList(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    onFetchData: () async {
-                      await context
-                          .read<NotificationsCubit>()
-                          .fetchNotifications();
-                    },
-                    isLoading: state.paginationData.isLoadingMore,
-                    shrinkWrap: true,
-                    hasReachedMax: state.paginationData.hasReachedMax,
-                    itemBuilder: (context, index) {
-                      final notification = notifications[index];
-                      return ListTile(
-                        tileColor: Colors.white,
-                        onTap: () {
-                          // Handle notification tap
-                          switch (notification.type) {
-                            case 'appointment':
-                              // Navigate to order details
-                              final appointmentId = notification.typeIdentifier;
-                              if (isStylist) {
-                                // Navigate to stylist order details
-
-                                if (appointmentId != null) {
-                                  context.router.push(
-                                    SellerAppointmentDetailsRoute(
-                                      appointmentId: appointmentId.toString(),
-                                    ),
-                                  );
-                                } else {
-                                  context.pop();
-                                  // Navigate to Orders tab
-                                }
-                              } else {
-                                // Navigate to customer order details
-                                if (appointmentId != null) {
-                                  context.router.push(
-                                    UpdateCreateAppointmentRoute(
-                                      appointmentId: appointmentId.toString(),
-                                    ),
-                                  );
-                                } else {
-                                  context.pop();
-                                }
-                              }
-                            case 'wallet':
-
-                              // Navigate to wallet
-                              context.router.push(
-                                isStylist
-                                    ? const SellerEarningRoute()
-                                    : const CustomerWalletRoute(),
-                              );
-                            case 'conversation':
-                              context.router.push(
-                                ConversationListRoute(),
-                              );
-                            case 'dispute':
-                              final token =
-                                  getIt<LocalKeyStorage>().accessToken;
-                              if (token == null) return;
-                              final supportUrl = Environment()
-                                  .config
-                                  .apiHost
-                                  .replaceAll('api', 'disputes');
-                              context.router.pushWidget(
-                                SupportWebViewWidget(
-                                  supportUrl: supportUrl,
-                                  authToken: token,
-                                ),
-                              );
-                            default:
-                              // Default action
-                              break;
-                          }
-                        },
-                        title: AppText(
-                          text: notification.title ?? 'No Title',
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        subtitle: AppText(
-                          text: notification.description ?? 'No Message',
-                          maxLines: 2,
-                          color: Colors.grey,
-                        ),
-                        trailing: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AppText(
-                              text: notification.createdAt.toTimeAgo(),
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                            8.verticalSpace,
-                            const CircleAvatar(
-                              radius: 5,
-                              backgroundColor: Colors.red,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemCount: notifications.length,
+                  return SafeArea(
+                    child: InfiniteList(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      onFetchData: () async {
+                        await context
+                            .read<NotificationsCubit>()
+                            .fetchNotifications();
+                      },
+                      isLoading: state.paginationData.isLoadingMore,
+                      shrinkWrap: true,
+                      hasReachedMax: state.paginationData.hasReachedMax,
+                      itemBuilder: (context, index) {
+                        final notification = notifications[index];
+                        return NotificationTile(notification: notification);
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemCount: notifications.length,
+                    ),
                   );
                 },
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class NotificationTile extends StatefulWidget {
+  const NotificationTile({
+    super.key,
+    required this.notification,
+  });
+
+  final NotificationDatum notification;
+
+  @override
+  State<NotificationTile> createState() => _NotificationTileState();
+}
+
+class _NotificationTileState extends State<NotificationTile> {
+  bool _isRead = false;
+
+  @override
+  void didChangeDependencies() {
+    if (widget.notification.isRead ?? false) {
+      _isRead = true;
+    }
+    super.didChangeDependencies();
+  }
+
+  void _markAsRead() {
+    if (!_isRead) {
+      setState(() {
+        _isRead = true;
+      });
+      context
+          .read<NotificationsCubit>()
+          .markNotificationAsRead(widget.notification.id!);
+    }
+  }
+
+  void _showNotificationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        title: AppText(
+          text: widget.notification.title ?? 'Notification',
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w600,
+        ),
+        content: AppText(
+          text: widget.notification.description ?? 'No details available',
+          fontSize: 14.sp,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const AppText(
+              text: 'Cancel',
+            ),
+          ),
+          CustomButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _markAsRead();
+              _navigateToNotificationDestination();
+            },
+            title: 'View',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToNotificationDestination() {
+    final isStylist = context.read<AppCubit>().state.isStylist;
+
+    switch (widget.notification.type) {
+      case 'profile':
+        if (isStylist) {
+          context.router.push(const SellerProfileManagementRoute());
+        } else {
+          context.router.push(const CustomerProfileMgtRoute());
+        }
+      case 'appointment':
+        final appointmentId = widget.notification.typeIdentifier;
+        if (isStylist) {
+          if (appointmentId != null) {
+            context.router.push(
+              SellerAppointmentDetailsRoute(
+                appointmentId: appointmentId.toString(),
+              ),
+            );
+          } else {
+            context.pop();
+          }
+        } else {
+          if (appointmentId != null) {
+            context.router.push(
+              UpdateCreateAppointmentRoute(
+                appointmentId: appointmentId.toString(),
+              ),
+            );
+          } else {
+            context.pop();
+          }
+        }
+      case 'wallet':
+        context.router.push(
+          isStylist ? const SellerEarningRoute() : const CustomerWalletRoute(),
+        );
+      case 'conversation':
+        context.router.push(
+          ConversationListRoute(),
+        );
+      case 'dispute':
+        final token = getIt<LocalKeyStorage>().accessToken;
+        if (token == null) return;
+        final supportUrl =
+            Environment().config.apiHost.replaceAll('api', 'disputes');
+        context.router.pushWidget(
+          SupportWebViewWidget(
+            supportUrl: supportUrl,
+            authToken: token,
+          ),
+        );
+
+      default:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isStylist =
+        context.select<AppCubit, bool>((AppCubit bloc) => bloc.state.isStylist);
+
+    return ListTile(
+      tileColor: Colors.white,
+      onTap: _showNotificationDialog,
+      title: AppText(
+        text: widget.notification.title ?? 'No Title',
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w600,
+      ),
+      subtitle: AppText(
+        text: widget.notification.description ?? 'No Message',
+        maxLines: 2,
+        color: Colors.grey,
+      ),
+      trailing: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            text: widget.notification.createdAt.toTimeAgo(),
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+          8.verticalSpace,
+          if (!_isRead)
+            const CircleAvatar(
+              radius: 5,
+              backgroundColor: Colors.red,
+            ),
+        ],
       ),
     );
   }

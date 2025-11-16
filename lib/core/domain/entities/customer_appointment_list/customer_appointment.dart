@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
 
 import 'portfolio.dart';
 import 'stylist.dart';
@@ -37,13 +38,14 @@ class CustomerAppointment {
   @JsonKey(name: 'stylist_note')
   dynamic stylistNote;
   @JsonKey(name: 'service_notes')
-  dynamic serviceNotes;
+  String? serviceNotes;
   @JsonKey(name: 'completed_at')
   dynamic completedAt;
   @JsonKey(name: 'appointment_date_time')
   DateTime? appointmentDateTime;
   Stylist? stylist;
   Portfolio? portfolio;
+  Customer? customer;
   @JsonKey(name: 'distance_from_stylist')
   String? distanceFromStylist;
 
@@ -70,6 +72,7 @@ class CustomerAppointment {
     this.appointmentDateTime,
     this.stylist,
     this.portfolio,
+    this.customer,
     this.distanceFromStylist,
   });
 
