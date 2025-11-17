@@ -385,7 +385,7 @@ class CustomerProfileMgtScreen extends StatelessWidget {
       sliver: SliverAppBar(
         foregroundColor: Colors.white,
         backgroundColor: AppColors.primaryColor,
-        expandedHeight: 230.h,
+        expandedHeight: 250.h,
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         title: innerBoxIsScrolled
@@ -408,18 +408,18 @@ class CustomerProfileMgtScreen extends StatelessWidget {
                   SizedBox.expand(
                     child: Container(
                       padding: const EdgeInsets.only(top: 50),
-                      height: 30,
+                      height: 30.h,
                       color: Colors.white,
                     ),
                   ),
                   Container(
-                    height: 150,
+                    height: 150.h,
                     decoration: const BoxDecoration(
                       gradient: AppColors.appgradient,
                     ),
                   ),
                   Container(
-                    height: 190,
+                    height: 190.h,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -478,8 +478,8 @@ class CustomerProfileMgtScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            height: 30,
-                            width: 150,
+                            height: 30.h,
+                            width: 150.w,
                             child: CustomButton(
                               onPressed: () {
                                 context.router
@@ -501,7 +501,7 @@ class CustomerProfileMgtScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 16,
-                        ),
+                        ).r,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -525,7 +525,7 @@ class CustomerProfileMgtScreen extends StatelessWidget {
                                   ),
                               ],
                             ),
-                            AppText(
+                            const AppText(
                               text: 'Customer',
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryColor,

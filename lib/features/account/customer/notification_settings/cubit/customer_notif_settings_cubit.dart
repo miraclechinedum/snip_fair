@@ -36,7 +36,7 @@ class CustomerNotifSettingsCubit extends Cubit<CustomerNotifSettingsState> {
       success: (_) async {
         emit(
           state.copyWith(
-            updateSettingsState: const ProcessState.success(null),
+            updateSettingsState: const ProcessState.success(true),
           ),
         );
       },

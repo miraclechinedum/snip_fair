@@ -26,7 +26,7 @@ class SearchCubit extends Cubit<SearchState> {
     _debounce.run(() {
       emit(state.copyWith(searchQuery: query));
       _getStylists(query);
-      // _getServices(query);
+      _getServices(query);
     });
   }
 
@@ -58,7 +58,7 @@ class SearchCubit extends Cubit<SearchState> {
   void onSelectCategory(WorkCategory? category) {
     emit(state.copyWith(selectedCategory: category));
     _getStylists(state.searchQuery);
-    // _getServices(state.searchQuery);
+    _getServices(state.searchQuery);
   }
 
   Future<void> fetchCategories() async {
@@ -120,6 +120,12 @@ class SearchCubit extends Cubit<SearchState> {
       perPage: '20',
       query: query,
       categoryId: state.selectedCategory?.id?.toString(),
+      sort: _mapSort(state.sortOption),
+      highestRated: state.highestRated ? true : null,
+      online: state.online ? true : null,
+      lowestPrice: state.lowestPriceFlag ? true : null,
+      minPrice: state.minPrice,
+      maxPrice: state.maxPrice,
     );
     response.when(
       success: (data) {

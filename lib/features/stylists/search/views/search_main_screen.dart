@@ -171,18 +171,18 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // BlocBuilder<SearchCubit, SearchState>(
-                      //   buildWhen: (previous, current) =>
-                      //       previous.services != current.services,
-                      //   builder: (context, state) {
-                      //     return buildServices(
-                      //       label: 'Services',
-                      //       portfolios: state.services.data ?? [],
-                      //       isLoading: state.services.isLoading,
-                      //     );
-                      //   },
-                      // ),
-                      // 12.verticalSpace,
+                      BlocBuilder<SearchCubit, SearchState>(
+                        buildWhen: (previous, current) =>
+                            previous.services != current.services,
+                        builder: (context, state) {
+                          return buildServices(
+                            label: 'Services',
+                            portfolios: state.services.data ?? [],
+                            isLoading: state.services.isLoading,
+                          );
+                        },
+                      ),
+                      12.verticalSpace,
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [

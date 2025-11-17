@@ -38,77 +38,82 @@ class SellerProfileVerificationScreen extends StatelessWidget
     final profile =
         context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
     final cubit = context.watch<SellerProfileVerificationCubit>();
+    final isProfileVerified =
+        profile?.profileCompleteness?.statusApproved ?? false;
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Profile Verification',
       ),
-      bottomNavigationBar: SafeArea(
-        child: SizedBox(
-          height: 80,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: BlocListener<SellerProfileVerificationCubit,
-                SellerProfileVerificationState>(
-              listenWhen: (previous, current) =>
-                  previous.submitState != current.submitState,
-              listener: (context, state) async {
-                if (state.submitState.hasSuccess) {
-                  await context
-                      .read<SellerProfileMgtCubit>()
-                      .getProfileDetails(true);
+      bottomNavigationBar: isProfileVerified
+          ? null
+          : SafeArea(
+              child: SizedBox(
+                height: 80,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: BlocListener<SellerProfileVerificationCubit,
+                      SellerProfileVerificationState>(
+                    listenWhen: (previous, current) =>
+                        previous.submitState != current.submitState,
+                    listener: (context, state) async {
+                      if (state.submitState.hasSuccess) {
+                        await context
+                            .read<SellerProfileMgtCubit>()
+                            .getProfileDetails(true);
 
-                  // Optionally do something after refreshing profile details
-                  final profileCompleteness = context
-                      .read<SellerProfileMgtCubit>()
-                      .state
-                      .profileDetails
-                      .data
-                      ?.profileCompleteness;
+                        // Optionally do something after refreshing profile details
+                        final profileCompleteness = context
+                            .read<SellerProfileMgtCubit>()
+                            .state
+                            .profileDetails
+                            .data
+                            ?.profileCompleteness;
 
-                  if (profileCompleteness == null) {
-                    context.pop();
-                    return;
-                  }
+                        if (profileCompleteness == null) {
+                          context.pop();
+                          return;
+                        }
 
-                  final isComplete =
-                      AppHelper.getAllIncompleteSteps(profileCompleteness)
-                          .isEmpty;
+                        final isComplete =
+                            AppHelper.getAllIncompleteSteps(profileCompleteness)
+                                .isEmpty;
 
-                  if (!isComplete) {
-                    AppHelper.checkAndNavigateProfileCompletion(
-                      context,
-                      profileCompleteness,
-                    );
-                  } else {
-                    context.pop();
-                  }
-                }
+                        if (!isComplete) {
+                          AppHelper.checkAndNavigateProfileCompletion(
+                            context,
+                            profileCompleteness,
+                          );
+                        } else {
+                          context.pop();
+                        }
+                      }
 
-                if (state.submitState.hasError) {
-                  AppHelper.showAppDialog<void>(
-                    context,
-                    OnFailDialogContent(
-                      subtext: (state.submitState.error! as RemoteException)
-                              .errorResponse
-                              ?.message ??
-                          '',
-                      onDoneCallback: (_) {},
+                      if (state.submitState.hasError) {
+                        AppHelper.showAppDialog<void>(
+                          context,
+                          OnFailDialogContent(
+                            subtext:
+                                (state.submitState.error! as RemoteException)
+                                        .errorResponse
+                                        ?.message ??
+                                    '',
+                            onDoneCallback: (_) {},
+                          ),
+                        );
+                      }
+                    },
+                    child: CustomButton(
+                      title: 'Submit Requirements',
+                      isLoading: cubit.state.submitState.isLoading,
+                      onPressed: cubit.state.canSubmitRequirements &&
+                              (profile?.portfolios?.isNotEmpty ?? true)
+                          ? cubit.submitRequirements
+                          : null,
                     ),
-                  );
-                }
-              },
-              child: CustomButton(
-                title: 'Submit Requirements',
-                isLoading: cubit.state.submitState.isLoading,
-                onPressed: cubit.state.canSubmitRequirements &&
-                        (profile?.portfolios?.isNotEmpty ?? true)
-                    ? cubit.submitRequirements
-                    : null,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -133,6 +138,7 @@ class SellerProfileVerificationScreen extends StatelessWidget
                 CustomTextField(
                   label: 'Bussiness name',
                   isRequired: true,
+                  readOnly: isProfileVerified,
                   initialText:
                       profile?.user?.stylistProfile?.businessName ?? '',
                   onChanged: cubit.onBusinessNameChanged,
@@ -184,17 +190,19 @@ class SellerProfileVerificationScreen extends StatelessWidget
                   ],
                 ),
                 16.verticalSpace,
-                MultiDocumentPicker(
-                  label: 'Upload Past Works',
-                  onSelected: cubit.onSelectImages,
-                ),
+                if (!isProfileVerified)
+                  MultiDocumentPicker(
+                    label: 'Upload Past Works',
+                    onSelected: cubit.onSelectImages,
+                  ),
                 12.verticalSpace,
                 Wrap(
                   spacing: 5,
+                  runSpacing: 5,
                   children: List.generate(
                     cubit.state.pastWorksFilePaths.length,
                     (index) => SizedBox.square(
-                      dimension: 40,
+                      dimension: isProfileVerified ? 100 : 40,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -222,17 +230,18 @@ class SellerProfileVerificationScreen extends StatelessWidget
                                     },
                                   ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              cubit.onRemoveImage(
-                                cubit.state.pastWorksFilePaths[index],
-                              );
-                            },
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.red,
+                          if (!isProfileVerified)
+                            GestureDetector(
+                              onTap: () {
+                                cubit.onRemoveImage(
+                                  cubit.state.pastWorksFilePaths[index],
+                                );
+                              },
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -276,7 +285,10 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.watch<SellerProfileVerificationCubit>();
-
+    final profile =
+        context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
+    final isProfileVerified =
+        profile?.profileCompleteness?.statusApproved ?? false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -308,69 +320,72 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
             title: AppText(text: social.socialApp ?? ''),
             subtitle: AppText(text: social.url ?? ''),
             tileColor: Colors.white,
-            trailing: IconButton(
-              onPressed: () {
-                cubit.onRemoveSocialAccount(social);
-              },
-              icon: const Icon(Icons.close),
-            ),
+            trailing: isProfileVerified
+                ? null
+                : IconButton(
+                    onPressed: () {
+                      cubit.onRemoveSocialAccount(social);
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
           );
         }),
         10.verticalSpace,
-        Column(
-          children: [
-            CustomTextField(
-              textController: socailAppController,
-              label: 'Social App',
-              hint: 'e.g Instagram, Facebook',
-              isRequired: true,
-              onChanged: cubit.onSocialAppChanged,
-              isError: cubit.state.socialApp.isNotValid,
-              descriptionText: cubit.state.socialApp.displayError?.message,
-            ),
-            10.verticalSpace,
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    textController: socailLinkController,
-                    label: 'Social Handle',
-                    hint: '',
-                    isRequired: true,
-                    onChanged: cubit.onSocialUrlChanged,
-                    isError: cubit.state.socialLink.isNotValid,
-                    descriptionText:
-                        cubit.state.socialLink.displayError?.message,
-                  ),
-                ),
-                10.horizontalSpace,
-                GestureDetector(
-                  onTap: () {
-                    if (cubit.state.canAddSocial) {
-                      cubit.onAddSocialAccount();
-                      socailAppController.clear();
-                      socailLinkController.clear();
-                      AppHelper.unfocus(context);
-                    }
-                  },
-                  child: Container(
-                    width: 50.w,
-                    height: 50.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(10).r,
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: AppColors.white,
+        if (!isProfileVerified)
+          Column(
+            children: [
+              CustomTextField(
+                textController: socailAppController,
+                label: 'Social App',
+                hint: 'e.g Instagram, Facebook',
+                isRequired: true,
+                onChanged: cubit.onSocialAppChanged,
+                isError: cubit.state.socialApp.isNotValid,
+                descriptionText: cubit.state.socialApp.displayError?.message,
+              ),
+              10.verticalSpace,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      textController: socailLinkController,
+                      label: 'Social Handle',
+                      hint: '',
+                      isRequired: true,
+                      onChanged: cubit.onSocialUrlChanged,
+                      isError: cubit.state.socialLink.isNotValid,
+                      descriptionText:
+                          cubit.state.socialLink.displayError?.message,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                  10.horizontalSpace,
+                  GestureDetector(
+                    onTap: () {
+                      if (cubit.state.canAddSocial) {
+                        cubit.onAddSocialAccount();
+                        socailAppController.clear();
+                        socailLinkController.clear();
+                        AppHelper.unfocus(context);
+                      }
+                    },
+                    child: Container(
+                      width: 50.w,
+                      height: 50.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(10).r,
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
       ],
     );
   }

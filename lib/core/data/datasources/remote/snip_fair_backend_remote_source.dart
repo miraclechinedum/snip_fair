@@ -963,6 +963,12 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? perPage,
     String? sort,
     bool? favourite,
+    bool? topRated,
+    bool? online,
+    bool? highestRated,
+    bool? lowestPrice,
+    String? minPrice,
+    String? maxPrice,
   }) {
     return run(() async {
       final client = _clientWithRetry();
@@ -976,6 +982,12 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           if (perPage != null) 'per_page': perPage,
           if (sort != null) 'sort': sort,
           if (favourite != null) 'favourite': favourite,
+          if (topRated != null) 'top_rated': topRated,
+          if (online != null) 'online': online,
+          if (highestRated != null) 'highest_rated': highestRated,
+          if (lowestPrice != null) 'lowest_price': lowestPrice,
+          if (minPrice != null) 'min_price': minPrice,
+          if (maxPrice != null) 'max_price': maxPrice,
         },
       );
       return ApiResult.success(

@@ -58,7 +58,8 @@ class NotificationsScreen extends StatelessWidget {
                   return SafeArea(
                     child: InfiniteList(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, top: 12, bottom: 100),
                       onFetchData: () async {
                         await context
                             .read<NotificationsCubit>()
@@ -120,6 +121,7 @@ class _NotificationTileState extends State<NotificationTile> {
   }
 
   void _showNotificationDialog() {
+    _markAsRead();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -146,7 +148,6 @@ class _NotificationTileState extends State<NotificationTile> {
           CustomButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _markAsRead();
               _navigateToNotificationDestination();
             },
             title: 'View',
