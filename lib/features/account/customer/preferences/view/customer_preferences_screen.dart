@@ -93,7 +93,7 @@ class CustomerPreferencesScreen extends StatelessWidget
                                     (e) =>
                                         e.name ==
                                         state.preferences!.preferredStylist,
-                                    orElse: () => StylistGender.noPreference,
+                                    orElse: () => StylistGender.none,
                                   )
                                 : null,
                         items: StylistGender.values

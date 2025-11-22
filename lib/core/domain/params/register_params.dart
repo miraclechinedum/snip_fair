@@ -7,6 +7,7 @@ class RegisterParams {
     this.password,
     this.passwordConfirmation,
     this.deviceName,
+    this.gender,
   });
 
   String? firstName;
@@ -16,6 +17,7 @@ class RegisterParams {
   String? password;
   String? passwordConfirmation;
   String? deviceName;
+  String? gender;
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
@@ -26,6 +28,7 @@ class RegisterParams {
     data['password'] = password;
     data['password_confirmation'] = passwordConfirmation;
     data['device_name'] = deviceName;
+    data['gender'] = gender;
     return data;
   }
 }

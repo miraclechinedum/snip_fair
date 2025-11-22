@@ -16,6 +16,7 @@ import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart';
 import 'package:snip_fair/features/account/seller/personal_details/cubit/seller_personal_details_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
@@ -118,6 +119,36 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                         TextEditingController(text: currentProfile.user!.phone),
                     onInputChanged: (phone) =>
                         cubit.onPhoneChanged(phone.international),
+                  ),
+                  12.verticalSpace,
+                  const AppText(
+                    text: 'Gender',
+                    fontSize: 12,
+                  ),
+                  5.verticalSpace,
+                  DropdownButtonFormField<StylistGender>(
+                    initialValue: currentProfile.user?.gender != null
+                        ? StylistGender.values.firstWhere(
+                            (e) => e.name == currentProfile.user?.gender,
+                            orElse: () => StylistGender.none,
+                          )
+                        : null,
+                    items: StylistGender.values
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(e.displayName),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+
+                      cubit.onGenderChanged(value.name);
+                    },
+                    decoration: AppColors.inputDecoration.copyWith(
+                      hintText: 'Gender',
+                    ),
                   ),
                   12.verticalSpace,
                   BlocSelector<SellerPersonalDetailsCubit,

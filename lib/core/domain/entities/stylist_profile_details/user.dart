@@ -19,6 +19,7 @@ class User {
   @JsonKey(name: 'phone_verified_at')
   dynamic phoneVerifiedAt;
   String? phone;
+  String? gender;
   String? country;
   String? bio;
   String? type;
@@ -61,6 +62,7 @@ class User {
     this.type,
     this.role,
     this.avatar,
+    this.gender,
     this.lastLoginAt,
     this.status,
     this.createdAt,

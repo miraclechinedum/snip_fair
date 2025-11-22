@@ -15,7 +15,7 @@ enum ServiceTime {
 enum StylistGender {
   male('Male'),
   female('Female'),
-  noPreference('No Preference');
+  none('Prefer Not to Say');
 
   final String displayName;
   const StylistGender(this.displayName);
@@ -24,7 +24,7 @@ enum StylistGender {
 enum PreferredLanguage { english, spanish, french }
 
 enum PreferredCurrency {
-  usd('\$'),
+  usd(r'$'),
   eur('€'),
   gbp('£'),
   zar('R');

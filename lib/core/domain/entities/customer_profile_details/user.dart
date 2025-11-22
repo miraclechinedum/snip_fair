@@ -17,6 +17,7 @@ class User {
   dynamic phoneVerifiedAt;
   String? password;
   String? phone;
+  String? gender;
   String? country;
   String? bio;
   String? type;
@@ -54,6 +55,7 @@ class User {
     this.type,
     this.role,
     this.avatar,
+    this.gender,
     this.lastLoginAt,
     this.status,
     this.rememberToken,

@@ -9,6 +9,7 @@ class CustomerPersonalDetailsState extends BaseState {
     required this.bio,
     required this.updateProfile,
     required this.avatar,
+    required this.gender,
     super.exception,
     super.isLoading,
   });
@@ -21,6 +22,7 @@ class CustomerPersonalDetailsState extends BaseState {
           phone: const PhoneInput.pure(),
           address: const StringInput.pure(),
           bio: const StringInput.pure(),
+          gender: const StringInput.pure(),
           avatar: const StringInput.pure(),
         );
 
@@ -30,6 +32,7 @@ class CustomerPersonalDetailsState extends BaseState {
   final StringInput address;
   final StringInput bio;
   final StringInput avatar;
+  final StringInput gender;
   final ProcessState<bool> updateProfile;
 
   bool get canSignupAsStylist =>
@@ -40,6 +43,7 @@ class CustomerPersonalDetailsState extends BaseState {
         address,
         bio,
         avatar,
+        gender,
       ]) &&
       !updateProfile.isLoading;
 
@@ -60,6 +64,7 @@ class CustomerPersonalDetailsState extends BaseState {
     StringInput? address,
     StringInput? yearsOfExperience,
     StringInput? bio,
+    StringInput? gender,
     ProcessState<bool>? updateProfile,
     StringInput? avatar,
     Exception? exception,
@@ -71,6 +76,7 @@ class CustomerPersonalDetailsState extends BaseState {
       phone: phone ?? this.phone,
       address: address ?? this.address,
       bio: bio ?? this.bio,
+      gender: gender ?? this.gender,
       updateProfile: updateProfile ?? this.updateProfile,
       exception: exception ?? this.exception,
       isLoading: isLoading ?? this.isLoading,
@@ -84,6 +90,7 @@ class CustomerPersonalDetailsState extends BaseState {
         lastName,
         phone,
         address,
+        gender,
         bio,
         updateProfile,
         avatar,

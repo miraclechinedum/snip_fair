@@ -20,6 +20,7 @@ import 'package:snip_fair/features/account/customer/profile_management/cubit/cus
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
 import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class AccountMainScreen extends StatelessWidget {
@@ -286,11 +287,13 @@ class AccountMainScreen extends StatelessWidget {
                       .config
                       .apiHost
                       .replaceAll('api', 'disputes');
-                  context.router.pushWidget(SupportWebViewWidget(
-                    authToken: token!,
-                    title: 'Disputes',
-                    supportUrl: supportUrl,
-                  ));
+                  context.router.pushWidget(
+                    SupportWebViewWidget(
+                      authToken: token!,
+                      title: 'Disputes',
+                      supportUrl: supportUrl,
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -304,10 +307,42 @@ class AccountMainScreen extends StatelessWidget {
                   final token = getIt<LocalKeyStorage>().accessToken;
                   final supportUrl =
                       Environment().config.apiHost.replaceAll('api', 'support');
-                  context.router.pushWidget(SupportWebViewWidget(
-                    authToken: token!,
-                    supportUrl: supportUrl,
-                  ));
+                  context.router.pushWidget(
+                    SupportWebViewWidget(
+                      authToken: token!,
+                      supportUrl: supportUrl,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.strongbox),
+                title: const AppText(
+                  text: 'Privacy Policy',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                onTap: () {
+                  launchUrl(
+                    Uri.parse(
+                      'https://snipfair.com/privacy-policy',
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.strongbox),
+                title: const AppText(
+                  text: 'Terms of Service',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                onTap: () {
+                  launchUrl(
+                    Uri.parse(
+                      'https://snipfair.com/terms',
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -322,7 +357,7 @@ class AccountMainScreen extends StatelessWidget {
                   color: Colors.red,
                 ),
                 onTap: () {
-                  AppHelper.showAppDialog(
+                  AppHelper.showAppDialog<void>(
                     context,
                     OnConfirmDialog(
                       icon: const Icon(
@@ -519,8 +554,11 @@ class AccountMainScreen extends StatelessWidget {
                                   horizontal: 8,
                                   vertical: 2,
                                 ),
-                                child: const AppText(
-                                  text: 'Unverified',
+                                child: AppText(
+                                  text: state.profileDetails.data?.user
+                                          ?.stylistProfile?.status
+                                          .capitalizeFirstLetter() ??
+                                      '',
                                   color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -556,11 +594,12 @@ class AccountMainScreen extends StatelessWidget {
                         )
                       else
                         AppText(
-                            text: state.profileDetails.data?.user
-                                        ?.stylistProfile?.isAvailable ??
-                                    false
-                                ? 'ON'
-                                : 'OFF'),
+                          text: state.profileDetails.data?.user?.stylistProfile
+                                      ?.isAvailable ??
+                                  false
+                              ? 'ON'
+                              : 'OFF',
+                        ),
                       SizedBox(
                         height: 35,
                         child: BlocListener<SellerProfileMgtCubit,

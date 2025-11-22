@@ -73,6 +73,7 @@ abstract class ProfileRepository {
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   });
 
   Future<ApiResult<SimpleResponse>> updateCustomerProfile({
@@ -83,6 +84,7 @@ abstract class ProfileRepository {
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   });
 
   Future<ApiResult<SimpleResponse>> makePaymentMethodDefault(
@@ -403,6 +405,7 @@ class ProfileRepoImpl implements ProfileRepository {
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   }) =>
       _remoteSource.updateStylistProfile(
         businessName: businessName,
@@ -414,7 +417,9 @@ class ProfileRepoImpl implements ProfileRepository {
         country: country,
         yearsOfExperience: yearsOfExperience,
         bio: bio,
+        gender: gender,
       );
+
 
   @override
   Future<ApiResult<SimpleResponse>> updateStylistSettings(
@@ -621,6 +626,7 @@ class ProfileRepoImpl implements ProfileRepository {
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   }) {
     return _remoteSource.updateCustomerProfile(
       avatar: avatar,
@@ -630,6 +636,7 @@ class ProfileRepoImpl implements ProfileRepository {
       country: country,
       yearsOfExperience: yearsOfExperience,
       bio: bio,
+      gender: gender,
     );
   }
 

@@ -43,6 +43,10 @@ class SellerPersonalDetailsCubit extends BaseCubit<SellerPersonalDetailsState> {
     emit(state.copyWith(yearsOfExperience: StringInput.dirty(value)));
   }
 
+  void onGenderChanged(String value) {
+    emit(state.copyWith(gender: StringInput.dirty(value)));
+  }
+
   void onBioChanged(String value) {
     emit(state.copyWith(bio: StringInput.dirty(value)));
   }
@@ -57,6 +61,7 @@ class SellerPersonalDetailsCubit extends BaseCubit<SellerPersonalDetailsState> {
         country: state.address.value,
         yearsOfExperience: state.yearsOfExperience.value,
         bio: state.bio.value,
+        gender: state.gender.value,
       ),
       doOnLoading: () => emit(
         state.copyWith(

@@ -476,6 +476,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client(isFormDataRequest: true);
@@ -487,6 +488,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (country != null) 'country': country,
         if (yearsOfExperience != null) 'years_of_experience': yearsOfExperience,
         if (bio != null) 'bio': bio,
+        if (gender != null) 'gender': gender,
         'socials': jsonEncode(socials.map((e) => e.toJson()).toList()),
         for (int i = 0; i < medias.length; i++)
           'media[$i]': medias[i].isLocalFilePath
@@ -1322,6 +1324,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? country,
     String? yearsOfExperience,
     String? bio,
+    String? gender,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client(isFormDataRequest: true);
@@ -1332,6 +1335,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (phone != null) 'phone': phone,
         if (country != null) 'country': country,
         if (bio != null) 'bio': bio,
+        if (gender != null) 'gender': gender,
         if (avatar != null)
           'avatar': avatar.isLocalFilePath
               ? await MultipartFile.fromFile(

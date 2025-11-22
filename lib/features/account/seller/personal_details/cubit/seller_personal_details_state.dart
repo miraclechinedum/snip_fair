@@ -5,6 +5,7 @@ class SellerPersonalDetailsState extends BaseState {
     required this.firstName,
     required this.lastName,
     required this.phone,
+    required this.gender,
     required this.businessName,
     required this.address,
     required this.yearsOfExperience,
@@ -20,6 +21,7 @@ class SellerPersonalDetailsState extends BaseState {
           firstName: const StringInput.pure(),
           lastName: const StringInput.pure(),
           phone: const PhoneInput.pure(),
+          gender: const StringInput.pure(),
           businessName: const StringInput.pure(),
           address: const StringInput.pure(),
           yearsOfExperience: const StringInput.pure(),
@@ -28,6 +30,7 @@ class SellerPersonalDetailsState extends BaseState {
 
   final StringInput firstName;
   final StringInput lastName;
+  final StringInput gender;
   final PhoneInput phone;
   final StringInput businessName;
   final StringInput address;
@@ -43,6 +46,7 @@ class SellerPersonalDetailsState extends BaseState {
         businessName,
         address,
         yearsOfExperience,
+        gender,
         bio,
       ]) &&
       !updateProfile.isLoading;
@@ -51,6 +55,7 @@ class SellerPersonalDetailsState extends BaseState {
       Formz.validate([
         firstName,
         lastName,
+        gender,
         phone,
       ]) &&
       !updateProfile.isLoading;
@@ -65,6 +70,7 @@ class SellerPersonalDetailsState extends BaseState {
     StringInput? yearsOfExperience,
     StringInput? bio,
     ProcessState<bool>? updateProfile,
+    StringInput? gender,
     Exception? exception,
     bool? isLoading,
   }) {
@@ -77,6 +83,7 @@ class SellerPersonalDetailsState extends BaseState {
       yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
       bio: bio ?? this.bio,
       updateProfile: updateProfile ?? this.updateProfile,
+      gender: gender ?? this.gender,
       exception: exception ?? this.exception,
       isLoading: isLoading ?? this.isLoading,
     );
@@ -91,6 +98,7 @@ class SellerPersonalDetailsState extends BaseState {
         address,
         yearsOfExperience,
         bio,
+        gender,
         updateProfile,
         exception,
         isLoading,

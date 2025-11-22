@@ -37,6 +37,10 @@ class CustomerPersonalDetailsCubit
     emit(state.copyWith(address: StringInput.dirty(value)));
   }
 
+  void onGenderChanged(String value) {
+    emit(state.copyWith(gender: StringInput.dirty(value)));
+  }
+
   void onBioChanged(String value) {
     emit(state.copyWith(bio: StringInput.dirty(value)));
   }
@@ -49,6 +53,7 @@ class CustomerPersonalDetailsCubit
         phone: state.phone.value,
         country: state.address.value,
         bio: state.bio.value,
+        gender: state.gender.value,
       ),
       doOnLoading: () => emit(
         state.copyWith(

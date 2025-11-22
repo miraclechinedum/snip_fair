@@ -42,6 +42,10 @@ class SignupCubit extends BaseCubit<SignupState> {
     emit(state.copyWith(email: EmailInput.dirty(value.trim())));
   }
 
+  void onGenderChanged(String value) {
+    emit(state.copyWith(gender: StringInput.dirty(value.trim())));
+  }
+
   void onPasswordChanged(String value) {
     final passwordInput =
         PasswordInput.dirty(value: value.trim(), pinLenght: 8);
@@ -84,6 +88,7 @@ class SignupCubit extends BaseCubit<SignupState> {
           passwordConfirmation: state.password.value,
           email: state.email.value,
           password: state.password.value,
+          gender: state.gender.value,
           deviceName: Platform.isAndroid
               ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
               : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
@@ -109,6 +114,7 @@ class SignupCubit extends BaseCubit<SignupState> {
           passwordConfirmation: state.password.value,
           email: state.email.value,
           password: state.password.value,
+          gender: state.gender.value,
           deviceName: Platform.isAndroid
               ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
               : IosDeviceInfo.fromMap(deviceInfo.data).modelName,

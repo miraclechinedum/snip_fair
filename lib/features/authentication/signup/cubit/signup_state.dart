@@ -6,6 +6,7 @@ class SignupState extends BaseState {
     required this.lastName,
     required this.phone,
     required this.email,
+    required this.gender,
     required this.password,
     required this.confirmPassword,
     required this.signUpResult,
@@ -19,6 +20,7 @@ class SignupState extends BaseState {
   const SignupState.initial()
       : this._(
           email: const EmailInput.pure(),
+          gender: const StringInput.pure(),
           password: const PasswordInput.pure(),
           confirmPassword:
               const ConfirmPasswordInput.pure(PasswordInput.pure()),
@@ -26,13 +28,14 @@ class SignupState extends BaseState {
           firstName: const StringInput.pure(),
           lastName: const StringInput.pure(),
           phone: const PhoneInput.pure(),
-          googleLoginResult: const ProcessState.init(null), 
+          googleLoginResult: const ProcessState.init(null),
           acceptTerms: false,
           showPassword: false,
         );
 
   final StringInput firstName;
   final StringInput lastName;
+  final StringInput gender;
   final PhoneInput phone;
   final EmailInput email;
   final PasswordInput password;
@@ -46,9 +49,11 @@ class SignupState extends BaseState {
       Formz.validate([
         email,
         password,
+        gender,
         firstName,
         lastName,
         phone,
+        gender,
         confirmPassword,
       ]) &&
       acceptTerms &&
@@ -61,6 +66,7 @@ class SignupState extends BaseState {
     PhoneInput? phone,
     EmailInput? email,
     PasswordInput? password,
+    StringInput? gender,
     ProcessState<LoginResponse>? signUpResult,
     ConfirmPasswordInput? confirmPassword,
     ProcessState<LoginResponse>? googleLoginResult,
@@ -74,6 +80,7 @@ class SignupState extends BaseState {
       lastName: lastName ?? this.lastName,
       phone: phone ?? this.phone,
       email: email ?? this.email,
+      gender: gender ?? this.gender,
       password: password ?? this.password,
       googleLoginResult: googleLoginResult ?? this.googleLoginResult,
       confirmPassword: confirmPassword ?? this.confirmPassword,
@@ -92,6 +99,7 @@ class SignupState extends BaseState {
         phone,
         email,
         password,
+        gender,
         showPassword,
         googleLoginResult,
         confirmPassword,

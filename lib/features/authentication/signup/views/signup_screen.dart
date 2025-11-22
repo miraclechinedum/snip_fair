@@ -19,6 +19,7 @@ import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
 import 'package:snip_fair/core/utils/input/input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart';
 import 'package:snip_fair/features/authentication/signup/cubit/signup_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
@@ -121,6 +122,30 @@ class SignupScreen extends BaseStatelessPage<SignupCubit>
                       dialCode: '+27',
                       onInputChanged: (phone) =>
                           cubit.onPhoneChanged(phone.international),
+                    ),
+                    16.verticalSpace,
+                    const AppText(
+                      text: 'Gender',
+                      fontSize: 12,
+                    ),
+                    5.verticalSpace,
+                    DropdownButtonFormField<StylistGender>(
+                      items: StylistGender.values
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e.displayName),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+
+                        cubit.onGenderChanged(value.name);
+                      },
+                      decoration: AppColors.inputDecoration.copyWith(
+                        hintText: 'Gender',
+                      ),
                     ),
                     16.verticalSpace,
                     BlocSelector<SignupCubit, SignupState, bool>(
