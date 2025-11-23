@@ -96,6 +96,11 @@ build_apk_prod: ## Runs the mobile application in production
 	@flutter pub get
 	@flutter build apk --flavor production -t lib/main_production.dart
 
+build_app_prod: ## Runs the mobile application in production
+	@flutter clean
+	@flutter pub get
+	@flutter build appbundle --flavor production -t lib/main_production.dart
+
 build_ipa_prod: ## Builds the ipa in prod
 	@flutter clean
 	@flutter pub get

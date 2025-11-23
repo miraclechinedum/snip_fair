@@ -41,7 +41,7 @@ SellerPortfolio _$SellerPortfolioFromJson(Map<String, dynamic> json) =>
       user: json['user'] == null
           ? null
           : User.fromJson(json['user'] as Map<String, dynamic>),
-      distance: (json['distance'] as num?)?.toInt(),
+      distance: json['distance'],
       sampleImages: (json['sample_images'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),

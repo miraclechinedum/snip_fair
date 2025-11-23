@@ -42,7 +42,7 @@ class SellerPortfolio {
   bool? favourite;
   Category? category;
   User? user;
-  int? distance;
+  dynamic distance;
   @JsonKey(name: 'sample_images')
   List<String>? sampleImages;
 

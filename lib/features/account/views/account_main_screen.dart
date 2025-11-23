@@ -20,6 +20,7 @@ import 'package:snip_fair/features/account/customer/profile_management/cubit/cus
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
 import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
@@ -271,6 +272,7 @@ class AccountMainScreen extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
                 onTap: () {
+                  context.read<ConversationsCubit>().fetchConversations();
                   context.pushRoute(ConversationListRoute());
                 },
               ),

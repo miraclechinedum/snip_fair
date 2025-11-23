@@ -140,6 +140,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
         );
       },
       failure: (error) {
+        stopPollingMessages();
         emit(
           state.copyWith(
             chatMessagesState: ProcessState.success(
