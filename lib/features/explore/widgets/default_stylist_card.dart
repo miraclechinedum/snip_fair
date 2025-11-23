@@ -41,7 +41,7 @@ class DefaultStylistCard extends StatelessWidget {
               Stack(
                 children: [
                   SizedBox(
-                    height: 150,
+                    height: 150.h,
                     width: double.infinity,
                     child: ColoredBox(
                       color: AppColors.primaryColor.withValues(alpha: 0.3),

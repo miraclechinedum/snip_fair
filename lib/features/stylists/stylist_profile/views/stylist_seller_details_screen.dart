@@ -83,7 +83,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
       sliver: SliverAppBar(
         foregroundColor: Colors.white,
         backgroundColor: AppColors.primaryColor,
-        expandedHeight: 470,
+        expandedHeight: 500.h,
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         bottom: PreferredSize(
@@ -113,15 +113,15 @@ class StylistSellerDetailsScreen extends StatelessWidget
             children: [
               SizedBox.expand(
                 child: Container(
-                  padding: const EdgeInsets.only(top: 50),
-                  height: 30,
+                  padding: EdgeInsets.only(top: 50.h),
+                  height: 30.h,
                   color: Colors.white,
                 ),
               ),
               BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
                 builder: (context, state) {
                   return Container(
-                    height: 150,
+                    height: 150.h,
                     decoration: const BoxDecoration(
                       gradient: AppColors.appgradient,
                     ),
@@ -146,7 +146,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             '',
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        height: 150,
+                        height: 150.h,
                         errorWidget: (context, url, error) {
                           return ColoredBox(
                             color: Colors.grey.shade200,
@@ -165,7 +165,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
               BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
                 builder: (context, state) {
                   return Container(
-                    height: 190,
+                    height: 190.h,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -196,7 +196,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                 shape: BoxShape.circle,
                               ),
                               child: CircleAvatar(
-                                radius: 30,
+                                radius: 30.r,
                                 backgroundImage:
                                     state.sellerDetails.data?.avatar != null
                                         ? CachedNetworkImageProvider(
@@ -249,7 +249,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                     alignment: Alignment.bottomCenter,
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 16.w,
                         vertical: 50.h,
                       ),
                       child: Column(
@@ -329,7 +329,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             color: Colors.grey.shade200,
                           ),
                           SizedBox(
-                            height: 60.h,
+                            height: 80.h,
                             child: Row(
                               children: [
                                 Expanded(

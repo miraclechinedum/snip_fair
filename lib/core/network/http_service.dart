@@ -41,11 +41,16 @@ class HttpService {
           ErrorInterceptor(
             onAuthTokenExpired: (failedRequest) async {
               final appRouter = getIt<AppRouter>();
-              // Handle token expiration (e.g., refresh token)
-              await appRouter.replaceAll([const LandingRoute()]);
+
+              if (appRouter.current.name == LandingRoute.name) {
+                return;
+              }
+
               Fluttertoast.showToast(
                 msg: 'Session expired. Please log in again.',
               );
+              // Handle token expiration (e.g., refresh token)
+              await appRouter.replaceAll([const LandingRoute()]);
             },
           ),
         )

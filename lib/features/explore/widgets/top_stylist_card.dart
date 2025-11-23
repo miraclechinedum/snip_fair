@@ -35,7 +35,7 @@ class TopStylistCard extends StatelessWidget {
         },
         child: AnimationButtonEffect(
           child: Container(
-            width: 300,
+            width: 300.w,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -45,7 +45,7 @@ class TopStylistCard extends StatelessWidget {
                 Stack(
                   children: [
                     SizedBox(
-                      height: 150,
+                      height: 150.h,
                       width: double.infinity,
                       child: ColoredBox(
                         color: AppColors.primaryColor.withValues(alpha: 0.3),

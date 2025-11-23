@@ -61,7 +61,7 @@ class _CustomerAppointmentsCalendarScreenState
                     Expanded(
                       child: AppText(
                         text: '${AppHelper.monthName(date.month)} ${date.year}',
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -111,7 +111,7 @@ class _CustomerAppointmentsCalendarScreenState
                       child: AppText(
                         text:
                             '${date.day} ${AppHelper.monthName(date.month)} ${date.year} - ${date2.day} ${AppHelper.monthName(date2.month)} ${date2.year}',
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -151,7 +151,7 @@ class _CustomerAppointmentsCalendarScreenState
                       child: AppText(
                         text:
                             '${date.day} ${AppHelper.monthName(date.month)} ${date.year}',
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -268,7 +268,7 @@ class _CustomerAppointmentsCalendarScreenState
         color: color,
         titleStyle: TextStyle(
           color: Colors.white,
-          fontSize: 12.sp,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         event: a,
@@ -396,7 +396,7 @@ class DailyAppointmentDetails extends StatelessWidget {
                       text: e.event?.stylist?.name != null
                           ? 'Stylist: ${e.event!.stylist!.name}'
                           : '',
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       color: AppColors.primaryColor,
                     ),
                   ],
@@ -410,7 +410,7 @@ class DailyAppointmentDetails extends StatelessWidget {
                     ),
                     child: AppText(
                       text: a.status.toStatusText(),
-                      fontSize: 10.sp,
+                      fontSize: 10,
                       color: a.status.toStatusColor(),
                     )),
                 onTap: () {

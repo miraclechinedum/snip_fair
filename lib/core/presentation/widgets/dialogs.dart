@@ -233,7 +233,7 @@ class OnConfirmDialog extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: Padding(
-        padding: const EdgeInsets.all(24).dg,
+        padding: const EdgeInsets.all(24).r,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

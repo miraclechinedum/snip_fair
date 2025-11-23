@@ -290,8 +290,12 @@ class _MainScreenState extends State<MainScreen> {
               ];
         return BottomNavigationBar(
           items: items,
-          selectedLabelStyle:
-              AppTextStyle.caption.copyWith(fontWeight: FontWeight.w600),
+          selectedLabelStyle: AppTextStyle.caption.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: AppTextStyle.caption.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
           currentIndex: tabsRouter.activeIndex,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: AppColors.primaryColor,

@@ -41,11 +41,11 @@ class AppText extends StatelessWidget {
         color: color ?? Colors.black,
         fontSize: fontSize.sp,
         fontWeight: fontWeight,
-        height: height?.h,
+        // height: height?.h,
         decoration: decoration,
 
         // letterSpacing: letterSpacing,
-        textStyle: Theme.of(context).textTheme.bodyLarge,
+        // textStyle: Theme.of(context).textTheme.bodyLarge,
       ),
     );
   }

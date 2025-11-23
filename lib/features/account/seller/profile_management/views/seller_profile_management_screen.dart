@@ -126,7 +126,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                 return RefreshIndicator(
                   onRefresh: () async {
                     context.read<SellerProfileMgtCubit>()
-                      ..getProfileDetails()
+                      ..getProfileDetails(true)
                       ..getStats();
                   },
                   child: CustomScrollView(
@@ -282,7 +282,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                 ?.portfolios !=
                                             null)
                                           SizedBox(
-                                            height: 100,
+                                            height: 100.h,
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
                                               itemBuilder: (context, index) {
@@ -291,7 +291,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                     .data!
                                                     .portfolios![index];
                                                 return Container(
-                                                  width: 200,
+                                                  width: 200.w,
                                                   decoration: BoxDecoration(
                                                     borderRadius:
                                                         BorderRadius.circular(8)
@@ -301,7 +301,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                     ),
                                                   ),
                                                   padding:
-                                                      const EdgeInsets.all(16),
+                                                      const EdgeInsets.all(16)
+                                                          .r,
                                                   child: Column(
                                                     children: [
                                                       Row(
@@ -311,6 +312,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                               text: portfolio
                                                                       .title ??
                                                                   'N/A',
+                                                              maxLines: 1,
                                                             ),
                                                           ),
                                                           GestureDetector(
@@ -546,8 +548,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                 children: [
                   SizedBox.expand(
                     child: Container(
-                      padding: const EdgeInsets.only(top: 50),
-                      height: 30,
+                      padding: EdgeInsets.only(top: 50.h),
+                      height: 30.h,
                       color: Colors.white,
                     ),
                   ),
@@ -558,7 +560,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                     child: Stack(
                       children: [
                         Container(
-                          height: 150,
+                          height: 150.h,
                           decoration: const BoxDecoration(
                             gradient: AppColors.appgradient,
                           ),
@@ -574,7 +576,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                           '',
                                       fit: BoxFit.cover,
                                       width: double.infinity,
-                                      height: 150,
+                                      height: 150.h,
                                       placeholder: (context, url) =>
                                           const LinearProgressIndicator(
                                         valueColor: AlwaysStoppedAnimation(
@@ -594,8 +596,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   .pickAndUploadBanner();
                             },
                             child: Container(
-                              width: 24,
-                              height: 24,
+                              width: 24.w,
+                              height: 24.h,
                               decoration: const BoxDecoration(
                                 color: AppColors.contentColorBlue,
                                 shape: BoxShape.circle,
@@ -612,7 +614,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    height: 190,
+                    height: 190.h,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -653,8 +655,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                           .pickAndUploadAvatar();
                                     },
                                     child: Container(
-                                      width: 24,
-                                      height: 24,
+                                      width: 24.w,
+                                      height: 24.h,
                                       decoration: const BoxDecoration(
                                         color: AppColors.contentColorBlue,
                                         shape: BoxShape.circle,
@@ -671,8 +673,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            height: 30,
-                            width: 150,
+                            height: 30.h,
+                            width: 150.w,
                             child: CustomButton(
                               onPressed: () {
                                 context.router
@@ -839,7 +841,7 @@ class SellerProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: radius,
+      radius: radius.r,
       backgroundImage: profileDetails?.user?.avatar != null
           ? CachedNetworkImageProvider(
               profileDetails!.user!.avatar!.completeImagePath(),

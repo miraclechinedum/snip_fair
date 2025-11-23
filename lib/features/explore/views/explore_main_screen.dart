@@ -187,8 +187,8 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                width: 150,
-                height: 18,
+                width: 150.w,
+                height: 18.h,
                 color: Colors.white, // This will be the "shimmered" area
               ),
             ),
@@ -204,7 +204,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                   baseColor: Colors.grey[300]!,
                   highlightColor: Colors.grey[100]!,
                   child: Container(
-                    width: 300,
+                    width: 300.w,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -215,7 +215,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                           children: [
                             Container(
                               width: double.infinity,
-                              height: 150,
+                              height: 150.h,
                               color: Colors
                                   .white, // This will be the "shimmered" area
                             ),
@@ -232,8 +232,8 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                   vertical: 5,
                                 ),
                                 child: Container(
-                                  width: 150,
-                                  height: 12,
+                                  width: 150.w,
+                                  height: 12.h,
                                   color: Colors
                                       .white, // This will be the "shimmered" area
                                 ),
@@ -246,15 +246,15 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                           children: [
                             8.horizontalSpace,
                             Container(
-                              width: 50,
-                              height: 15,
+                              width: 50.w,
+                              height: 15.h,
                               color: Colors
                                   .white, // This will be the "shimmered" area
                             ),
                             const Spacer(),
                             Container(
-                              width: 120,
-                              height: 30,
+                              width: 120.w,
+                              height: 30.h,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
@@ -325,7 +325,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
         ),
         8.verticalSpace,
         SizedBox(
-          height: 250,
+          height: 250.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -363,15 +363,15 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                width: 150,
-                height: 18,
+                width: 150.w,
+                height: 18.h,
                 color: Colors.white, // This will be the "shimmered" area
               ),
             ),
           ),
           8.verticalSpace,
           SizedBox(
-            height: 230,
+            height: 230.h,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -380,7 +380,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                   baseColor: Colors.grey[300]!,
                   highlightColor: Colors.grey[100]!,
                   child: Container(
-                    width: 300,
+                    width: 300.w,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -391,7 +391,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                           children: [
                             Container(
                               width: double.infinity,
-                              height: 150,
+                              height: 150.h,
                               color: Colors
                                   .white, // This will be the "shimmered" area
                             ),
@@ -408,7 +408,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                   vertical: 5,
                                 ),
                                 child: Container(
-                                  width: 150,
+                                  width: 150.w,
                                   height: 12,
                                   color: Colors
                                       .white, // This will be the "shimmered" area
@@ -422,15 +422,15 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                           children: [
                             8.horizontalSpace,
                             Container(
-                              width: 50,
-                              height: 15,
+                              width: 50.w,
+                              height: 15.h,
                               color: Colors
                                   .white, // This will be the "shimmered" area
                             ),
                             const Spacer(),
                             Container(
-                              width: 120,
-                              height: 30,
+                              width: 120.w,
+                              height: 30.h,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
@@ -470,7 +470,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
         ),
         8.verticalSpace,
         SizedBox(
-          height: 220.h,
+          height: 230.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -385,7 +385,7 @@ class CustomerProfileMgtScreen extends StatelessWidget {
       sliver: SliverAppBar(
         foregroundColor: Colors.white,
         backgroundColor: AppColors.primaryColor,
-        expandedHeight: 250.h,
+        expandedHeight: 260.h,
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         title: innerBoxIsScrolled

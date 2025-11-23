@@ -77,7 +77,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                 ),
                 10.verticalSpace,
                 SizedBox(
-                  height: 40,
+                  height: 40.h,
                   child: BlocBuilder<SearchCubit, SearchState>(
                     buildWhen: (previous, current) =>
                         previous.categories != current.categories ||
@@ -90,8 +90,8 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                             baseColor: Colors.grey[300]!,
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: 100,
-                              height: 40,
+                              width: 100.w,
+                              height: 40.h,
                               decoration: BoxDecoration(
                                 color: Colors
                                     .white, // This will be the "shimmered" area
@@ -135,7 +135,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 5,
-                                ),
+                                ).r,
                                 child: Center(
                                   child: AppText(
                                     text: categories[index].name ?? '',
@@ -268,8 +268,8 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                width: 150,
-                height: 18,
+                width: 150.w,
+                height: 18.h,
                 color: Colors.white, // This will be the "shimmered" area
               ),
             ),
@@ -285,7 +285,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                   baseColor: Colors.grey[300]!,
                   highlightColor: Colors.grey[100]!,
                   child: Container(
-                    width: 300,
+                    width: 300.w,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -296,7 +296,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                           children: [
                             Container(
                               width: double.infinity,
-                              height: 150,
+                              height: 150.h,
                               color: Colors
                                   .white, // This will be the "shimmered" area
                             ),
@@ -375,7 +375,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
         ),
         8.verticalSpace,
         SizedBox(
-          height: 220.h,
+          height: 230.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),

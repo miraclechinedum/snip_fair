@@ -28,7 +28,7 @@ class PopularStyleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
+      width: 300.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -38,7 +38,7 @@ class PopularStyleCard extends StatelessWidget {
           Stack(
             children: [
               SizedBox(
-                height: 150,
+                height: 150.h,
                 width: double.infinity,
                 child: ColoredBox(
                   color: AppColors.primaryColor.withValues(alpha: 0.3),
@@ -100,11 +100,12 @@ class PopularStyleCard extends StatelessWidget {
                       AppText(
                         text: portfolio.title ?? 'N/A',
                         fontWeight: FontWeight.w600,
+                        maxLines: showFullDescription ? null : 1,
                       ),
                       // if (!showFullDescription)
                       AppText(
                         text: portfolio.description ?? 'N/A',
-                        maxLines: showFullDescription ? null : 2,
+                        maxLines: showFullDescription ? null : 1,
                         fontSize: 12,
                       ),
                     ],
@@ -122,7 +123,7 @@ class PopularStyleCard extends StatelessWidget {
                     ),
                     10.verticalSpace,
                     SizedBox(
-                      height: 30,
+                      height: 30.h,
                       width: 120.w,
                       child: CustomButton(
                         title: 'Book Now',

@@ -137,7 +137,7 @@ class CustomTextField extends StatelessWidget {
             alignLabelWithHint: true,
 
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 14).dg,
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 14).r,
             // floatingLabelBehavior: FloatingLabelBehavior.always,
 
             enabledBorder: OutlineInputBorder(

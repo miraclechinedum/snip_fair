@@ -405,7 +405,7 @@ class AppointmentHeader extends StatelessWidget {
                     children: [
                       AppText(
                         text: state.fetchPortfolioState.data?.title ?? '',
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         maxLines: 2,
                       ),
@@ -413,7 +413,7 @@ class AppointmentHeader extends StatelessWidget {
                         text: state.fetchPortfolioState.data?.user
                                 ?.stylistProfile?.businessName ??
                             '',
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         maxLines: 1,
                         color: AppColors.primaryColor,
@@ -489,14 +489,14 @@ class BookingSummary extends StatelessWidget {
               AppText(
                 text: 'Booking Summary',
                 fontWeight: FontWeight.w600,
-                fontSize: 16.sp,
+                fontSize: 16,
               ),
               if (state.fetchAppointmentState.hasSuccess)
                 AppText(
                   text:
                       'Booking ID: ${state.fetchAppointmentState.data?.bookingId}',
                   fontWeight: FontWeight.w600,
-                  fontSize: 12.sp,
+                  fontSize: 12,
                 ),
               const Divider(),
               8.verticalSpace,
@@ -1343,7 +1343,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
                             child: AppText(
                               text:
                                   '${AppHelper.monthName(date.month)} ${date.year}',
-                              fontSize: 14.sp,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1466,7 +1466,7 @@ class PaymentSummaryWidget extends StatelessWidget {
                 AppText(
                   text: 'Payment Summary',
                   fontWeight: FontWeight.w600,
-                  fontSize: 16.sp,
+                  fontSize: 16,
                 ),
                 16.verticalSpace,
                 Container(
