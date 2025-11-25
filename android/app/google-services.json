@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "93247050443-lb24gdgfcc40149ovhi3tbkffviovs7h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.snipfair.app",
+            "certificate_hash": "65777a4779ed496b751d47df9b779fb6f5d15a89"
+          }
+        },
+        {
           "client_id": "93247050443-p33nrtciphrksd5nj2moms95aqtfo939.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
