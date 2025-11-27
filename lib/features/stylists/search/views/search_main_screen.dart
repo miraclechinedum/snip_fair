@@ -13,8 +13,59 @@ import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
 import 'package:snip_fair/features/stylists/search/cubit/search_cubit.dart';
 
 @RoutePage()
-class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
+class SearchMainScreen extends StatefulWidget implements AutoRouteWrapper {
   const SearchMainScreen({super.key});
+
+  @override
+  State<SearchMainScreen> createState() => _SearchMainScreenState();
+
+  @override
+  Widget wrappedRoute(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<SearchCubit>()
+        ..fetchCategories()
+        ..search(''),
+      child: this,
+    );
+  }
+}
+
+class _SearchMainScreenState extends State<SearchMainScreen> {
+  final ScrollController _stylistScrollController = ScrollController();
+  final ScrollController _servicesScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _stylistScrollController.addListener(_onStylistScroll);
+    _servicesScrollController.addListener(_onServicesScroll);
+  }
+
+  @override
+  void dispose() {
+    _stylistScrollController.dispose();
+    _servicesScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onStylistScroll() {
+    if (_isBottom(_stylistScrollController)) {
+      context.read<SearchCubit>().loadMoreStylists();
+    }
+  }
+
+  void _onServicesScroll() {
+    if (_isBottom(_servicesScrollController)) {
+      context.read<SearchCubit>().loadMoreServices();
+    }
+  }
+
+  bool _isBottom(ScrollController controller) {
+    if (!controller.hasClients) return false;
+    final maxScroll = controller.position.maxScrollExtent;
+    final currentScroll = controller.position.pixels;
+    return currentScroll >= (maxScroll * 0.9);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +209,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
           Expanded(
             child: BlocBuilder<SearchCubit, SearchState>(
               builder: (context, state) {
-                if (state.stylists.isLoading) {
+                if (state.stylists.isLoading && state.stylists.data == null) {
                   return const Center(
                     child: CircularProgressIndicator(
                       color: AppColors.primaryColor,
@@ -168,6 +219,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
 
                 final stylists = state.stylists.data?.data ?? [];
                 return SingleChildScrollView(
+                  controller: _stylistScrollController,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -177,8 +229,11 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                         builder: (context, state) {
                           return buildServices(
                             label: 'Services',
-                            portfolios: state.services.data ?? [],
-                            isLoading: state.services.isLoading,
+                            portfolios: state.services.data?.data ?? [],
+                            isLoading: state.services.isLoading &&
+                                state.services.data == null,
+                            isLoadingMore:
+                                state.servicePagination.isLoadingMore,
                           );
                         },
                       ),
@@ -225,6 +280,15 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                 color: AppColors.grey3,
                               ),
                             ),
+                          if (state.stylistPagination.isLoadingMore)
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primaryColor,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ],
@@ -257,6 +321,7 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
     required String label,
     required List<SellerPortfolio> portfolios,
     required bool isLoading,
+    required bool isLoadingMore,
   }) {
     if (isLoading) {
       return Column(
@@ -377,9 +442,20 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
         SizedBox(
           height: 230.h,
           child: ListView.separated(
+            controller: _servicesScrollController,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemBuilder: (context, index) {
+              if (index == portfolios.length) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                );
+              }
               final portfolio = portfolios[index];
               return PopularStyleCard(
                 portfolio: portfolio,
@@ -391,20 +467,10 @@ class SearchMainScreen extends StatelessWidget implements AutoRouteWrapper {
               );
             },
             separatorBuilder: (context, index) => 12.horizontalSpace,
-            itemCount: portfolios.length,
+            itemCount: portfolios.length + (isLoadingMore ? 1 : 0),
           ),
         ),
       ],
-    );
-  }
-
-  @override
-  Widget wrappedRoute(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<SearchCubit>()
-        ..fetchCategories()
-        ..search(''),
-      child: this,
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auth_buttons/auth_buttons.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
@@ -158,6 +160,9 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                     12.verticalSpace,
                     BlocBuilder<LoginCubit, LoginState>(
                       builder: (context, state) {
+                        if (Platform.isIOS) {
+                          return const SizedBox.shrink();
+                        }
                         return Center(
                           child: GoogleAuthButton(
                             isLoading: state.loginResult.isLoading,

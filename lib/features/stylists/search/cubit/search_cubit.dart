@@ -6,11 +6,12 @@ import 'package:equatable/equatable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
 import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/utils/pagination_data.dart';
 
 part 'search_state.dart';
 
@@ -25,8 +26,8 @@ class SearchCubit extends Cubit<SearchState> {
   void search(String query) {
     _debounce.run(() {
       emit(state.copyWith(searchQuery: query));
-      _getStylists(query);
-      _getServices(query);
+      _getStylists(query, isInitial: true);
+      _getServices(query, isInitial: true);
     });
   }
 
@@ -57,8 +58,8 @@ class SearchCubit extends Cubit<SearchState> {
 
   void onSelectCategory(WorkCategory? category) {
     emit(state.copyWith(selectedCategory: category));
-    _getStylists(state.searchQuery);
-    _getServices(state.searchQuery);
+    _getStylists(state.searchQuery, isInitial: true);
+    _getServices(state.searchQuery, isInitial: true);
   }
 
   Future<void> fetchCategories() async {
@@ -66,9 +67,13 @@ class SearchCubit extends Cubit<SearchState> {
     final response = await _appointmentRepository.fetchWorkCategories();
     response.when(
       success: (data) {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             categories: ProcessState.success(
-                data..insert(0, WorkCategory(name: 'All')))));
+              data..insert(0, WorkCategory(name: 'All')),
+            ),
+          ),
+        );
       },
       failure: (error) {
         emit(state.copyWith(categories: ProcessState.error(error)));
@@ -76,11 +81,29 @@ class SearchCubit extends Cubit<SearchState> {
     );
   }
 
-  Future<void> _getStylists(String query) async {
-    emit(state.copyWith(stylists: const ProcessState.loading()));
+  Future<void> _getStylists(String query, {bool isInitial = false}) async {
+    if (isInitial) {
+      emit(
+        state.copyWith(
+          stylists: const ProcessState.loading(),
+          stylistPagination: const PaginationData(),
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          stylistPagination: PaginationData(
+            isLoadingMore: true,
+            nextPageCursor: state.stylistPagination.nextPageCursor,
+            hasReachedMax: state.stylistPagination.hasReachedMax,
+          ),
+        ),
+      );
+    }
     final response = await _appointmentRepository.customerFetchStylists(
-      perPage: '20',
+      perPage: '5',
       query: query,
+      page: isInitial ? null : state.stylistPagination.nextPageCursor,
       sort: _mapSort(state.sortOption),
       categoryId: state.selectedCategory?.id?.toString(),
       highestRated: state.highestRated ? true : null,
@@ -91,12 +114,55 @@ class SearchCubit extends Cubit<SearchState> {
     );
     response.when(
       success: (data) {
-        emit(state.copyWith(stylists: ProcessState.success(data)));
+        final mergedData = isInitial
+            ? data
+            : StylistList(
+                data: [...?state.stylists.data?.data, ...?data.data],
+                nextCursor: data.nextCursor,
+                prevCursor: data.prevCursor,
+                nextPageUrl: data.nextPageUrl,
+                prevPageUrl: data.prevPageUrl,
+                perPage: data.perPage,
+                path: data.path,
+              );
+        emit(
+          state.copyWith(
+            stylists: ProcessState.success(mergedData),
+            stylistPagination: PaginationData(
+              nextPageCursor: data.nextCursor,
+              hasReachedMax: data.nextCursor == null,
+            ),
+          ),
+        );
       },
       failure: (error) {
-        emit(state.copyWith(stylists: ProcessState.error(error)));
+        if (isInitial) {
+          emit(
+            state.copyWith(
+              stylists: ProcessState.error(error),
+              stylistPagination: const PaginationData(),
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              stylistPagination: PaginationData(
+                nextPageCursor: state.stylistPagination.nextPageCursor,
+                hasReachedMax: state.stylistPagination.hasReachedMax,
+              ),
+            ),
+          );
+        }
       },
     );
+  }
+
+  Future<void> loadMoreStylists() async {
+    if (state.stylistPagination.isLoadingMore ||
+        state.stylistPagination.hasReachedMax) {
+      return;
+    }
+    await _getStylists(state.searchQuery, isInitial: false);
   }
 
   String? _mapSort(SortOption option) {
@@ -114,27 +180,83 @@ class SearchCubit extends Cubit<SearchState> {
     }
   }
 
-  Future<void> _getServices(String query) async {
-    emit(state.copyWith(services: const ProcessState.loading()));
+  Future<void> _getServices(String query, {bool isInitial = false}) async {
+    if (isInitial) {
+      emit(
+        state.copyWith(
+          services: const ProcessState.loading(),
+          servicePagination: const PaginationData(),
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          servicePagination: PaginationData(
+            isLoadingMore: true,
+            nextPageCursor: state.servicePagination.nextPageCursor,
+            hasReachedMax: state.servicePagination.hasReachedMax,
+          ),
+        ),
+      );
+    }
     final response = await _appointmentRepository.customerFetchPortfolioList(
-      perPage: '20',
+      perPage: '5',
       query: query,
+      page: isInitial ? null : state.servicePagination.nextPageCursor,
       categoryId: state.selectedCategory?.id?.toString(),
       sort: _mapSort(state.sortOption),
-      highestRated: state.highestRated ? true : null,
-      online: state.online ? true : null,
-      lowestPrice: state.lowestPriceFlag ? true : null,
-      minPrice: state.minPrice,
-      maxPrice: state.maxPrice,
     );
     response.when(
       success: (data) {
-        emit(state.copyWith(services: ProcessState.success(data.data ?? [])));
+        final mergedData = isInitial
+            ? data
+            : SellerPortfolioList(
+                data: [...?state.services.data?.data, ...?data.data],
+                nextCursor: data.nextCursor,
+                prevCursor: data.prevCursor,
+                nextPageUrl: data.nextPageUrl,
+                prevPageUrl: data.prevPageUrl,
+                perPage: data.perPage,
+                path: data.path,
+              );
+        emit(
+          state.copyWith(
+            services: ProcessState.success(mergedData),
+            servicePagination: PaginationData(
+              nextPageCursor: data.nextCursor,
+              hasReachedMax: data.nextCursor == null,
+            ),
+          ),
+        );
       },
       failure: (error) {
-        emit(state.copyWith(services: ProcessState.error(error)));
+        if (isInitial) {
+          emit(
+            state.copyWith(
+              services: ProcessState.error(error),
+              servicePagination: const PaginationData(),
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              servicePagination: PaginationData(
+                nextPageCursor: state.servicePagination.nextPageCursor,
+                hasReachedMax: state.servicePagination.hasReachedMax,
+              ),
+            ),
+          );
+        }
       },
     );
+  }
+
+  Future<void> loadMoreServices() async {
+    if (state.servicePagination.isLoadingMore ||
+        state.servicePagination.hasReachedMax) {
+      return;
+    }
+    await _getServices(state.searchQuery, isInitial: false);
   }
 
   Future<bool?> likePortfolio(String portfolioId) async {

@@ -30,6 +30,8 @@ class SearchState extends Equatable {
       online: false,
       lowestPriceFlag: false,
       priceRange: PriceRangeFilter.all,
+      stylistPagination: PaginationData(),
+      servicePagination: PaginationData(),
     );
   }
 
@@ -44,9 +46,13 @@ class SearchState extends Equatable {
     required this.online,
     required this.lowestPriceFlag,
     required this.priceRange,
+    required this.stylistPagination,
+    required this.servicePagination,
   });
   final ProcessState<StylistList> stylists;
-  final ProcessState<List<SellerPortfolio>> services;
+  final PaginationData stylistPagination;
+  final ProcessState<SellerPortfolioList> services;
+  final PaginationData servicePagination;
   final ProcessState<List<WorkCategory>> categories;
   final WorkCategory? selectedCategory;
   final String searchQuery;
@@ -78,7 +84,7 @@ class SearchState extends Equatable {
 
   SearchState copyWith({
     ProcessState<StylistList>? stylists,
-    ProcessState<List<SellerPortfolio>>? services,
+    ProcessState<SellerPortfolioList>? services,
     String? searchQuery,
     ProcessState<List<WorkCategory>>? categories,
     WorkCategory? selectedCategory,
@@ -87,6 +93,8 @@ class SearchState extends Equatable {
     bool? online,
     bool? lowestPriceFlag,
     PriceRangeFilter? priceRange,
+    PaginationData? stylistPagination,
+    PaginationData? servicePagination,
   }) {
     return SearchState._(
       stylists: stylists ?? this.stylists,
@@ -99,6 +107,8 @@ class SearchState extends Equatable {
       online: online ?? this.online,
       lowestPriceFlag: lowestPriceFlag ?? this.lowestPriceFlag,
       priceRange: priceRange ?? this.priceRange,
+      stylistPagination: stylistPagination ?? this.stylistPagination,
+      servicePagination: servicePagination ?? this.servicePagination,
     );
   }
 
@@ -114,5 +124,7 @@ class SearchState extends Equatable {
         online,
         lowestPriceFlag,
         priceRange,
+        stylistPagination,
+        servicePagination,
       ];
 }
