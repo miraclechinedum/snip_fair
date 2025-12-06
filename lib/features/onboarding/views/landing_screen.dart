@@ -88,7 +88,6 @@ class _LandingScreenState extends State<LandingScreen> {
                     const AppText(
                       text:
                           'Connect with professional stylists in your area. Book hair, nails, makeup, and grooming services at your convenience.',
-                      fontSize: 14,
                       color: Colors.white,
                     ),
                     20.verticalSpace,
@@ -111,6 +110,14 @@ class _LandingScreenState extends State<LandingScreen> {
                         textColor: Colors.black,
                         background: Colors.white,
                       ),
+                    12.verticalSpace,
+                    CustomButton(
+                      title: 'Continue as Guest',
+                      onPressed: cubit.setGuestUser,
+                      gradient: null,
+                      isOutline: true,
+                      background: Colors.white,
+                    ),
                   ],
                 ),
               ),

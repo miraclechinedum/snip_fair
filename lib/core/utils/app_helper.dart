@@ -16,6 +16,7 @@ import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_paym
 import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/main_screen.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
@@ -821,6 +822,77 @@ class AppHelper {
     final endStr = timeOfDayToString(context, latestEnd);
 
     return '$startStr - $endStr';
+  }
+
+  /// Shows the authentication required bottom sheet when guest users try to
+  /// perform protected actions like liking, commenting, or booking appointments.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// AuthenticationHelpers.showAuthenticationRequired(
+  ///   context,
+  ///   title: 'Like this stylist',
+  ///   subtitle: 'Create an account or sign in to like stylists and save your favorites.',
+  ///   onLogin: () {
+  ///     // Optional: handle login selection
+  ///   },
+  ///   onSignup: () {
+  ///     // Optional: handle signup selection
+  ///   },
+  /// );
+  /// ```
+  static Future<String?> showAuthenticationRequired(
+    BuildContext context, {
+    String? title,
+    String? subtitle,
+    VoidCallback? onLogin,
+    VoidCallback? onSignup,
+    IconData? icon,
+  }) {
+    return AuthenticationRequiredBottomSheet.show(
+      context,
+      title: title,
+      subtitle: subtitle,
+      onLogin: onLogin,
+      onSignup: onSignup,
+      icon: icon,
+    );
+  }
+
+  /// Checks if user is authenticated and shows the auth sheet if not.
+  /// Returns true if authenticated, false if not authenticated.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// if (!await AuthenticationHelpers.checkAuthenticationRequired(
+  ///   context,
+  ///   isAuthenticated: appState.status == AuthStatus.authenticated,
+  /// )) {
+  ///   return; // User is not authenticated, sheet was shown
+  /// }
+  /// // Proceed with protected action
+  /// ```
+  static Future<bool> checkAuthenticationRequired(
+    BuildContext context, {
+    required bool isAuthenticated,
+    String? title,
+    String? subtitle,
+    VoidCallback? onLogin,
+    VoidCallback? onSignup,
+    IconData? icon,
+  }) async {
+    if (!isAuthenticated) {
+      await showAuthenticationRequired(
+        context,
+        title: title,
+        subtitle: subtitle,
+        onLogin: onLogin,
+        onSignup: onSignup,
+        icon: icon,
+      );
+      return false;
+    }
+    return true;
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/main_screen.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
@@ -35,6 +36,13 @@ class AccountMainScreen extends StatelessWidget {
         context.watch<CustomerProfileMgtCubit>().state.profileDetails;
     final stylistProfilestate =
         context.watch<CustomerProfileMgtCubit>().state.profileDetails;
+    final isAuthenticated =
+        context.read<AppCubit>().state.status == AuthStatus.authenticated;
+    if (!isAuthenticated) {
+      return const Scaffold(
+        body: Center(child: AuthenticationRequiredBottomSheet()),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(

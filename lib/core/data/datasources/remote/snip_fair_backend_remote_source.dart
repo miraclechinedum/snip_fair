@@ -319,7 +319,6 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     required String photoPath,
   }) {
     return run(() async {
-      print(photoPath);
       final client = getIt<HttpService>().client(isFormDataRequest: true);
       final formData = FormData.fromMap({
         'identification_id': documentNumber,
@@ -332,7 +331,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           filename: filePath.split('/').last,
         ),
       });
-      ;
+
       await client.post<Map<String, dynamic>>(
         AuthPath.updateIdentityInfo,
         data: formData,
@@ -498,7 +497,6 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
                 )
               : medias[i].completeImagePath(),
       });
-      print(formData.fields.map((e) => '${e.key} ${e.value}'));
       await client.post<Map<String, dynamic>>(
         AuthPath.stylistProfile,
         queryParameters: {'_method': 'PATCH'},
@@ -622,7 +620,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<List<WorkCategory>>> fetchWorkCategories() {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(requireAuth: false);
       final response = await client.get<List<dynamic>>(
         AuthPath.workCategories,
       );
@@ -906,7 +904,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(requireAuth: false);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/$id',
       );
@@ -932,7 +930,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? maxPrice,
   }) {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(requireAuth: false);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/list',
         queryParameters: {
@@ -973,7 +971,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? maxPrice,
   }) {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(requireAuth: false);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/list',
         queryParameters: {
@@ -1080,7 +1078,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerPortfolio>> customerFetchPortfolioById({String? id}) {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(requireAuth: false);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/$id',
       );

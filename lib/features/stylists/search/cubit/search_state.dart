@@ -29,7 +29,7 @@ class SearchState extends Equatable {
       highestRated: false,
       online: false,
       lowestPriceFlag: false,
-      priceRange: PriceRangeFilter.all,
+      priceRange: null,
       stylistPagination: PaginationData(),
       servicePagination: PaginationData(),
     );
@@ -60,27 +60,27 @@ class SearchState extends Equatable {
   final bool highestRated;
   final bool online;
   final bool lowestPriceFlag;
-  final PriceRangeFilter? priceRange;
+  final PortfolioPriceFilters? priceRange;
 
-  String? get minPrice => switch (priceRange) {
-        PriceRangeFilter.below50 => '0',
-        PriceRangeFilter.from50To100 => '50',
-        PriceRangeFilter.from101To150 => '101',
-        PriceRangeFilter.from150To200 => '150',
-        PriceRangeFilter.above200 => '200',
-        PriceRangeFilter.all => null,
-        null => null,
-      };
+  // String? get minPrice => switch (priceRange) {
+  //       PriceRangeFilter.below50 => '0',
+  //       PriceRangeFilter.from50To100 => '50',
+  //       PriceRangeFilter.from101To150 => '101',
+  //       PriceRangeFilter.from150To200 => '150',
+  //       PriceRangeFilter.above200 => '200',
+  //       PriceRangeFilter.all => null,
+  //       null => null,
+  //     };
 
-  String? get maxPrice => switch (priceRange) {
-        PriceRangeFilter.below50 => '49',
-        PriceRangeFilter.from50To100 => '100',
-        PriceRangeFilter.from101To150 => '150',
-        PriceRangeFilter.from150To200 => '200',
-        PriceRangeFilter.above200 => null,
-        PriceRangeFilter.all => null,
-        null => null,
-      };
+  // String? get maxPrice => switch (priceRange) {
+  //       PriceRangeFilter.below50 => '49',
+  //       PriceRangeFilter.from50To100 => '100',
+  //       PriceRangeFilter.from101To150 => '150',
+  //       PriceRangeFilter.from150To200 => '200',
+  //       PriceRangeFilter.above200 => null,
+  //       PriceRangeFilter.all => null,
+  //       null => null,
+  //     };
 
   SearchState copyWith({
     ProcessState<StylistList>? stylists,
@@ -92,7 +92,7 @@ class SearchState extends Equatable {
     bool? highestRated,
     bool? online,
     bool? lowestPriceFlag,
-    PriceRangeFilter? priceRange,
+    PortfolioPriceFilters? priceRange,
     PaginationData? stylistPagination,
     PaginationData? servicePagination,
   }) {

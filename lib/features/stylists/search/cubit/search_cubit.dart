@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
@@ -36,7 +37,7 @@ class SearchCubit extends Cubit<SearchState> {
     // _getStylists(state.searchQuery);
   }
 
-  void setPriceRange(PriceRangeFilter? range) {
+  void setPriceRange(PortfolioPriceFilters? range) {
     emit(state.copyWith(priceRange: range));
     // _getStylists(state.searchQuery);
   }
@@ -109,8 +110,8 @@ class SearchCubit extends Cubit<SearchState> {
       highestRated: state.highestRated ? true : null,
       online: state.online ? true : null,
       lowestPrice: state.lowestPriceFlag ? true : null,
-      minPrice: state.minPrice,
-      maxPrice: state.maxPrice,
+      minPrice: state.priceRange?.min?.toString(),
+      maxPrice: state.priceRange?.max?.toString(),
     );
     response.when(
       success: (data) {
@@ -205,6 +206,11 @@ class SearchCubit extends Cubit<SearchState> {
       page: isInitial ? null : state.servicePagination.nextPageCursor,
       categoryId: state.selectedCategory?.id?.toString(),
       sort: _mapSort(state.sortOption),
+      highestRated: state.highestRated ? true : null,
+      online: state.online ? true : null,
+      lowestPrice: state.lowestPriceFlag ? true : null,
+      minPrice: state.priceRange?.min?.toString(),
+      maxPrice: state.priceRange?.max?.toString(),
     );
     response.when(
       success: (data) {

@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
@@ -263,6 +265,13 @@ class _LikeItemWidgetState extends State<LikeItemWidget> {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () async {
+        final isAuthenticated =
+            context.read<AppCubit>().state.status == AuthStatus.authenticated;
+        if (!isAuthenticated) {
+          await AppHelper.showAuthenticationRequired(context);
+          return;
+        }
+
         final result = await widget.onLikePressed();
         if (result == null) return;
         setState(() {

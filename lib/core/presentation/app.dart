@@ -78,7 +78,6 @@ class _AppState extends State<App> {
                 ),
               );
             }
-            break;
 
           case 'appointment':
             // Different routes for stylists vs customers
@@ -94,7 +93,6 @@ class _AppState extends State<App> {
                 _appRouter.push(const CustomerAppointmentsCalendarRoute());
               }
             }
-            break;
 
           case 'booking':
             // Handle booking notifications
@@ -105,7 +103,6 @@ class _AppState extends State<App> {
               // Navigate to customer appointments
               _appRouter.push(const CustomerAppointmentsCalendarRoute());
             }
-            break;
 
           case 'payment':
           case 'wallet':
@@ -113,18 +110,15 @@ class _AppState extends State<App> {
             if (state.isCustomer) {
               _appRouter.push(const CustomerWalletRoute());
             }
-            break;
 
           case 'dispute':
             // Navigate to disputes
             _appRouter.push(const DisputesRoute());
-            break;
 
           case 'notification':
           case 'general':
             // Navigate to notifications list
             _appRouter.push(const NotificationsRoute());
-            break;
 
           default:
             log('Unknown notification type: $type');
@@ -206,7 +200,6 @@ class _AppState extends State<App> {
                                     context
                                         .read<NotificationsCubit>()
                                         .onLogout();
-                                    break;
 
                                   case AuthStatus.authenticated:
                                     if (state.user.emailVerifiedAt == null) {
@@ -257,6 +250,8 @@ class _AppState extends State<App> {
                                         ..getWalletTransactions();
                                     }
 
+                                    _appRouter.replaceAll([const MainRoute()]);
+                                  case AuthStatus.guest:
                                     _appRouter.replaceAll([const MainRoute()]);
                                 }
                               },

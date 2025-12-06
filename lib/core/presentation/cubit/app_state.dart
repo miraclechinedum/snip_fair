@@ -6,6 +6,7 @@ enum AuthStatus {
   unknown,
   unAuthenticated,
   authenticated,
+  guest,
 }
 
 class AppState extends Equatable {
@@ -36,11 +37,18 @@ class AppState extends Equatable {
           platformSettings: settings,
         );
 
+  const AppState.guest({PlatformSettings? settings})
+      : this._(
+          status: AuthStatus.guest,
+          user: const User(role: 'guest', name: 'Guest'),
+          platformSettings: settings,
+        );
+
   final AuthStatus status;
   final User user;
   final PlatformSettings? platformSettings;
 
-  bool get isCustomer => user.role == 'customer';
+  bool get isCustomer => user.role == 'customer' || user.role == 'guest';
   bool get isStylist => user.role == 'stylist';
 
   @override

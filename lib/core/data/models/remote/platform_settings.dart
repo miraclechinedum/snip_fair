@@ -1,70 +1,39 @@
 class PlatformSettings {
-  int? id;
-  String? terms;
-  String? privacyPolicy;
-  String? cookies;
-  bool? emailVerification;
-  bool? twoFactorAuth;
-  int? minBookingAmount;
-  int? maxBookingAmount;
-  bool? allowRegistrationStylists;
-  bool? allowRegistrationCustomers;
-  bool? maintenanceMode;
-  String? maintenanceMessage;
-  bool? emailNotifications;
-  bool? pushNotifications;
-  bool? systemAlerts;
-  bool? paymentAlerts;
-  bool? contentModeration;
-  int? appointmentRescheduleThreshold;
-  int? appointmentReschedulePercentage;
-  int? appointmentCancelingThreshold;
-  int? appointmentCancelingPercentage;
-  String? updatedBy;
-  String? createdAt;
-  String? updatedAt;
-  int? commissionRate;
-  String? currencySymbol;
-  String? currencyCode;
-  List<String>? featuredMedia;
-  int? professionalStylists;
-  int? happyCustomers;
-  int? servicesCompleted;
-  double? customerSatisfaction;
-
-  PlatformSettings(
-      {this.id,
-      this.terms,
-      this.privacyPolicy,
-      this.cookies,
-      this.emailVerification,
-      this.twoFactorAuth,
-      this.minBookingAmount,
-      this.maxBookingAmount,
-      this.allowRegistrationStylists,
-      this.allowRegistrationCustomers,
-      this.maintenanceMode,
-      this.maintenanceMessage,
-      this.emailNotifications,
-      this.pushNotifications,
-      this.systemAlerts,
-      this.paymentAlerts,
-      this.contentModeration,
-      this.appointmentRescheduleThreshold,
-      this.appointmentReschedulePercentage,
-      this.appointmentCancelingThreshold,
-      this.appointmentCancelingPercentage,
-      this.updatedBy,
-      this.createdAt,
-      this.updatedAt,
-      this.commissionRate,
-      this.currencySymbol,
-      this.currencyCode,
-      this.featuredMedia,
-      this.professionalStylists,
-      this.happyCustomers,
-      this.servicesCompleted,
-      this.customerSatisfaction});
+  PlatformSettings({
+    this.id,
+    this.terms,
+    this.privacyPolicy,
+    this.cookies,
+    this.emailVerification,
+    this.twoFactorAuth,
+    this.minBookingAmount,
+    this.maxBookingAmount,
+    this.allowRegistrationStylists,
+    this.allowRegistrationCustomers,
+    this.maintenanceMode,
+    this.maintenanceMessage,
+    this.emailNotifications,
+    this.pushNotifications,
+    this.systemAlerts,
+    this.paymentAlerts,
+    this.contentModeration,
+    this.appointmentRescheduleThreshold,
+    this.appointmentReschedulePercentage,
+    this.appointmentCancelingThreshold,
+    this.appointmentCancelingPercentage,
+    this.updatedBy,
+    this.createdAt,
+    this.updatedAt,
+    this.commissionRate,
+    this.currencySymbol,
+    this.currencyCode,
+    this.featuredMedia,
+    this.professionalStylists,
+    this.happyCustomers,
+    this.servicesCompleted,
+    this.customerSatisfaction,
+    this.portfolioPriceFilters,
+  });
 
   PlatformSettings.fromJson(Map<String, dynamic> json) {
     id = json['id'] is int
@@ -135,46 +104,114 @@ class PlatformSettings {
         : json['customer_satisfaction'] != null
             ? double.tryParse(json['customer_satisfaction'].toString())
             : null;
+    if (json['portfolio_price_filters'] != null) {
+      portfolioPriceFilters = <PortfolioPriceFilters>[];
+      for (final v in (json['portfolio_price_filters'] as List<dynamic>)) {
+        portfolioPriceFilters!
+            .add(PortfolioPriceFilters.fromJson(v as Map<String, dynamic>));
+      }
+    }
   }
+  int? id;
+  String? terms;
+  String? privacyPolicy;
+  String? cookies;
+  bool? emailVerification;
+  bool? twoFactorAuth;
+  int? minBookingAmount;
+  int? maxBookingAmount;
+  bool? allowRegistrationStylists;
+  bool? allowRegistrationCustomers;
+  bool? maintenanceMode;
+  String? maintenanceMessage;
+  bool? emailNotifications;
+  bool? pushNotifications;
+  bool? systemAlerts;
+  bool? paymentAlerts;
+  bool? contentModeration;
+  int? appointmentRescheduleThreshold;
+  int? appointmentReschedulePercentage;
+  int? appointmentCancelingThreshold;
+  int? appointmentCancelingPercentage;
+  String? updatedBy;
+  String? createdAt;
+  String? updatedAt;
+  int? commissionRate;
+  String? currencySymbol;
+  String? currencyCode;
+  List<String>? featuredMedia;
+  int? professionalStylists;
+  int? happyCustomers;
+  int? servicesCompleted;
+  double? customerSatisfaction;
+  List<PortfolioPriceFilters>? portfolioPriceFilters;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['terms'] = this.terms;
-    data['privacy_policy'] = this.privacyPolicy;
-    data['cookies'] = this.cookies;
-    data['email_verification'] = this.emailVerification;
-    data['two_factor_auth'] = this.twoFactorAuth;
-    data['min_booking_amount'] = this.minBookingAmount;
-    data['max_booking_amount'] = this.maxBookingAmount;
-    data['allow_registration_stylists'] = this.allowRegistrationStylists;
-    data['allow_registration_customers'] = this.allowRegistrationCustomers;
-    data['maintenance_mode'] = this.maintenanceMode;
-    data['maintenance_message'] = this.maintenanceMessage;
-    data['email_notifications'] = this.emailNotifications;
-    data['push_notifications'] = this.pushNotifications;
-    data['system_alerts'] = this.systemAlerts;
-    data['payment_alerts'] = this.paymentAlerts;
-    data['content_moderation'] = this.contentModeration;
-    data['appointment_reschedule_threshold'] =
-        this.appointmentRescheduleThreshold;
-    data['appointment_reschedule_percentage'] =
-        this.appointmentReschedulePercentage;
-    data['appointment_canceling_threshold'] =
-        this.appointmentCancelingThreshold;
-    data['appointment_canceling_percentage'] =
-        this.appointmentCancelingPercentage;
-    data['updated_by'] = this.updatedBy;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['commission_rate'] = this.commissionRate;
-    data['currency_symbol'] = this.currencySymbol;
-    data['currency_code'] = this.currencyCode;
-    data['featured_media'] = this.featuredMedia;
-    data['professional_stylists'] = this.professionalStylists;
-    data['happy_customers'] = this.happyCustomers;
-    data['services_completed'] = this.servicesCompleted;
-    data['customer_satisfaction'] = this.customerSatisfaction;
+    data['id'] = id;
+    data['terms'] = terms;
+    data['privacy_policy'] = privacyPolicy;
+    data['cookies'] = cookies;
+    data['email_verification'] = emailVerification;
+    data['two_factor_auth'] = twoFactorAuth;
+    data['min_booking_amount'] = minBookingAmount;
+    data['max_booking_amount'] = maxBookingAmount;
+    data['allow_registration_stylists'] = allowRegistrationStylists;
+    data['allow_registration_customers'] = allowRegistrationCustomers;
+    data['maintenance_mode'] = maintenanceMode;
+    data['maintenance_message'] = maintenanceMessage;
+    data['email_notifications'] = emailNotifications;
+    data['push_notifications'] = pushNotifications;
+    data['system_alerts'] = systemAlerts;
+    data['payment_alerts'] = paymentAlerts;
+    data['content_moderation'] = contentModeration;
+    data['appointment_reschedule_threshold'] = appointmentRescheduleThreshold;
+    data['appointment_reschedule_percentage'] = appointmentReschedulePercentage;
+    data['appointment_canceling_threshold'] = appointmentCancelingThreshold;
+    data['appointment_canceling_percentage'] = appointmentCancelingPercentage;
+    data['updated_by'] = updatedBy;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['commission_rate'] = commissionRate;
+    data['currency_symbol'] = currencySymbol;
+    data['currency_code'] = currencyCode;
+    data['featured_media'] = featuredMedia;
+    data['professional_stylists'] = professionalStylists;
+    data['happy_customers'] = happyCustomers;
+    data['services_completed'] = servicesCompleted;
+    data['customer_satisfaction'] = customerSatisfaction;
+    if (portfolioPriceFilters != null) {
+      data['portfolio_price_filters'] =
+          portfolioPriceFilters!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class PortfolioPriceFilters {
+  PortfolioPriceFilters({this.label, this.max, this.min, this.isDefault});
+
+  PortfolioPriceFilters.fromJson(Map<String, dynamic> json) {
+    label = json['label'] as String?;
+    max = json['max'] is int
+        ? json['max'] as int
+        : int.tryParse(json['max']?.toString() ?? '');
+    min = json['min'] is int
+        ? json['min'] as int
+        : int.tryParse(json['min']?.toString() ?? '');
+    isDefault = json['is_default'] as bool?;
+  }
+  String? label;
+  int? max;
+  int? min;
+  bool? isDefault;
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['label'] = label;
+    data['max'] = max;
+    data['min'] = min;
+    data['is_default'] = isDefault;
     return data;
   }
 }

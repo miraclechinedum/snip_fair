@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
@@ -21,10 +23,18 @@ class SearchMainScreen extends StatefulWidget implements AutoRouteWrapper {
 
   @override
   Widget wrappedRoute(BuildContext context) {
+    final settings =
+        context.select((AppCubit bloc) => bloc.state.platformSettings);
+    final priceRanges = settings?.portfolioPriceFilters ?? [];
+    final defaultRange = priceRanges.firstWhere(
+      (element) => element.isDefault ?? false,
+      orElse: () => PortfolioPriceFilters(label: 'All'),
+    );
     return BlocProvider(
       create: (context) => getIt<SearchCubit>()
         ..fetchCategories()
-        ..search(''),
+        ..search('')
+        ..setPriceRange(defaultRange),
       child: this,
     );
   }
@@ -492,67 +502,79 @@ class FilterSheet extends StatelessWidget {
     var highestRated = state.highestRated;
     var online = state.online;
     var lowestPriceFlag = state.lowestPriceFlag;
+    final settings =
+        context.select((AppCubit bloc) => bloc.state.platformSettings);
+    final priceRanges = settings?.portfolioPriceFilters ?? [];
+    final defaultRange = priceRanges.firstWhere(
+      (element) => element.isDefault ?? false,
+      orElse: () => PortfolioPriceFilters(label: 'All'),
+    );
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: StatefulBuilder(
-        builder: (ctx, setModalState) {
-          void apply() {
-            cubit
-              ..setSortOption(selectedSort)
-              ..setPriceRange(selectedRange)
-              ..toggleHighestRated(highestRated)
-              ..toggleOnline(online)
-              ..toggleLowestPriceFlag(lowestPriceFlag);
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setModalState) {
+            void apply() {
+              cubit
+                ..setSortOption(selectedSort)
+                ..setPriceRange(selectedRange)
+                ..toggleHighestRated(highestRated)
+                ..toggleOnline(online)
+                ..toggleLowestPriceFlag(lowestPriceFlag);
 
-            cubit.search(cubit.state.searchQuery);
-            Navigator.of(ctx).pop();
-          }
+              cubit.search(cubit.state.searchQuery);
+              Navigator.of(ctx).pop();
+            }
 
-          void clear() {
-            selectedSort = SortOption.distance;
-            selectedRange = PriceRangeFilter.all;
-            highestRated = false;
-            online = false;
-            lowestPriceFlag = false;
-            setModalState(() {});
-          }
+            void clear() {
+              selectedSort = SortOption.distance;
+              selectedRange = defaultRange;
+              highestRated = false;
+              online = false;
+              lowestPriceFlag = false;
+              setModalState(() {});
+            }
 
-          Widget radio(SortOption opt, String label) {
-            return RadioListTile<SortOption>(
-              value: opt,
-              title: Text(label),
-              activeColor: AppColors.primaryColor,
-            );
-          }
+            Widget radio(SortOption opt, String label) {
+              return RadioListTile<SortOption>(
+                value: opt,
+                title: Text(label),
+                activeColor: AppColors.primaryColor,
+              );
+            }
 
-          return SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'Sort & Filters',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Sort & Filters',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                            onPressed: clear, child: const Text('Clear')),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text('Sort by',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    RadioGroup<SortOption>(
+                          const Spacer(),
+                          TextButton(
+                            onPressed: clear,
+                            child: const Text('Clear'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Sort by',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      RadioGroup<SortOption>(
                         groupValue: selectedSort,
                         onChanged: (v) {
                           setModalState(() {
@@ -569,123 +591,97 @@ class FilterSheet extends StatelessWidget {
                             radio(SortOption.lowestPrice, 'Lowest price'),
                             radio(SortOption.highestPrice, 'Highest price'),
                           ],
-                        )),
-                    const SizedBox(height: 12),
-                    const Divider(
-                      thickness: 0.5,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('Price range',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ChoiceChip(
-                          label: const Text('Below 50'),
-                          selected: selectedRange == PriceRangeFilter.below50,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.below50;
-                            setModalState(() {});
-                          },
                         ),
-                        ChoiceChip(
-                          label: const Text('50 - 100'),
-                          selected:
-                              selectedRange == PriceRangeFilter.from50To100,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.from50To100;
-                            setModalState(() {});
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('101 - 150'),
-                          selected:
-                              selectedRange == PriceRangeFilter.from101To150,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.from101To150;
-                            setModalState(() {});
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('150 - 200'),
-                          selected:
-                              selectedRange == PriceRangeFilter.from150To200,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.from150To200;
-                            setModalState(() {});
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('200 and above'),
-                          selected: selectedRange == PriceRangeFilter.above200,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.above200;
-                            setModalState(() {});
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('Any'),
-                          selected: selectedRange == PriceRangeFilter.all,
-                          onSelected: (_) {
-                            selectedRange = PriceRangeFilter.all;
-                            setModalState(() {});
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(
-                      thickness: 0.5,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('Quick filters',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    SwitchListTile(
-                      value: highestRated,
-                      onChanged: (v) => setModalState(() => highestRated = v),
-                      title: const Text('Highest rating'),
-                    ),
-                    SwitchListTile(
-                      value: online,
-                      onChanged: (v) => setModalState(() => online = v),
-                      title: const Text('Online'),
-                    ),
-                    SwitchListTile(
-                      value: lowestPriceFlag,
-                      onChanged: (v) =>
-                          setModalState(() => lowestPriceFlag = v),
-                      title: const Text('Lowest price'),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: apply,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(
+                        thickness: 0.5,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Price range',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ...priceRanges.map(
+                            (range) => ChoiceChip(
+                              label: Text(range.label ?? ''),
+                              selected: selectedRange == range,
+                              onSelected: (selected) {
+                                setModalState(() {
+                                  selectedRange = selected ? range : null;
+                                });
+                              },
+                              selectedColor:
+                                  AppColors.primaryColor.withValues(alpha: .1),
+                              backgroundColor: AppColors.grey1,
+                              labelStyle: TextStyle(
+                                color: selectedRange == range
+                                    ? AppColors.primaryColor
+                                    : AppColors.black,
                               ),
                             ),
-                            child: const Text('Apply'),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(
+                        thickness: 0.5,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Quick filters',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      SwitchListTile(
+                        value: highestRated,
+                        onChanged: (v) => setModalState(() => highestRated = v),
+                        title: const Text('Highest rating'),
+                      ),
+                      SwitchListTile(
+                        value: online,
+                        onChanged: (v) => setModalState(() => online = v),
+                        title: const Text('Online'),
+                      ),
+                      SwitchListTile(
+                        value: lowestPriceFlag,
+                        onChanged: (v) =>
+                            setModalState(() => lowestPriceFlag = v),
+                        title: const Text('Lowest price'),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: apply,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text('Apply'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -83,7 +83,7 @@ class StylistBusinessIdVerifyScreen
                     builder: (context, documentNumber) {
                       return CustomTextField(
                         label: 'Document Number',
-                        hint: 'Enter your bio',
+                        hint: 'Enter your ID number',
                         isRequired: true,
                         onChanged: cubit.onDocNumberChanged,
                         isError: documentNumber.isNotValid,

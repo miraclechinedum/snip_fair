@@ -2,8 +2,10 @@
 // ignore_for_file: type=lint
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
@@ -128,6 +130,13 @@ class PopularStyleCard extends StatelessWidget {
                       child: CustomButton(
                         title: 'Book Now',
                         onPressed: () {
+                          final isAuthenticated =
+                              context.read<AppCubit>().state.status ==
+                                  AuthStatus.authenticated;
+                          if (!isAuthenticated) {
+                            AppHelper.showAuthenticationRequired(context);
+                            return;
+                          }
                           context.pushRoute(UpdateCreateAppointmentRoute(
                               portfolioId: portfolio.id.toString()));
                         },

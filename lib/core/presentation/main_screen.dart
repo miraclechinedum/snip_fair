@@ -20,6 +20,7 @@ import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/services/location_service.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
@@ -168,6 +169,10 @@ class _MainScreenState extends State<MainScreen> {
             msg: 'Location permission is required to use this feature.',
           );
         }
+      } else {
+        Fluttertoast.showToast(
+          msg: 'To get the best experience, please enable location sharing.',
+        );
       }
     } else {
       locationService.sendLocationUpdateRequest();
@@ -218,6 +223,12 @@ class _MainScreenState extends State<MainScreen> {
           actions: [
             IconButton(
               onPressed: () {
+                final isAuthenticated = context.read<AppCubit>().state.status ==
+                    AuthStatus.authenticated;
+                if (!isAuthenticated) {
+                  AppHelper.showAuthenticationRequired(context);
+                  return;
+                }
                 context.read<ConversationsCubit>().fetchConversations();
                 context.router.push(ConversationListRoute());
               },
@@ -228,6 +239,12 @@ class _MainScreenState extends State<MainScreen> {
             ),
             IconButton(
               onPressed: () {
+                final isAuthenticated = context.read<AppCubit>().state.status ==
+                    AuthStatus.authenticated;
+                if (!isAuthenticated) {
+                  AppHelper.showAuthenticationRequired(context);
+                  return;
+                }
                 context
                     .read<NotificationsCubit>()
                     .fetchNotifications(isInitial: true);
@@ -300,7 +317,19 @@ class _MainScreenState extends State<MainScreen> {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: AppColors.primaryColor,
           backgroundColor: AppColors.white,
-          onTap: (index) => tabsRouter.setActiveIndex(index),
+          onTap: (index) {
+            if (appState.isCustomer) {
+              if (index == 2) {
+                final isAuthenticated = context.read<AppCubit>().state.status ==
+                    AuthStatus.authenticated;
+                if (!isAuthenticated) {
+                  AppHelper.showAuthenticationRequired(context);
+                  return;
+                }
+              }
+            }
+            tabsRouter.setActiveIndex(index);
+          },
         );
       },
     );
@@ -347,6 +376,274 @@ class CustomBarItem extends StatelessWidget {
               text: label,
               fontSize: 12,
               color: isActive ? AppColors.primaryColor : AppColors.darkGrey700,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// class AuthenticationRequiredBottomSheet extends StatelessWidget {
+//   const AuthenticationRequiredBottomSheet({
+//     super.key,
+//     this.title = 'Sign in to continue',
+//     this.subtitle = 'Create an account or sign in to access this feature.',
+//     this.onLoginTap,
+//     this.onSignUpTap,
+//   });
+
+//   final String title;
+//   final String subtitle;
+//   final VoidCallback? onLoginTap;
+//   final VoidCallback? onSignUpTap;
+
+//   /// Convenience helper to display the sheet
+//   static void show(
+//     BuildContext context, {
+//     String? title,
+//     String? subtitle,
+//     VoidCallback? onLoginTap,
+//     VoidCallback? onSignUpTap,
+//   }) {
+//     showModalBottomSheet<void>(
+//       context: context,
+//       isScrollControlled: true,
+//       backgroundColor: Colors.transparent,
+//       builder: (c) => AuthenticationRequiredBottomSheet(
+//         title: title ?? 'Sign in to continue',
+//         subtitle:
+//             subtitle ?? 'Create an account or sign in to access this feature.',
+//         onLoginTap: onLoginTap,
+//         onSignUpTap: onSignUpTap,
+//       ),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       decoration: BoxDecoration(
+//         color: AppColors.white,
+//         borderRadius: BorderRadius.vertical(top: const Radius.circular(16).r),
+//       ),
+//       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+//       child: SafeArea(
+//         top: false,
+//         child: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             // drag handle
+//             Container(
+//               width: 40.w,
+//               height: 4.h,
+//               decoration: BoxDecoration(
+//                 color: AppColors.darkGrey100,
+//                 borderRadius: BorderRadius.circular(2.r),
+//               ),
+//             ),
+//             16.verticalSpace,
+//             Icon(
+//               Icons.lock_outline,
+//               size: 56.r,
+//               color: AppColors.primaryColor,
+//             ),
+//             12.verticalSpace,
+//             Text(
+//               title,
+//               textAlign: TextAlign.center,
+//               style:
+//                   AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+//             ),
+//             8.verticalSpace,
+//             Text(
+//               subtitle,
+//               textAlign: TextAlign.center,
+//               style: AppTextStyle.subTitle2.copyWith(
+//                 color: AppColors.darkGrey700,
+//               ),
+//             ),
+//             20.verticalSpace,
+//             CustomButton(
+//               title: 'Sign In',
+//               onPressed: () {
+//                 Navigator.of(context).pop();
+//                 context.router.push(LoginRoute());
+//                 onLoginTap?.call();
+//               },
+//             ),
+//             8.verticalSpace,
+//             SizedBox(
+//               width: double.infinity,
+//               child: CustomButton(
+//                 title: 'Sign Up',
+//                 background: AppColors.white,
+//                 textColor: AppColors.primaryColor,
+//                 borderColor: AppColors.primaryColor,
+//                 isOutline: true,
+//                 onPressed: () {
+//                   Navigator.of(context).pop();
+//                   context.router.push(SignupRoute());
+//                   onSignUpTap?.call();
+//                 },
+//               ),
+//             ),
+//             8.verticalSpace,
+//             SizedBox(
+//               width: double.infinity,
+//               child: TextButton(
+//                 onPressed: () {
+//                   Navigator.of(context).pop();
+//                 },
+//                 style: TextButton.styleFrom(
+//                   padding: EdgeInsets.symmetric(vertical: 14.h),
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(12.r),
+//                     side: const BorderSide(color: AppColors.darkGrey100),
+//                   ),
+//                 ),
+//                 child: Text(
+//                   'Dismiss',
+//                   style: AppTextStyle.subTitle2.copyWith(
+//                     color: AppColors.darkGrey700,
+//                     fontWeight: FontWeight.w600,
+//                     fontSize: 16.sp,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+class AuthenticationRequiredBottomSheet extends StatelessWidget {
+  const AuthenticationRequiredBottomSheet({
+    super.key,
+    this.onLogin,
+    this.onSignup,
+    this.title = 'Sign in to continue',
+    this.subtitle =
+        'Create an account or log in to access this feature and get started.',
+    this.icon = Icons.lock_outline,
+  });
+
+  final VoidCallback? onLogin;
+  final VoidCallback? onSignup;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  /// Convenience helper to display the sheet and receive a result:
+  /// 'login' = login selected, 'signup' = signup selected, null = dismissed.
+  static Future<String?> show(
+    BuildContext context, {
+    VoidCallback? onLogin,
+    VoidCallback? onSignup,
+    String? title,
+    String? subtitle,
+    IconData? icon,
+  }) {
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => AuthenticationRequiredBottomSheet(
+        onLogin: onLogin,
+        onSignup: onSignup,
+        title: title ?? 'Sign in to continue',
+        subtitle: subtitle ??
+            'Create an account or log in to access this feature and get started.',
+        icon: icon ?? Icons.lock_outline,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: const Radius.circular(16).r),
+      ),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // drag handle
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: AppColors.darkGrey100,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            16.verticalSpace,
+            Icon(
+              icon,
+              size: 56.r,
+              color: AppColors.primaryColor,
+            ),
+            12.verticalSpace,
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style:
+                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+            ),
+            8.verticalSpace,
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: AppTextStyle.subTitle2.copyWith(
+                color: AppColors.darkGrey700,
+              ),
+            ),
+            20.verticalSpace,
+            CustomButton(
+              title: 'Sign up',
+              onPressed: () {
+                if (onSignup != null) {
+                  Navigator.of(context).pop('signup');
+                  onSignup?.call();
+                } else {
+                  context.router.root.push(SignupRoute());
+                }
+              },
+            ),
+            8.verticalSpace,
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  if (onLogin != null) {
+                    Navigator.of(context).pop('login');
+                    onLogin?.call();
+                  } else {
+                    context.router.root.push(LoginRoute());
+                  }
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    side: const BorderSide(color: AppColors.darkGrey100),
+                  ),
+                ),
+                child: Text(
+                  'Already have an account? Log in',
+                  style: AppTextStyle.subTitle2.copyWith(
+                    color: AppColors.darkGrey700,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -438,37 +735,37 @@ class LocationPermissionBottomSheet extends StatelessWidget {
             ),
             20.verticalSpace,
             CustomButton(
-              title: 'Allow location',
+              title: 'Continue',
               onPressed: () {
                 Navigator.of(context).pop(true);
                 onAllow?.call();
               },
             ),
-            8.verticalSpace,
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                  onDeny?.call();
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    side: const BorderSide(color: AppColors.darkGrey100),
-                  ),
-                ),
-                child: Text(
-                  'Not now',
-                  style: AppTextStyle.subTitle2.copyWith(
-                    color: AppColors.darkGrey700,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-              ),
-            ),
+            // 8.verticalSpace,
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: TextButton(
+            //     onPressed: () {
+            //       Navigator.of(context).pop(false);
+            //       onDeny?.call();
+            //     },
+            //     style: TextButton.styleFrom(
+            //       padding: EdgeInsets.symmetric(vertical: 14.h),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(12.r),
+            //         side: const BorderSide(color: AppColors.darkGrey100),
+            //       ),
+            //     ),
+            //     child: Text(
+            //       'Not now',
+            //       style: AppTextStyle.subTitle2.copyWith(
+            //         color: AppColors.darkGrey700,
+            //         fontWeight: FontWeight.w600,
+            //         fontSize: 16.sp,
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

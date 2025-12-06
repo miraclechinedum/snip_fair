@@ -101,4 +101,8 @@ class AppCubit extends Cubit<AppState> {
   Future<void> updateDeviceToken(String fcmToken) async {
     await _repository.updateUser(fcmToken: fcmToken);
   }
+
+  void setGuestUser() {
+    emit(AppState.guest(settings: state.platformSettings));
+  }
 }
