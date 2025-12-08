@@ -30,9 +30,9 @@ class LocationService {
 
   ///Write function to check location permission and return true or false
   Future<bool> checkLocationPermission() async {
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    final permission = await Geolocator.checkPermission();
+    if (permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;

@@ -98,8 +98,11 @@ class _MainScreenState extends State<MainScreen> {
                 );
               } else if (state.isCustomer) {
                 // Navigate to customer appointments calendar
-                appRouter.push(UpdateCreateAppointmentRoute(
-                    appointmentId: typeIdentifier.toString()));
+                appRouter.push(
+                  UpdateCreateAppointmentRoute(
+                    appointmentId: typeIdentifier.toString(),
+                  ),
+                );
               }
             }
             break;
@@ -164,14 +167,17 @@ class _MainScreenState extends State<MainScreen> {
         if (permissionGranted) {
           locationService.sendLocationUpdateRequest();
         } else {
-          unawaited(locationService.openLocationSettings());
-          Fluttertoast.showToast(
-            msg: 'Location permission is required to use this feature.',
+          unawaited(
+            Fluttertoast.showToast(
+              msg: 'Location permission is required to show nearby results.',
+            ),
           );
         }
       } else {
-        Fluttertoast.showToast(
-          msg: 'To get the best experience, please enable location sharing.',
+        unawaited(
+          Fluttertoast.showToast(
+            msg: 'To get the best experience, please enable location sharing.',
+          ),
         );
       }
     } else {
