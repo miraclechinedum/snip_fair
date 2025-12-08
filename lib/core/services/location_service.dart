@@ -41,8 +41,8 @@ class LocationService {
   //Write functions to request location permission
   Future<bool> requestLocationPermission() async {
     final permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    if (permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;
