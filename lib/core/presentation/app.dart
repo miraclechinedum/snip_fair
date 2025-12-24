@@ -259,10 +259,7 @@ class _AppState extends State<App> {
                                 if (state.status == AuthStatus.unknown) {
                                   return const SplashScreen();
                                 }
-                                return AppExpiryOverlay(
-                                  expiryDate: DateTime(2025, 12, 24),
-                                  child: child!,
-                                );
+                                return child!;
                               },
                             );
                           },
