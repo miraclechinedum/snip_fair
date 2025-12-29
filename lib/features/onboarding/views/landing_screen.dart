@@ -112,7 +112,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       ),
                     12.verticalSpace,
                     CustomButton(
-                      title: 'Continue as Guest',
+                      title: 'Customer Guest Mode',
                       onPressed: cubit.setGuestUser,
                       gradient: null,
                       isOutline: true,

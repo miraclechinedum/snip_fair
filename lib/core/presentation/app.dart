@@ -203,12 +203,13 @@ class _AppState extends State<App> {
 
                                   case AuthStatus.authenticated:
                                     if (state.user.emailVerifiedAt == null) {
-                                      _appRouter.push(
+                                      _appRouter.replaceAll([
+                                        const LandingRoute(),
                                         VerifyEmailRoute(
                                           email: state.user.email!,
                                           asStylist: state.isStylist,
                                         ),
-                                      );
+                                      ]);
                                       return;
                                     }
 
@@ -216,11 +217,12 @@ class _AppState extends State<App> {
                                         state.user.stylistProfile
                                                 ?.businessName ==
                                             null) {
-                                      _appRouter.push(
+                                      _appRouter.replaceAll([
+                                        const LandingRoute(),
                                         SellerBusinessCreateRoute(
                                           fromSignUp: true,
                                         ),
-                                      );
+                                      ]);
                                       return;
                                     }
 
@@ -228,11 +230,12 @@ class _AppState extends State<App> {
                                         state.user.stylistProfile
                                                 ?.identificationId ==
                                             null) {
-                                      _appRouter.push(
+                                      _appRouter.replaceAll([
+                                        const LandingRoute(),
                                         StylistBusinessIdVerifyRoute(
                                           fromSignUp: true,
                                         ),
-                                      );
+                                      ]);
                                       return;
                                     }
 
