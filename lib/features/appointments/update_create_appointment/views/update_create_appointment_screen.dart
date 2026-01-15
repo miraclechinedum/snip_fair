@@ -762,25 +762,6 @@ class BookingSummary extends StatelessWidget {
                         ),
                       ),
                       24.verticalSpace,
-                      CustomButton(
-                        title: 'Rate this service',
-                        onPressed: () {
-                          AppHelper.showCustomModalBottomSheet<void>(
-                            context: context,
-                            modal: SubmitReviewBottomSheet(
-                              onSubmit: (rating, comment) {
-                                return context
-                                    .read<UpdateCreateAppointmentCubit>()
-                                    .reviewAppointment(
-                                      rating: rating,
-                                      comment: comment,
-                                    );
-                              },
-                            ),
-                            isDarkMode: false,
-                          );
-                        },
-                      ),
                     ],
                   ),
                 )
@@ -849,7 +830,8 @@ class BookingSummary extends StatelessWidget {
                   },
                 ),
               if (state.fetchAppointmentState.hasSuccess &&
-                  state.fetchAppointmentState.data!.status.isCompletedStatus)
+                  state.fetchAppointmentState.data!.status
+                      .isCompletedStatus) ...[
                 Builder(
                   builder: (context) {
                     return BlocConsumer<CustomerProfileMgtCubit,
@@ -921,6 +903,27 @@ class BookingSummary extends StatelessWidget {
                     );
                   },
                 ),
+                12.verticalSpace,
+                CustomButton(
+                  title: 'Rate this service',
+                  onPressed: () {
+                    AppHelper.showCustomModalBottomSheet<void>(
+                      context: context,
+                      modal: SubmitReviewBottomSheet(
+                        onSubmit: (rating, comment) {
+                          return context
+                              .read<UpdateCreateAppointmentCubit>()
+                              .reviewAppointment(
+                                rating: rating,
+                                comment: comment,
+                              );
+                        },
+                      ),
+                      isDarkMode: false,
+                    );
+                  },
+                ),
+              ],
               12.verticalSpace,
               if (state.fetchAppointmentState.hasSuccess &&
                   (state.fetchAppointmentState.data!.status.isPendingStatus ||

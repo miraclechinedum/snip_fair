@@ -246,6 +246,7 @@ class SellerAppointmentDetailsCubit
             updateAppointmentState: ProcessState.error(error),
           ),
         );
+        throw error;
       },
     );
   }

@@ -763,6 +763,14 @@ class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
       await widget.onSubmit(_comment.trim(), _imagePaths);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
+      if (e is RemoteException) {
+        AppHelper.showSnackBar(
+          context,
+          message: e.errorResponse?.message ??
+              'Failed to submit proof. Please try again.',
+        );
+        return;
+      }
       AppHelper.showSnackBar(
         context,
         message: 'Failed to submit proof. Please try again.',
@@ -811,57 +819,65 @@ class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          const ModalPill(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const AppText(
-                  text: 'Submit Proof of Completion',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              const ModalPill(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppText(
+                      text: 'Submit Proof of Completion',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                    12.verticalSpace,
+                    CustomTextField(
+                      label: 'Comment',
+                      onChanged: (v) => _comment = v,
+                      textInputAction: TextInputAction.done,
+                      maxLines: 5,
+                    ),
+                    12.verticalSpace,
+                    ImageTakerWidget(
+                      label: 'Attach a photo',
+                      onSelected: (image) {
+                        setState(() {
+                          _imagePaths
+                            ..clear()
+                            ..add(image);
+                        });
+                      },
+                    ),
+                    12.verticalSpace,
+                    _buildPickedList(),
+                    16.verticalSpace,
+                    CustomButton(
+                      title: 'Submit Proof',
+                      isLoading: _isSubmitting,
+                      onPressed: _isSubmitting ? null : _handleSubmit,
+                    ),
+                    12.verticalSpace,
+                    CustomButton(
+                      title: 'Cancel',
+                      onPressed: () => Navigator.of(context).pop(false),
+                      gradient: null,
+                      background: const Color(0xff374757),
+                    ),
+                  ],
                 ),
-                12.verticalSpace,
-                CustomTextField(
-                  label: 'Comment',
-                  onChanged: (v) => _comment = v,
-                  maxLines: 5,
-                ),
-                12.verticalSpace,
-                ImageTakerWidget(
-                  label: 'Attach a photo',
-                  onSelected: (image) {
-                    setState(() {
-                      _imagePaths
-                        ..clear()
-                        ..add(image);
-                    });
-                  },
-                ),
-                12.verticalSpace,
-                _buildPickedList(),
-                16.verticalSpace,
-                CustomButton(
-                  title: 'Submit Proof',
-                  isLoading: _isSubmitting,
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                ),
-                12.verticalSpace,
-                CustomButton(
-                  title: 'Cancel',
-                  onPressed: () => Navigator.of(context).pop(false),
-                  gradient: null,
-                  background: const Color(0xff374757),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
