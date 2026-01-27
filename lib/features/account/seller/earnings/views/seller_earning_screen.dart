@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+import 'package:keyboard_actions/keyboard_actions_config.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
@@ -701,6 +703,37 @@ class _RequestPayoutFormWidgetState extends State<RequestPayoutFormWidget> {
   PaymentMethod? _paymentMethod;
   bool _isSubmitting = false;
 
+  final FocusNode _focusNode = FocusNode();
+
+  KeyboardActionsConfig get _keyboardActionsConfig {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: const Color(0xFFCAD1D9), //Apple keyboard color
+      actions: [
+        KeyboardActionsItem(
+          focusNode: _focusNode,
+          toolbarButtons: [
+            (node) {
+              return GestureDetector(
+                onTap: () => node.unfocus(),
+                child: Container(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text(
+                    'Done',
+                    style: const TextStyle(
+                      color: AppColors.primaryColor, //Done button color
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }
+          ],
+        ),
+      ],
+    );
+  }
+
   Future<void> _handleSubmit() async {
     if (_amount == 0 || _paymentMethod == null) {
       AppHelper.showSnackBar(
@@ -743,90 +776,102 @@ class _RequestPayoutFormWidgetState extends State<RequestPayoutFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          const ModalPill(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const AppText(
-                  text: 'Payout Details',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              const ModalPill(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppText(
+                      text: 'Payout Details',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                    12.verticalSpace,
+                    KeyboardActions(
+                      config: _keyboardActionsConfig,
+                      disableScroll: true,
+                      child: CustomTextField(
+                        focusNode: _focusNode,
+                        label: 'Withdrawal Amount (R)',
+                        onChanged: (v) => _amount = double.tryParse(v) ?? 0,
+                        inputType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        hint: '0.00',
+                        textInputAction: TextInputAction.done,
+                      ),
+                    ),
+                    12.verticalSpace,
+                    const AppText(
+                      text: 'Payout Method',
+                      fontSize: 12,
+                    ),
+                    5.verticalSpace,
+                    DropdownButtonFormField<PaymentMethod>(
+                      decoration: AppColors.inputDecoration.copyWith(
+                        hintText: 'Select Payment Method',
+                      ),
+                      initialValue: _paymentMethod,
+                      items: widget.paymentMethods
+                          .map(
+                            (method) => DropdownMenuItem<PaymentMethod>(
+                              value: method,
+                              child: Text(
+                                '${method.bankName} - ${method.accountNumber.showLast4Digits()}',
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value;
+                        });
+                      },
+                    ),
+                    12.verticalSpace,
+                    const AppText(text: 'Note.'),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xfffa8740).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const AppText(
+                        text:
+                            'Payouts are processed on business days only. You will receive an email confirmation once your payout is processed.',
+                        fontSize: 12,
+                        color: Color(0xfffa8740),
+                      ),
+                    ),
+                    16.verticalSpace,
+                    CustomButton(
+                      title: 'Request Payout',
+                      isLoading: _isSubmitting,
+                      onPressed: _isSubmitting ? null : _handleSubmit,
+                    ),
+                    12.verticalSpace,
+                    CustomButton(
+                      title: 'Cancel',
+                      onPressed: () => Navigator.of(context).pop(false),
+                      gradient: null,
+                      background: const Color(0xff374757),
+                    ),
+                  ],
                 ),
-                12.verticalSpace,
-                CustomTextField(
-                  label: 'Withdrawal Amount (R)',
-                  onChanged: (v) => _amount = double.tryParse(v) ?? 0,
-                  inputType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  hint: '0.00',
-                ),
-                12.verticalSpace,
-                const AppText(
-                  text: 'Payout Method',
-                  fontSize: 12,
-                ),
-                5.verticalSpace,
-                DropdownButtonFormField<PaymentMethod>(
-                  decoration: AppColors.inputDecoration.copyWith(
-                    hintText: 'Select Payment Method',
-                  ),
-                  initialValue: _paymentMethod,
-                  items: widget.paymentMethods
-                      .map(
-                        (method) => DropdownMenuItem<PaymentMethod>(
-                          value: method,
-                          child: Text(
-                            '${method.bankName} - ${method.accountNumber.showLast4Digits()}',
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _paymentMethod = value;
-                    });
-                  },
-                ),
-                12.verticalSpace,
-                const AppText(text: 'Note.'),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xfffa8740).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: const AppText(
-                    text:
-                        'Payouts are processed on business days only. You will receive an email confirmation once your payout is processed.',
-                    fontSize: 12,
-                    color: Color(0xfffa8740),
-                  ),
-                ),
-                16.verticalSpace,
-                CustomButton(
-                  title: 'Request Payout',
-                  isLoading: _isSubmitting,
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                ),
-                12.verticalSpace,
-                CustomButton(
-                  title: 'Cancel',
-                  onPressed: () => Navigator.of(context).pop(false),
-                  gradient: null,
-                  background: const Color(0xff374757),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

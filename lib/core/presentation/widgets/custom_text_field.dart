@@ -33,6 +33,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;
   final bool isRequired;
+  final FocusNode? focusNode;
 
   const CustomTextField({
     Key? key,
@@ -57,6 +58,7 @@ class CustomTextField extends StatelessWidget {
     this.maxLines = 1,
     this.inputFormatters,
     this.isRequired = false,
+    this.focusNode,
   }) : super(key: key);
 
   @override
@@ -91,6 +93,7 @@ class CustomTextField extends StatelessWidget {
           5.verticalSpace,
         ],
         TextFormField(
+          focusNode: focusNode,
           cursorColor: AppColors.primaryColor,
           onTap: onTap,
           onChanged: onChanged,
