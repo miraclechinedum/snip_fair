@@ -46,7 +46,7 @@ dependencies:
   video_player: ^2.10.0
   modal_bottom_sheet: ^3.0.0
   webview_flutter: ^4.13.0
-  webview_flutter_android: ^4.10.5
+  webview_flutter_android: ^4.10.11
   webview_flutter_wkwebview: ^3.23.1
   image_picker: ^1.2.0
   firebase_core: ^3.6.0
