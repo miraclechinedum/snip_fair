@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-
 import '../../../../core/domain/entities/chat_message_list/chat_message.dart';
+import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_card.dart';
+
 
 class ChatMessageBubble extends StatelessWidget {
   const ChatMessageBubble({
@@ -16,6 +17,15 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Payment request messages render as a full-width card
+    if (message.isPaymentRequest) {
+      final paymentRequestId =
+          message.metadata?['payment_request_id'] as int?;
+      if (paymentRequestId != null) {
+        return PaymentRequestCard(paymentRequestId: paymentRequestId);
+      }
+    }
+
     final theme = Theme.of(context);
 
     return Align(

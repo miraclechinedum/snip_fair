@@ -1,26 +1,24 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
-import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/services/notification_service.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
 
 part 'conversations_state.dart';
 
 @Injectable()
 class ConversationsCubit extends Cubit<ConversationsState> {
-  ConversationsCubit(this._profileRepository)
-      : super(ConversationsState.initial()) {
+  ConversationsCubit(this._profileRepository) : super(ConversationsState.initial()) {
     _chatNotificationsSubscription = null;
-    _chatNotificationsSubscription =
-        NotificationService.instance.updates.listen((event) {
+    _chatNotificationsSubscription = NotificationService.instance.updates.listen((event) {
       final type = event['type'] as String?;
       if (type == 'conversation') {
         final conversationId = event['type_identifier'] as String?;
@@ -40,8 +38,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     if (!silent) {
       emit(
         state.copyWith(
-          conversationsState:
-              ProcessState.loading(state.conversationsState.data),
+          conversationsState: ProcessState.loading(state.conversationsState.data),
         ),
       );
     }
@@ -72,8 +69,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     Fluttertoast.showToast(msg: 'Starting conversation...');
     clearChatMessages();
 
-    final response =
-        await _profileRepository.startConversation(recipientId: recipientId);
+    final response = await _profileRepository.startConversation(recipientId: recipientId);
     unawaited(fetchConversations());
     return response.when(
       success: (data) => data,
@@ -245,8 +241,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     String conversationId, {
     Duration interval = const Duration(seconds: 10),
   }) {
-    if (_polledConversationId == conversationId &&
-        (_pollingTimer?.isActive ?? false)) {
+    if (_polledConversationId == conversationId && (_pollingTimer?.isActive ?? false)) {
       return;
     }
     stopPollingMessages();
@@ -281,6 +276,94 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     emit(
       state.copyWith(
         conversationsState: const ProcessState.success([]),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Payment Request methods
+  // ---------------------------------------------------------------------------
+
+  /// In-memory cache so each PaymentRequestCard can look up its data
+  /// without triggering a full state rebuild on every fetch.
+  final Map<int, PaymentRequest> _paymentRequestCache = {};
+
+  PaymentRequest? getCachedPaymentRequest(int id) => _paymentRequestCache[id];
+
+  Future<PaymentRequest?> fetchPaymentRequest(int id) async {
+    final result = await _profileRepository.getPaymentRequest(id);
+    return result.when(
+      success: (data) {
+        _paymentRequestCache[id] = data;
+        return data;
+      },
+      failure: (_) => null,
+    );
+  }
+
+  Future<void> createPaymentRequest({
+    required int recipientId,
+    required String title,
+    String? description,
+    required List<Map<String, dynamic>> items,
+    int? expiresInHours,
+  }) async {
+    emit(
+      state.copyWith(
+        createPaymentRequestState: const ProcessState<PaymentRequest>.loading(),
+      ),
+    );
+    final result = await _profileRepository.createPaymentRequest(
+      recipientId: recipientId,
+      title: title,
+      description: description,
+      items: items,
+      expiresInHours: expiresInHours,
+    );
+    result.when(
+      success: (data) {
+        _paymentRequestCache[data.id!] = data;
+        emit(
+          state.copyWith(
+            createPaymentRequestState: ProcessState.success(data),
+          ),
+        );
+        // Re-fetch messages so the new payment_request message appears
+        if (data.conversationId != null) {
+          fetchChatMessages(data.conversationId.toString(), silent: true);
+        }
+      },
+      failure: (error) {
+        emit(
+          state.copyWith(
+            createPaymentRequestState: ProcessState<PaymentRequest>.error(error),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<PaymentRequest?> respondToPaymentRequest(
+    int id,
+    String action,
+  ) async {
+    final result = await _profileRepository.respondToPaymentRequest(id, action);
+    return result.when(
+      success: (data) {
+        _paymentRequestCache[id] = data;
+        return data;
+      },
+      failure: (error) {
+        Fluttertoast.showToast(msg: 'Action failed. Please try again.');
+        return null;
+      },
+    );
+  }
+
+  void resetCreatePaymentRequestState() {
+    emit(
+      state.copyWith(
+        createPaymentRequestState: const ProcessState<PaymentRequest>.init(null),
       ),
     );
   }

@@ -14,6 +14,8 @@ ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => ChatMessage(
       text: json['text'] as String?,
       attachment: json['attachment'] as String?,
       isRead: json['is_read'] as bool?,
+      type: json['type'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -31,6 +33,8 @@ Map<String, dynamic> _$ChatMessageToJson(ChatMessage instance) =>
       'text': instance.text,
       'attachment': instance.attachment,
       'is_read': instance.isRead,
+      'type': instance.type,
+      'metadata': instance.metadata,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

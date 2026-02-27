@@ -1,54 +1,54 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/datasources/remote/base_remote_source.dart';
-import 'package:snip_fair/core/data/models/remote/login_response.dart';
-import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
-import 'package:snip_fair/core/data/models/remote/simple_response.dart';
-import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
-import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
-import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/network/http_service.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
-import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
-import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
-import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
-import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
-import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
-import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
-import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
-import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
-import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
-import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
-import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
-import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
-import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
 import 'package:snip_fair/core/domain/entities/user/user.dart';
-import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_list.dart';
 import 'package:snip_fair/core/domain/params/login_params.dart';
 import 'package:snip_fair/core/domain/params/register_params.dart';
 import 'package:snip_fair/core/domain/params/schedule_params.dart';
-import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/network/http_service.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/data/models/remote/login_response.dart';
+import 'package:snip_fair/core/data/models/remote/simple_response.dart';
+import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
+import 'package:snip_fair/core/domain/entities/work_list/work_list.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/dispute_list.dart';
+import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
+import 'package:snip_fair/core/data/datasources/remote/base_remote_source.dart';
+import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
+import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
+import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
+import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
+import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
+import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
+import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
+import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
+import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
 
 class AuthPath {
   // Auth
@@ -110,14 +110,14 @@ class AuthPath {
   //Location
   static const updateLocationConsent = '/user/location/consent';
   static const updateCurrentLocation = '/user/location'; // Patch
+
+  // Payment Requests
+  static const paymentRequests = '/payment-requests';
 }
 
 @LazySingleton()
 class SnipFairBackendRemoteSource extends BaseRemoteSource
-    implements
-        AuthenticationRepository,
-        ProfileRepository,
-        AppointmentRepository {
+    implements AuthenticationRepository, ProfileRepository, AppointmentRepository {
   /// Helper method to get a Dio client with retry interceptor for GET requests
   Dio _clientWithRetry({bool requireAuth = true}) {
     final client = getIt<HttpService>().client(requireAuth: requireAuth);
@@ -384,9 +384,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         AuthPath.stylistPaymentMethods,
       );
       return ApiResult.success(
-        data: response.data!
-            .map((e) => PaymentMethod.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        data: response.data!.map((e) => PaymentMethod.fromJson(e as Map<String, dynamic>)).toList(),
       );
     });
   }
@@ -832,8 +830,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         AuthPath.availability,
         data: {
           if (isAvailable != null) 'is_available': isAvailable,
-          if (schedules != null)
-            'schedules': schedules.map((e) => e.toJson()).toList(),
+          if (schedules != null) 'schedules': schedules.map((e) => e.toJson()).toList(),
         },
       );
       return ApiResult.success(
@@ -1568,6 +1565,71 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
       return ApiResult.success(
         data: SimpleResponse.fromJson({}),
+      );
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Payment Request methods
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<ApiResult<PaymentRequest>> createPaymentRequest({
+    required int recipientId,
+    required String title,
+    String? description,
+    required List<Map<String, dynamic>> items,
+    int? expiresInHours,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        AuthPath.paymentRequests,
+        data: {
+          'recipient_id': recipientId,
+          'title': title,
+          if (description != null) 'description': description,
+          'items': items,
+          if (expiresInHours != null) 'expires_in_hours': expiresInHours,
+        },
+      );
+      return ApiResult.success(
+        data: PaymentRequest.fromJson(
+          response.data!['data'] as Map<String, dynamic>,
+        ),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<PaymentRequest>> getPaymentRequest(int id) {
+    return run(() async {
+      final client = _clientWithRetry();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.paymentRequests}/$id',
+      );
+      return ApiResult.success(
+        data: PaymentRequest.fromJson(
+          response.data!['data'] as Map<String, dynamic>,
+        ),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<PaymentRequest>> respondToPaymentRequest(
+    int id,
+    String action,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.paymentRequests}/$id/$action',
+      );
+      return ApiResult.success(
+        data: PaymentRequest.fromJson(
+          response.data!['data'] as Map<String, dynamic>,
+        ),
       );
     });
   }
