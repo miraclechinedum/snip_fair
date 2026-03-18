@@ -1,17 +1,18 @@
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/domain/entities/tip/tip_response.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
 import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 import 'package:snip_fair/core/domain/entities/like_response/like_response.dart';
+import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
+import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
-import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
-import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
-import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 
 abstract class AppointmentRepository {
   Future<ApiResult<StylistAppointmentList>> getStylistAppointments({
@@ -121,6 +122,11 @@ abstract class AppointmentRepository {
   Future<ApiResult<CustomerAppointmentList>> getCustomerAppointments({
     String? page,
     String? perPage,
+  });
+
+  Future<ApiResult<TipResponse>> tipCustomerAppointment(
+    String id, {
+    required double amount,
   });
 }
 
@@ -308,8 +314,11 @@ class AppointmentRepoImpl implements AppointmentRepository {
       _remoteSource.updateCustomerAppointment(id, verdict: verdict);
 
   @override
-  Future<ApiResult<SimpleResponse>> disputeStylistAppointment(String id,
-          {required String comment, required List<String> images}) =>
+  Future<ApiResult<SimpleResponse>> disputeStylistAppointment(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) =>
       _remoteSource.disputeStylistAppointment(
         id,
         comment: comment,
@@ -317,11 +326,21 @@ class AppointmentRepoImpl implements AppointmentRepository {
       );
 
   @override
-  Future<ApiResult<SimpleResponse>> submitAppointmentProof(String id,
-          {required String comment, required List<String> images}) =>
+  Future<ApiResult<SimpleResponse>> submitAppointmentProof(
+    String id, {
+    required String comment,
+    required List<String> images,
+  }) =>
       _remoteSource.submitAppointmentProof(
         id,
         comment: comment,
         images: images,
       );
+
+  @override
+  Future<ApiResult<TipResponse>> tipCustomerAppointment(
+    String id, {
+    required double amount,
+  }) =>
+      _remoteSource.tipCustomerAppointment(id, amount: amount);
 }

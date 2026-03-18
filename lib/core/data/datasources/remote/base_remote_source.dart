@@ -1,7 +1,7 @@
-import 'package:snip_fair/core/errors/exception/mapper/http_request_exception_mapper.dart';
-import 'package:snip_fair/core/network/api_result.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/errors/exception/mapper/http_request_exception_mapper.dart';
 
 abstract class BaseRemoteSource {
   final HttpRequestExceptionMapper httpRequestExceptionMapper =

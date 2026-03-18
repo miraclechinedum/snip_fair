@@ -1,15 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/datum.dart';
-import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/settings.dart';
+import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
-import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
-import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/datum.dart';
 
 part 'earnings_state.dart';
 
@@ -153,8 +153,8 @@ class EarningsCubit extends Cubit<EarningsState> {
     if (isInitial) {
       emit(
         state.copyWith(
-          transactionsState: ProcessState.loading(null),
-          transactionsPaginationData: PaginationData(),
+          transactionsState: const ProcessState.loading(),
+          transactionsPaginationData: const PaginationData(),
         ),
       );
     } else {
@@ -164,7 +164,7 @@ class EarningsCubit extends Cubit<EarningsState> {
           nextPageCursor: state.transactionsPaginationData.nextPageCursor,
           prevPageCursor: state.transactionsPaginationData.prevPageCursor,
         ),
-      ));
+      ),);
     }
 
     final result = await _profileRepository.getWalletTransactions(

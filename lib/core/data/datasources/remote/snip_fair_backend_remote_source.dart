@@ -11,6 +11,7 @@ import 'package:snip_fair/core/domain/entities/user/user.dart';
 import 'package:snip_fair/core/domain/params/login_params.dart';
 import 'package:snip_fair/core/domain/params/register_params.dart';
 import 'package:snip_fair/core/domain/params/schedule_params.dart';
+import 'package:snip_fair/core/domain/entities/tip/tip_response.dart';
 import 'package:snip_fair/core/data/models/remote/login_response.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
 import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
@@ -1278,6 +1279,24 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
+  Future<ApiResult<TipResponse>> tipCustomerAppointment(
+    String id, {
+    required double amount,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$id/tip',
+        data: {'amount': amount},
+      );
+      return ApiResult.success(
+        data: TipResponse.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
   Future<ApiResult<SimpleResponse>> updateCustomerAppointment(
     String id, {
     required String verdict,
@@ -1577,8 +1596,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   Future<ApiResult<PaymentRequest>> createPaymentRequest({
     required int recipientId,
     required String title,
-    String? description,
-    required List<Map<String, dynamic>> items,
+    required List<Map<String, dynamic>> items, String? description,
     int? expiresInHours,
   }) {
     return run(() async {

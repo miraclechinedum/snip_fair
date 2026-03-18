@@ -1,21 +1,21 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
-import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
+import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
+import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
 
 @RoutePage()
 class NotificationsScreen extends StatelessWidget {
@@ -30,9 +30,7 @@ class NotificationsScreen extends StatelessWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            context
-                .read<NotificationsCubit>()
-                .fetchNotifications(isInitial: true);
+            context.read<NotificationsCubit>().fetchNotifications(isInitial: true);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -59,11 +57,13 @@ class NotificationsScreen extends StatelessWidget {
                     child: InfiniteList(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.only(
-                          left: 16, right: 16, top: 12, bottom: 100),
+                        left: 16,
+                        right: 16,
+                        top: 12,
+                        bottom: 100,
+                      ),
                       onFetchData: () async {
-                        await context
-                            .read<NotificationsCubit>()
-                            .fetchNotifications();
+                        await context.read<NotificationsCubit>().fetchNotifications();
                       },
                       isLoading: state.paginationData.isLoadingMore,
                       shrinkWrap: true,
@@ -88,8 +88,8 @@ class NotificationsScreen extends StatelessWidget {
 
 class NotificationTile extends StatefulWidget {
   const NotificationTile({
-    super.key,
     required this.notification,
+    super.key,
   });
 
   final NotificationDatum notification;
@@ -114,9 +114,7 @@ class _NotificationTileState extends State<NotificationTile> {
       setState(() {
         _isRead = true;
       });
-      context
-          .read<NotificationsCubit>()
-          .markNotificationAsRead(widget.notification.id!);
+      context.read<NotificationsCubit>().markNotificationAsRead(widget.notification.id!);
     }
   }
 
@@ -201,8 +199,7 @@ class _NotificationTileState extends State<NotificationTile> {
       case 'dispute':
         final token = getIt<LocalKeyStorage>().accessToken;
         if (token == null) return;
-        final supportUrl =
-            Environment().config.apiHost.replaceAll('api', 'disputes');
+        final supportUrl = Environment().config.apiHost.replaceAll('api', 'disputes');
         context.router.pushWidget(
           SupportWebViewWidget(
             supportUrl: supportUrl,
@@ -217,8 +214,7 @@ class _NotificationTileState extends State<NotificationTile> {
 
   @override
   Widget build(BuildContext context) {
-    final isStylist =
-        context.select<AppCubit, bool>((AppCubit bloc) => bloc.state.isStylist);
+    final isStylist = context.select<AppCubit, bool>((AppCubit bloc) => bloc.state.isStylist);
 
     return ListTile(
       tileColor: Colors.white,

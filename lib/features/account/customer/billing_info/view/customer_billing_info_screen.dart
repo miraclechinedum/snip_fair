@@ -1,19 +1,19 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
-import 'package:snip_fair/core/utils/input/string_input.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/account/customer/billing_info/cubit/customer_billing_info_cubit.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 
@@ -50,7 +50,7 @@ class CustomerBillingInfoScreen extends StatelessWidget
             message: (state.updateBillingInfoState.error! as RemoteException)
                     .errorResponse
                     ?.message
-                    .toString() ??
+                     ??
                 'Failed to update billing information',
           );
         }
@@ -162,7 +162,7 @@ class CustomerBillingInfoScreen extends StatelessWidget
                                   address: initialBillingInfo!.billingLocation!
                                       .toString(),
                                   lat: 0,
-                                  lng: 0)
+                                  lng: 0,)
                               : null,
                           onSelected: (place) => place != null
                               ? cubit.locationChanged(place.address)

@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
-import '../../server_error.dart';
-import '../error_response.dart';
-import 'base_remote_data_mapper.dart';
+import 'package:snip_fair/core/data/models/server_error.dart';
+import 'package:snip_fair/core/data/models/remote/error_response.dart';
+import 'package:snip_fair/core/data/models/remote/mapper/base_remote_data_mapper.dart';
 
 @Injectable()
 class ErrorResponseMapper

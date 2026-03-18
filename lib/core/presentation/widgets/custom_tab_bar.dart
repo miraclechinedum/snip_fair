@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 class CustomTabBar extends StatelessWidget {
   const CustomTabBar({
@@ -30,8 +30,9 @@ class CustomTabBar extends StatelessWidget {
         isScrollable: isScrollable,
         controller: tabController,
         indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: AppColors.primaryColor),
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.primaryColor,
+        ),
         labelColor: Colors.white,
         unselectedLabelColor: AppColors.black,
         unselectedLabelStyle: AppTextStyle.body2,

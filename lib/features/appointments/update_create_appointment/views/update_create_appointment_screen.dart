@@ -1,35 +1,33 @@
-// ignore_for_file: unawaited_futures
-
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:calendar_view/calendar_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:calendar_view/calendar_view.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/working_hour.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
-import 'package:snip_fair/features/appointments/customer_appointments/cubit/customer_appointments_cubit.dart';
-import 'package:snip_fair/features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/working_hour.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/appointments/customer_appointments/cubit/customer_appointments_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart';
+// ignore_for_file: unawaited_futures
 
 @RoutePage()
-class UpdateCreateAppointmentScreen extends StatefulWidget
-    implements AutoRouteWrapper {
+class UpdateCreateAppointmentScreen extends StatefulWidget implements AutoRouteWrapper {
   const UpdateCreateAppointmentScreen({
     super.key,
     this.portfolioId,
@@ -48,25 +46,18 @@ class UpdateCreateAppointmentScreen extends StatefulWidget
           portfolioId: portfolioId,
           appointmentId: appointmentId,
         )
-        ..onAddressChanged(context
-                .read<CustomerProfileMgtCubit>()
-                .state
-                .profileDetails
-                .data
-                ?.user
-                ?.country ??
-            ''),
+        ..onAddressChanged(
+          context.read<CustomerProfileMgtCubit>().state.profileDetails.data?.user?.country ?? '',
+        ),
       child: this,
     );
   }
 
   @override
-  State<UpdateCreateAppointmentScreen> createState() =>
-      _UpdateCreateAppointmentScreenState();
+  State<UpdateCreateAppointmentScreen> createState() => _UpdateCreateAppointmentScreenState();
 }
 
-class _UpdateCreateAppointmentScreenState
-    extends State<UpdateCreateAppointmentScreen> {
+class _UpdateCreateAppointmentScreenState extends State<UpdateCreateAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CustomerProfileMgtCubit, CustomerProfileMgtState>(
@@ -74,23 +65,18 @@ class _UpdateCreateAppointmentScreenState
         final view = KeyboardDismisser(
           child: Scaffold(
             appBar: CustomAppBar(
-              title: widget.appointmentId != null
-                  ? 'Update Appointment'
-                  : 'Book Appointment',
+              title: widget.appointmentId != null ? 'Update Appointment' : 'Book Appointment',
             ),
             body: SafeArea(
-              child: BlocListener<UpdateCreateAppointmentCubit,
-                  UpdateCreateAppointmentState>(
+              child: BlocListener<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                 listenWhen: (previous, current) =>
-                    previous.fetchAppointmentState !=
-                    current.fetchAppointmentState,
+                    previous.fetchAppointmentState != current.fetchAppointmentState,
                 listener: (context, state) {
                   if (state.fetchAppointmentState.hasError) {
                     AppHelper.showAppDialog<void>(
                       context,
                       OnFailDialogContent(
-                        subtext: (state.fetchAppointmentState.error!
-                                    as RemoteException)
+                        subtext: (state.fetchAppointmentState.error! as RemoteException)
                                 .errorResponse
                                 ?.message ??
                             'Something went wrong, please try again later.',
@@ -101,8 +87,7 @@ class _UpdateCreateAppointmentScreenState
                     );
                   }
                 },
-                child: BlocConsumer<UpdateCreateAppointmentCubit,
-                    UpdateCreateAppointmentState>(
+                child: BlocConsumer<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                   listenWhen: (previous, current) =>
                       previous.updateOrCreateAppointmentState !=
                       current.updateOrCreateAppointmentState,
@@ -115,9 +100,7 @@ class _UpdateCreateAppointmentScreenState
                             : 'Appointment created successfully',
                       );
                       // context.router.pop();
-                      context
-                          .read<CustomerAppointmentsCubit>()
-                          .getAppointments();
+                      context.read<CustomerAppointmentsCubit>().getAppointments();
                       context.read<CustomerProfileMgtCubit>()
                         ..getWallet()
                         ..getWalletTransactions();
@@ -125,8 +108,7 @@ class _UpdateCreateAppointmentScreenState
                       AppHelper.showAppDialog<void>(
                         context,
                         OnFailDialogContent(
-                          subtext: (state.updateOrCreateAppointmentState.error!
-                                      as RemoteException)
+                          subtext: (state.updateOrCreateAppointmentState.error! as RemoteException)
                                   .errorResponse
                                   ?.message ??
                               'Something went wrong, please try again later.',
@@ -138,10 +120,8 @@ class _UpdateCreateAppointmentScreenState
                     }
                   },
                   buildWhen: (previous, current) =>
-                      previous.fetchPortfolioState !=
-                          current.fetchPortfolioState ||
-                      previous.fetchAppointmentState !=
-                          current.fetchAppointmentState ||
+                      previous.fetchPortfolioState != current.fetchPortfolioState ||
+                      previous.fetchAppointmentState != current.fetchAppointmentState ||
                       previous.updateOrCreateAppointmentState !=
                           current.updateOrCreateAppointmentState,
                   builder: (context, state) {
@@ -159,11 +139,9 @@ class _UpdateCreateAppointmentScreenState
                               .read<UpdateCreateAppointmentCubit>()
                               .fetchAppointmentById(widget.appointmentId!);
                         } else if (state.fetchAppointmentState.hasSuccess) {
-                          return context
-                              .read<UpdateCreateAppointmentCubit>()
-                              .fetchAppointmentById(state
-                                  .fetchAppointmentState.data!.id
-                                  .toString());
+                          return context.read<UpdateCreateAppointmentCubit>().fetchAppointmentById(
+                                state.fetchAppointmentState.data!.id.toString(),
+                              );
                         }
                       },
                       child: SingleChildScrollView(
@@ -250,8 +228,7 @@ class _UpdateCreateAppointmentScreenState
                 readOnly: true,
               ),
               12.verticalSpace,
-              BlocBuilder<UpdateCreateAppointmentCubit,
-                  UpdateCreateAppointmentState>(
+              BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                 builder: (context, appointState) {
                   if (appointState.fetchAppointmentState.hasSuccess) {
                     return CustomPlaceSearchField(
@@ -262,20 +239,16 @@ class _UpdateCreateAppointmentScreenState
                             .read<UpdateCreateAppointmentCubit>()
                             .onAddressChanged(place.address);
                       },
-                      readOnly: appointState.fetchAppointmentState
-                          .hasSuccess, // make readOnly if update
-                      initialPlace: appointState
-                                  .fetchAppointmentState.data?.serviceNotes !=
-                              null
+                      readOnly:
+                          appointState.fetchAppointmentState.hasSuccess, // make readOnly if update
+                      initialPlace: appointState.fetchAppointmentState.data?.serviceNotes != null
                           ? GeoPlace(
-                              address: appointState
-                                  .fetchAppointmentState.data!.serviceNotes!,
+                              address: appointState.fetchAppointmentState.data!.serviceNotes!,
                               lat: 0,
                               lng: 0,
                             )
                           : GeoPlace(
-                              address:
-                                  state.profileDetails.data!.user!.country!,
+                              address: state.profileDetails.data!.user!.country!,
                               lat: 0,
                               lng: 0,
                             ),
@@ -285,14 +258,11 @@ class _UpdateCreateAppointmentScreenState
                     label: 'Location',
                     onSelected: (place) {
                       if (place == null) return;
-                      context
-                          .read<UpdateCreateAppointmentCubit>()
-                          .onAddressChanged(place.address);
+                      context.read<UpdateCreateAppointmentCubit>().onAddressChanged(place.address);
                     },
-                    readOnly: appointState.fetchAppointmentState
-                        .hasSuccess, // make readOnly if update
-                    initialPlace: state.profileDetails.data?.user?.country !=
-                            null
+                    readOnly:
+                        appointState.fetchAppointmentState.hasSuccess, // make readOnly if update
+                    initialPlace: state.profileDetails.data?.user?.country != null
                         ? GeoPlace(
                             address: state.profileDetails.data!.user!.country!,
                             lat: 0,
@@ -303,20 +273,15 @@ class _UpdateCreateAppointmentScreenState
                 },
               ),
               12.verticalSpace,
-              BlocBuilder<UpdateCreateAppointmentCubit,
-                  UpdateCreateAppointmentState>(
+              BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                 builder: (context, state) {
                   return CustomTextField(
                     label: 'Special Requests or Notes (Optional)',
                     onChanged: (value) {
-                      context
-                          .read<UpdateCreateAppointmentCubit>()
-                          .onNotesChanged(value);
+                      context.read<UpdateCreateAppointmentCubit>().onNotesChanged(value);
                     },
                     readOnly: state.fetchAppointmentState.hasSuccess,
-                    initialText:
-                        state.fetchAppointmentState.data?.extra?.toString() ??
-                            '',
+                    initialText: state.fetchAppointmentState.data?.extra?.toString() ?? '',
                     maxLines: 4,
                   );
                 },
@@ -336,14 +301,15 @@ class AppointmentHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UpdateCreateAppointmentCubit,
-        UpdateCreateAppointmentState>(
+    return BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
       builder: (context, state) {
         return GestureDetector(
           onTap: () {
-            context.router.push(StylistSellerDetailsRoute(
-              id: state.fetchPortfolioState.data!.user!.id.toString(),
-            ));
+            context.router.push(
+              StylistSellerDetailsRoute(
+                id: state.fetchPortfolioState.data!.user!.id.toString(),
+              ),
+            );
           },
           behavior: HitTestBehavior.opaque,
           child: Container(
@@ -367,8 +333,7 @@ class AppointmentHeader extends StatelessWidget {
                     image: state.fetchPortfolioState.data?.user?.avatar != null
                         ? DecorationImage(
                             image: CachedNetworkImageProvider(
-                              state.fetchPortfolioState.data!.user!.avatar!
-                                  .completeImagePath(),
+                              state.fetchPortfolioState.data!.user!.avatar!.completeImagePath(),
                             ),
                             fit: BoxFit.cover,
                           )
@@ -378,17 +343,11 @@ class AppointmentHeader extends StatelessWidget {
                   child: state.fetchPortfolioState.data?.user?.avatar == null
                       ? Center(
                           child: AppText(
-                            text: state.fetchPortfolioState.data?.user
-                                            ?.firstName !=
-                                        null &&
-                                    state.fetchPortfolioState.data?.user
-                                            ?.lastName !=
-                                        null
+                            text: state.fetchPortfolioState.data?.user?.firstName != null &&
+                                    state.fetchPortfolioState.data?.user?.lastName != null
                                 ? AppHelper.initialsFromName(
-                                    state.fetchPortfolioState.data!.user!
-                                        .firstName!,
-                                    state.fetchPortfolioState.data!.user!
-                                        .lastName!,
+                                    state.fetchPortfolioState.data!.user!.firstName!,
+                                    state.fetchPortfolioState.data!.user!.lastName!,
                                   )
                                 : 'N/A',
                             color: AppColors.white,
@@ -410,8 +369,7 @@ class AppointmentHeader extends StatelessWidget {
                         maxLines: 2,
                       ),
                       AppText(
-                        text: state.fetchPortfolioState.data?.user
-                                ?.stylistProfile?.businessName ??
+                        text: state.fetchPortfolioState.data?.user?.stylistProfile?.businessName ??
                             '',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -446,8 +404,7 @@ class BookingSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UpdateCreateAppointmentCubit,
-        UpdateCreateAppointmentState>(
+    return BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
       builder: (context, state) {
         return Container(
           width: double.infinity,
@@ -469,32 +426,26 @@ class BookingSummary extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: state.fetchAppointmentState.data!.status
-                        .toStatusColor()
-                        .withOpacity(0.1),
+                    color:
+                        state.fetchAppointmentState.data!.status.toStatusColor().withOpacity(0.1),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   child: Center(
                     child: AppText(
-                      text: state.fetchAppointmentState.data!.status
-                              ?.toStatusText() ??
-                          '',
+                      text: state.fetchAppointmentState.data!.status?.toStatusText() ?? '',
                       fontWeight: FontWeight.w600,
-                      color: state.fetchAppointmentState.data!.status
-                          .toStatusColor(),
+                      color: state.fetchAppointmentState.data!.status.toStatusColor(),
                     ),
                   ),
                 ),
-              AppText(
+              const AppText(
                 text: 'Booking Summary',
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
               ),
               if (state.fetchAppointmentState.hasSuccess)
                 AppText(
-                  text:
-                      'Booking ID: ${state.fetchAppointmentState.data?.bookingId}',
+                  text: 'Booking ID: ${state.fetchAppointmentState.data?.bookingId}',
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
@@ -589,8 +540,7 @@ class BookingSummary extends StatelessWidget {
               ),
               8.verticalSpace,
               if (state.fetchAppointmentState.hasSuccess &&
-                  state
-                      .fetchAppointmentState.data!.status.isApprovedStatus) ...[
+                  state.fetchAppointmentState.data!.status.isApprovedStatus) ...[
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 12),
@@ -608,8 +558,7 @@ class BookingSummary extends StatelessWidget {
                       ),
                       12.verticalSpace,
                       const AppText(
-                        text:
-                            'Your appointment is confirmed. Please Save your security code.',
+                        text: 'Your appointment is confirmed. Please Save your security code.',
                         textAlign: TextAlign.center,
                       ),
                       12.verticalSpace,
@@ -635,8 +584,7 @@ class BookingSummary extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppText(
-                                  text: state.fetchAppointmentState.data
-                                          ?.appointmentCode
+                                  text: state.fetchAppointmentState.data?.appointmentCode
                                           ?.split('-')
                                           .last
                                           .toString() ??
@@ -649,8 +597,7 @@ class BookingSummary extends StatelessWidget {
                                 GestureDetector(
                                   onTap: () => AppHelper.copyToClipboard(
                                     context,
-                                    state.fetchAppointmentState.data
-                                            ?.appointmentCode
+                                    state.fetchAppointmentState.data?.appointmentCode
                                             .pickNumber()
                                             .toString() ??
                                         '',
@@ -665,8 +612,7 @@ class BookingSummary extends StatelessWidget {
                             ),
                             12.verticalSpace,
                             const AppText(
-                              text:
-                                  'show this code to your stylist to verify appoinment',
+                              text: 'show this code to your stylist to verify appoinment',
                               fontSize: 12,
                               textAlign: TextAlign.center,
                             ),
@@ -675,11 +621,10 @@ class BookingSummary extends StatelessWidget {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
               if (state.fetchAppointmentState.hasSuccess &&
-                  state.fetchAppointmentState.data!.status
-                      .isConfirmedStatus) ...[
+                  state.fetchAppointmentState.data!.status.isConfirmedStatus) ...[
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 12),
@@ -723,8 +668,7 @@ class BookingSummary extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppText(
-                                  text: state.fetchAppointmentState.data
-                                          ?.completionCode
+                                  text: state.fetchAppointmentState.data?.completionCode
                                           ?.split('-')
                                           .last
                                           .toString() ??
@@ -737,8 +681,7 @@ class BookingSummary extends StatelessWidget {
                                 GestureDetector(
                                   onTap: () => AppHelper.copyToClipboard(
                                     context,
-                                    state.fetchAppointmentState.data
-                                            ?.completionCode
+                                    state.fetchAppointmentState.data?.completionCode
                                             .pickNumber()
                                             .toString() ??
                                         '',
@@ -753,8 +696,7 @@ class BookingSummary extends StatelessWidget {
                             ),
                             12.verticalSpace,
                             const AppText(
-                              text:
-                                  'show this code to your stylist to verify job completion',
+                              text: 'show this code to your stylist to verify job completion',
                               fontSize: 12,
                               textAlign: TextAlign.center,
                             ),
@@ -764,13 +706,12 @@ class BookingSummary extends StatelessWidget {
                       24.verticalSpace,
                     ],
                   ),
-                )
+                ),
               ],
               if (!state.fetchAppointmentState.hasSuccess)
                 BlocConsumer<CustomerProfileMgtCubit, CustomerProfileMgtState>(
                   listenWhen: (previous, current) =>
-                      previous.initializePaymentState !=
-                      current.initializePaymentState,
+                      previous.initializePaymentState != current.initializePaymentState,
                   listener: (context, profileState) async {
                     final cubit = context.read<UpdateCreateAppointmentCubit>();
                     if (profileState.initializePaymentState.hasSuccess) {
@@ -784,24 +725,20 @@ class BookingSummary extends StatelessWidget {
                     }
                   },
                   builder: (context, profileState) {
-                    final walletBalance =
-                        profileState.walletState.data?.balance ?? 0.0;
+                    final walletBalance = profileState.walletState.data?.balance ?? 0.0;
 
                     return CustomButton(
                       title: 'Book Appointment',
                       isLoading: state.updateOrCreateAppointmentState.isLoading,
                       onPressed: state.canBookAppointment
                           ? () async {
-                              final profileCubit =
-                                  context.read<CustomerProfileMgtCubit>();
-                              final cubit =
-                                  context.read<UpdateCreateAppointmentCubit>();
-                              final servicePrice =
-                                  state.fetchPortfolioState.data?.price ?? 0.0;
+                              final profileCubit = context.read<CustomerProfileMgtCubit>();
+                              final cubit = context.read<UpdateCreateAppointmentCubit>();
+                              final servicePrice = state.fetchPortfolioState.data?.price ?? 0.0;
 
                               if (walletBalance < servicePrice) {
-                                var canProceedToPay = await AppHelper
-                                    .showCustomModalBottomSheet<bool>(
+                                var canProceedToPay =
+                                    await AppHelper.showCustomModalBottomSheet<bool>(
                                   context: context,
                                   modal: PaymentSummaryWidget(
                                     servicePrice: servicePrice,
@@ -814,11 +751,8 @@ class BookingSummary extends StatelessWidget {
                                 if (canProceedToPay) {
                                   profileCubit.initialisePayfastDeposit(
                                     type: 'deposit',
-                                    amount: (servicePrice - walletBalance)
-                                        .toStringAsFixed(2),
-                                    portfolioId: state
-                                        .fetchPortfolioState.data!.id
-                                        .toString(),
+                                    amount: (servicePrice - walletBalance).toStringAsFixed(2),
+                                    portfolioId: state.fetchPortfolioState.data!.id.toString(),
                                   );
                                 }
                                 return;
@@ -830,21 +764,16 @@ class BookingSummary extends StatelessWidget {
                   },
                 ),
               if (state.fetchAppointmentState.hasSuccess &&
-                  state.fetchAppointmentState.data!.status
-                      .isCompletedStatus) ...[
+                  state.fetchAppointmentState.data!.status.isCompletedStatus) ...[
                 Builder(
                   builder: (context) {
-                    return BlocConsumer<CustomerProfileMgtCubit,
-                        CustomerProfileMgtState>(
+                    return BlocConsumer<CustomerProfileMgtCubit, CustomerProfileMgtState>(
                       listenWhen: (previous, current) =>
-                          previous.initializePaymentState !=
-                          current.initializePaymentState,
+                          previous.initializePaymentState != current.initializePaymentState,
                       listener: (_, profileState) async {
-                        final cubit =
-                            context.read<UpdateCreateAppointmentCubit>();
+                        final cubit = context.read<UpdateCreateAppointmentCubit>();
                         if (profileState.initializePaymentState.hasSuccess) {
-                          final paymentComplete =
-                              await AppHelper.showPaymentDialog(
+                          final paymentComplete = await AppHelper.showPaymentDialog(
                             context,
                             profileState.initializePaymentState.data!,
                           );
@@ -854,26 +783,20 @@ class BookingSummary extends StatelessWidget {
                         }
                       },
                       builder: (context, profileState) {
-                        final walletBalance =
-                            profileState.walletState.data?.balance ?? 0.0;
+                        final walletBalance = profileState.walletState.data?.balance ?? 0.0;
 
                         return CustomButton(
                           title: 'Book Again',
-                          isLoading:
-                              state.updateOrCreateAppointmentState.isLoading,
+                          isLoading: state.updateOrCreateAppointmentState.isLoading,
                           onPressed: state.canBookAppointment
                               ? () async {
-                                  final profileCubit =
-                                      context.read<CustomerProfileMgtCubit>();
-                                  final cubit = context
-                                      .read<UpdateCreateAppointmentCubit>();
-                                  final servicePrice =
-                                      state.fetchPortfolioState.data?.price ??
-                                          0.0;
+                                  final profileCubit = context.read<CustomerProfileMgtCubit>();
+                                  final cubit = context.read<UpdateCreateAppointmentCubit>();
+                                  final servicePrice = state.fetchPortfolioState.data?.price ?? 0.0;
 
                                   if (walletBalance < servicePrice) {
-                                    var canProceedToPay = await AppHelper
-                                        .showCustomModalBottomSheet<bool>(
+                                    var canProceedToPay =
+                                        await AppHelper.showCustomModalBottomSheet<bool>(
                                       context: context,
                                       modal: PaymentSummaryWidget(
                                         servicePrice: servicePrice,
@@ -886,11 +809,8 @@ class BookingSummary extends StatelessWidget {
                                     if (canProceedToPay) {
                                       profileCubit.initialisePayfastDeposit(
                                         type: 'deposit',
-                                        amount: (servicePrice - walletBalance)
-                                            .toStringAsFixed(2),
-                                        portfolioId: state
-                                            .fetchPortfolioState.data!.id
-                                            .toString(),
+                                        amount: (servicePrice - walletBalance).toStringAsFixed(2),
+                                        portfolioId: state.fetchPortfolioState.data!.id.toString(),
                                       );
                                     }
                                     return;
@@ -911,9 +831,7 @@ class BookingSummary extends StatelessWidget {
                       context: context,
                       modal: SubmitReviewBottomSheet(
                         onSubmit: (rating, comment) {
-                          return context
-                              .read<UpdateCreateAppointmentCubit>()
-                              .reviewAppointment(
+                          return context.read<UpdateCreateAppointmentCubit>().reviewAppointment(
                                 rating: rating,
                                 comment: comment,
                               );
@@ -924,41 +842,80 @@ class BookingSummary extends StatelessWidget {
                   },
                 ),
               ],
+              if (state.fetchAppointmentState.hasSuccess &&
+                  (state.fetchAppointmentState.data!.status.isConfirmedStatus ||
+                      state.fetchAppointmentState.data!.status.isCompletedStatus) &&
+                  !state.fetchAppointmentState.data!.hasBeenTipped) ...[
+                12.verticalSpace,
+                BlocConsumer<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
+                  listenWhen: (previous, current) =>
+                      previous.tipAppointmentState != current.tipAppointmentState,
+                  listener: (context, state) {
+                    if (state.tipAppointmentState.hasSuccess) {
+                      final msg = state.tipAppointmentState.data?.message ??
+                          'Tip sent successfully. Thank you for appreciating your stylist!';
+                      AppHelper.showSnackBar(context, message: msg);
+                      context.read<CustomerProfileMgtCubit>().getWallet();
+                    } else if (state.tipAppointmentState.hasError) {
+                      AppHelper.showSnackBar(
+                        context,
+                        message: 'Failed to send tip. Please try again.',
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    final profileState = context.read<CustomerProfileMgtCubit>().state;
+                    final walletBalance = profileState.walletState.data?.balance ?? 0.0;
+                    return CustomButton(
+                      title: 'Tip Your Stylist',
+                      isLoading: state.tipAppointmentState.isLoading,
+                      onPressed: state.tipAppointmentState.isLoading
+                          ? null
+                          : () {
+                              AppHelper.showCustomModalBottomSheet<void>(
+                                context: context,
+                                modal: TipBottomSheet(
+                                  walletBalance: walletBalance.toDouble(),
+                                  onSubmit: (amount) => context
+                                      .read<UpdateCreateAppointmentCubit>()
+                                      .tipAppointment(amount),
+                                ),
+                                isDarkMode: false,
+                              );
+                            },
+                    );
+                  },
+                ),
+              ],
               12.verticalSpace,
               if (state.fetchAppointmentState.hasSuccess &&
                   (state.fetchAppointmentState.data!.status.isPendingStatus ||
-                      state.fetchAppointmentState.data!.status
-                          .isApprovedStatus ||
-                      state.fetchAppointmentState.data!.status
-                          .isConfirmedStatus)) ...[
+                      state.fetchAppointmentState.data!.status.isApprovedStatus ||
+                      state.fetchAppointmentState.data!.status.isConfirmedStatus)) ...[
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: BlocConsumer<UpdateCreateAppointmentCubit,
-                      UpdateCreateAppointmentState>(
+                  child: BlocConsumer<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                     listenWhen: (previous, current) =>
-                        previous.rescheduleBookingState !=
-                        current.rescheduleBookingState,
+                        previous.rescheduleBookingState != current.rescheduleBookingState,
                     listener: (context, state) {
                       if (state.rescheduleBookingState.hasSuccess) {
                         context.router.popAndPush(
                           UpdateCreateAppointmentRoute(
-                            portfolioId:
-                                state.fetchPortfolioState.data!.id.toString(),
+                            portfolioId: state.fetchPortfolioState.data!.id.toString(),
                           ),
                         );
 
-                        context
-                            .read<CustomerAppointmentsCubit>()
-                            .getAppointments();
+                        context.read<CustomerAppointmentsCubit>().getAppointments();
                       }
 
                       if (state.rescheduleBookingState.hasError) {
-                        AppHelper.showSnackBar(context,
-                            message: (state.rescheduleBookingState.error!
-                                        as RemoteException)
-                                    .errorResponse
-                                    ?.message ??
-                                'Failed to reschedule booking');
+                        AppHelper.showSnackBar(
+                          context,
+                          message: (state.rescheduleBookingState.error! as RemoteException)
+                                  .errorResponse
+                                  ?.message ??
+                              'Failed to reschedule booking',
+                        );
                       }
                     },
                     builder: (context, state) {
@@ -991,26 +948,23 @@ class BookingSummary extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: BlocConsumer<UpdateCreateAppointmentCubit,
-                      UpdateCreateAppointmentState>(
+                  child: BlocConsumer<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
                     listenWhen: (previous, current) =>
-                        previous.cancelBookingState !=
-                        current.cancelBookingState,
+                        previous.cancelBookingState != current.cancelBookingState,
                     listener: (context, state) {
                       if (state.cancelBookingState.hasSuccess) {
                         context.router.pop();
-                        context
-                            .read<CustomerAppointmentsCubit>()
-                            .getAppointments();
+                        context.read<CustomerAppointmentsCubit>().getAppointments();
                       }
 
                       if (state.cancelBookingState.hasError) {
-                        AppHelper.showSnackBar(context,
-                            message: (state.rescheduleBookingState.error!
-                                        as RemoteException)
-                                    .errorResponse
-                                    ?.message ??
-                                'Failed to cancel booking');
+                        AppHelper.showSnackBar(
+                          context,
+                          message: (state.rescheduleBookingState.error! as RemoteException)
+                                  .errorResponse
+                                  ?.message ??
+                              'Failed to cancel booking',
+                        );
                       }
                     },
                     builder: (context, state) {
@@ -1030,9 +984,7 @@ class BookingSummary extends StatelessWidget {
                               content:
                                   "Are you sure you want to cancel this appointment? This can't be undone.",
                               onConfirmed: (_) {
-                                context
-                                    .read<UpdateCreateAppointmentCubit>()
-                                    .cancelAppointment();
+                                context.read<UpdateCreateAppointmentCubit>().cancelAppointment();
                               },
                             ),
                           );
@@ -1071,8 +1023,7 @@ class BookingSummary extends StatelessWidget {
               12.verticalSpace,
               const Center(
                 child: AppText(
-                  text:
-                      'By booking, you agree to our terms and cancellation policy.',
+                  text: 'By booking, you agree to our terms and cancellation policy.',
                   textAlign: TextAlign.center,
                   fontSize: 12,
                 ),
@@ -1080,12 +1031,9 @@ class BookingSummary extends StatelessWidget {
               12.verticalSpace,
               if (state.fetchAppointmentState.hasSuccess &&
                   (state.fetchAppointmentState.data!.status.isApprovedStatus ||
-                      state.fetchAppointmentState.data!.status
-                          .isCompletedStatus ||
-                      state.fetchAppointmentState.data!.status
-                          .isCanceledStatus ||
-                      state.fetchAppointmentState.data!.status
-                          .isConfirmedStatus ||
+                      state.fetchAppointmentState.data!.status.isCompletedStatus ||
+                      state.fetchAppointmentState.data!.status.isCanceledStatus ||
+                      state.fetchAppointmentState.data!.status.isConfirmedStatus ||
                       state.fetchAppointmentState.data!.status.isPendingStatus))
                 Center(
                   child: GestureDetector(
@@ -1094,9 +1042,7 @@ class BookingSummary extends StatelessWidget {
                         context: context,
                         modal: SubmitDisputeBottomSheet(
                           onSubmit: (comment, images) {
-                            return context
-                                .read<UpdateCreateAppointmentCubit>()
-                                .submitDispute(
+                            return context.read<UpdateCreateAppointmentCubit>().submitDispute(
                                   images: images,
                                   comment: comment,
                                 );
@@ -1128,8 +1074,7 @@ class SelectTimeWIdget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UpdateCreateAppointmentCubit,
-        UpdateCreateAppointmentState>(
+    return BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
       builder: (context, state) {
         return Container(
           decoration: BoxDecoration(
@@ -1163,12 +1108,10 @@ class SelectTimeWIdget extends StatelessWidget {
                       ],
                     );
                   }
-                  final workingDays =
-                      state.fetchSellerDetailsState.data?.workingHours ?? [];
+                  final workingDays = state.fetchSellerDetailsState.data?.workingHours ?? [];
 
                   final workDurationInHours =
-                      state.fetchPortfolioState.data?.duration?.pickNumber() ??
-                          0.5;
+                      state.fetchPortfolioState.data?.duration?.pickNumber() ?? 0.5;
 
                   final workDuration = (workDurationInHours * 60).toInt();
 
@@ -1223,13 +1166,10 @@ class SelectTimeWIdget extends StatelessWidget {
                       crossAxisSpacing: 8,
                       children: List.generate(availableTimes.length, (index) {
                         final isSelected = state.selectedTime != null &&
-                            state.selectedTime!
-                                .isAtSameTimeAs(availableTimes[index]);
+                            state.selectedTime!.isAtSameTimeAs(availableTimes[index]);
                         return GestureDetector(
                           onTap: () {
-                            context
-                                .read<UpdateCreateAppointmentCubit>()
-                                .onSelectTime(
+                            context.read<UpdateCreateAppointmentCubit>().onSelectTime(
                                   availableTimes[index],
                                 );
                           },
@@ -1237,8 +1177,7 @@ class SelectTimeWIdget extends StatelessWidget {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: isSelected ? null : Colors.white,
-                              gradient:
-                                  isSelected ? AppColors.appgradient : null,
+                              gradient: isSelected ? AppColors.appgradient : null,
                               border: Border.all(color: AppColors.grey1),
                             ),
                             padding: const EdgeInsets.symmetric(
@@ -1247,14 +1186,9 @@ class SelectTimeWIdget extends StatelessWidget {
                             ),
                             child: Center(
                               child: AppText(
-                                text: localizations
-                                    .formatTimeOfDay(availableTimes[index]),
-                                color: isSelected
-                                    ? AppColors.white
-                                    : AppColors.black,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
+                                text: localizations.formatTimeOfDay(availableTimes[index]),
+                                color: isSelected ? AppColors.white : AppColors.black,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               ),
                             ),
                           ),
@@ -1285,13 +1219,11 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
   final GlobalKey<MonthViewState> _monthViewKey = GlobalKey<MonthViewState>();
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UpdateCreateAppointmentCubit,
-        UpdateCreateAppointmentState>(
+    return BlocBuilder<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
       builder: (context, state) {
-        final isLoading = state.fetchSellerDetailsState.isLoading ||
-            state.fetchPortfolioState.isLoading;
-        final workingDays =
-            state.fetchSellerDetailsState.data?.workingHours ?? [];
+        final isLoading =
+            state.fetchSellerDetailsState.isLoading || state.fetchPortfolioState.isLoading;
+        final workingDays = state.fetchSellerDetailsState.data?.workingHours ?? [];
 
         return Container(
           decoration: BoxDecoration(
@@ -1344,9 +1276,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
                         children: [
                           Expanded(
                             child: AppText(
-                              text:
-                                  '${AppHelper.monthName(date.month)} ${date.year}',
-                              fontSize: 14,
+                              text: '${AppHelper.monthName(date.month)} ${date.year}',
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1401,9 +1331,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
                       onTap: isWorkingDay
                           ? () {
                               if (isLoading) return;
-                              context
-                                  .read<UpdateCreateAppointmentCubit>()
-                                  .onSelectDate(date);
+                              context.read<UpdateCreateAppointmentCubit>().onSelectDate(date);
                             }
                           : null,
                       child: Container(
@@ -1414,8 +1342,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
                           color: isSelected
                               ? null
                               : isToday
-                                  ? AppColors.primaryColor
-                                      .withValues(alpha: 0.3)
+                                  ? AppColors.primaryColor.withValues(alpha: 0.3)
                                   : Colors.transparent,
                         ),
                         alignment: Alignment.center,
@@ -1426,9 +1353,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
                               : isWorkingDay
                                   ? AppColors.black
                                   : AppColors.grey1,
-                          fontWeight: isSelected || isToday
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                          fontWeight: isSelected || isToday ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
                     );
@@ -1466,7 +1391,7 @@ class PaymentSummaryWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
+                const AppText(
                   text: 'Payment Summary',
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -1564,8 +1489,7 @@ class SubmitReviewBottomSheet extends StatefulWidget {
   final Future<void> Function(int rating, String comment) onSubmit;
 
   @override
-  State<SubmitReviewBottomSheet> createState() =>
-      _SubmitReviewBottomSheetState();
+  State<SubmitReviewBottomSheet> createState() => _SubmitReviewBottomSheetState();
 }
 
 class _SubmitReviewBottomSheetState extends State<SubmitReviewBottomSheet> {
@@ -1669,8 +1593,7 @@ class SubmitDisputeBottomSheet extends StatefulWidget {
   final Future<void> Function(String comment, List<String> imagePaths) onSubmit;
 
   @override
-  State<SubmitDisputeBottomSheet> createState() =>
-      _SubmitDisputeBottomSheetState();
+  State<SubmitDisputeBottomSheet> createState() => _SubmitDisputeBottomSheetState();
 }
 
 class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
@@ -1680,8 +1603,10 @@ class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
 
   Future<void> _handleSubmit() async {
     if (_comment.trim().isEmpty && _imagePaths.isEmpty) {
-      AppHelper.showSnackBar(context,
-          message: 'Please provide a comment or attach at least one image');
+      AppHelper.showSnackBar(
+        context,
+        message: 'Please provide a comment or attach at least one image',
+      );
       return;
     }
 
@@ -1690,8 +1615,7 @@ class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
       await widget.onSubmit(_comment.trim(), _imagePaths);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      AppHelper.showSnackBar(context,
-          message: 'Failed to submit dispute. Please try again.');
+      AppHelper.showSnackBar(context, message: 'Failed to submit dispute. Please try again.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -1715,9 +1639,7 @@ class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
               8.horizontalSpace,
               Expanded(
                 child: AppText(
-                  text: p.split(RegExp(r'[\\/]').toString()).isNotEmpty
-                      ? p.split('/').last
-                      : p,
+                  text: p.split(RegExp(r'[\\/]').toString()).isNotEmpty ? p.split('/').last : p,
                 ),
               ),
               GestureDetector(
@@ -1785,6 +1707,123 @@ class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class TipBottomSheet extends StatefulWidget {
+  const TipBottomSheet({
+    required this.walletBalance,
+    required this.onSubmit,
+    super.key,
+  });
+
+  final double walletBalance;
+  final Future<void> Function(double amount) onSubmit;
+
+  @override
+  State<TipBottomSheet> createState() => _TipBottomSheetState();
+}
+
+class _TipBottomSheetState extends State<TipBottomSheet> {
+  final _controller = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    final amount = double.tryParse(_controller.text.trim());
+    if (amount == null || amount <= 0) {
+      AppHelper.showSnackBar(context, message: 'Please enter a valid tip amount');
+      return;
+    }
+    if (amount > widget.walletBalance) {
+      AppHelper.showSnackBar(
+        context,
+        message: 'Tip amount exceeds your wallet balance',
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await widget.onSubmit(amount);
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            const ModalPill(),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppText(
+                    text: 'Appreciate Your Stylist',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                  8.verticalSpace,
+                  const AppText(
+                    text: 'Send a tip to show your appreciation for the great service!',
+                    color: AppColors.grey3,
+                  ),
+                  16.verticalSpace,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const AppText(text: 'Wallet Balance'),
+                      AppText(
+                        text: widget.walletBalance.formatAmount(),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ],
+                  ),
+                  12.verticalSpace,
+                  CustomTextField(
+                    label: 'Tip amount (R)',
+                    textController: _controller,
+                    hint: 'e.g. 50',
+                    inputType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                  ),
+                  16.verticalSpace,
+                  CustomButton(
+                    title: 'Send Tip',
+                    isLoading: _isSubmitting,
+                    onPressed: _isSubmitting ? null : _handleSubmit,
+                  ),
+                  12.verticalSpace,
+                  CustomButton(
+                    title: 'Cancel',
+                    onPressed: () => Navigator.of(context).pop(),
+                    gradient: null,
+                    background: const Color(0xff374757),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,33 +1,29 @@
-// ignore_for_file: only_throw_errors, join_return_with_assignment
-
 import 'dart:io';
-
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-
-import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
-import 'package:snip_fair/core/presentation/main_screen.dart';
-import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../presentation/theme/theme.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/main_screen.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
+// ignore_for_file: only_throw_errors, join_return_with_assignment
 
 class AppHelper {
   AppHelper._();
 
-  static showAppModal(
+  static void showAppModal(
     BuildContext context,
     Widget widget, [
     Color? backgroundColor,
@@ -84,8 +80,7 @@ class AppHelper {
       behavior: SnackBarBehavior.floating,
       content: Text(
         message,
-        style: AppTextStyle.body2
-            .copyWith(color: Colors.white, fontWeight: FontWeight.w500),
+        style: AppTextStyle.body2.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -258,7 +253,7 @@ class AppHelper {
   }
 
   static int profilePercentCompletion(ProfileCompleteness profileCompleteness) {
-    int percent = 0;
+    var percent = 0;
     if (profileCompleteness.paymentMethod ?? false) {
       percent += 10;
     }
@@ -309,16 +304,14 @@ class AppHelper {
   }
 
   static String initialsFromName(String firstName, String lastName) {
-    return (firstName.isNotEmpty ? firstName[0] : '') +
-        (lastName.isNotEmpty ? lastName[0] : '');
+    return (firstName.isNotEmpty ? firstName[0] : '') + (lastName.isNotEmpty ? lastName[0] : '');
   }
 
   static void unfocus(BuildContext context) =>
       WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
 
   static PlatformSettings appSettings(BuildContext context) {
-    return context.read<AppCubit>().state.platformSettings ??
-        PlatformSettings();
+    return context.read<AppCubit>().state.platformSettings ?? PlatformSettings();
   }
 
   static Future<bool> showPaymentDialog(
@@ -382,12 +375,10 @@ class AppHelper {
   }
 
   static bool isSameDate(DateTime dateTime, DateTime date) {
-    return dateTime.year == date.year &&
-        dateTime.month == date.month &&
-        dateTime.day == date.day;
+    return dateTime.year == date.year && dateTime.month == date.month && dateTime.day == date.day;
   }
 
-  static monthName(int month) {
+  static String monthName(int month) {
     switch (month) {
       case 1:
         return 'January';
@@ -457,10 +448,9 @@ class AppHelper {
                 return Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.totalSize != null
-                        ? (loadingProgress.progress ?? 0) /
-                            loadingProgress.totalSize!
+                        ? (loadingProgress.progress ?? 0) / loadingProgress.totalSize!
                         : null,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 );
               },
@@ -503,8 +493,7 @@ class AppHelper {
       return false;
     }
     if (!(profileCompleteness.locationService ?? false)) {
-      context.router
-          .push(SellerAvailabilityScheduleRoute(goToLocationSettings: true));
+      context.router.push(SellerAvailabilityScheduleRoute(goToLocationSettings: true));
       return false;
     }
     if (!(profileCompleteness.userAvatar ?? false)) {
@@ -557,8 +546,10 @@ class AppHelper {
     // }
 
     if (showSnackbar) {
-      showSnackBar(context,
-          message: '✓ Profile setup is 100% complete! Await verification.');
+      showSnackBar(
+        context,
+        message: '✓ Profile setup is 100% complete! Await verification.',
+      );
     }
 
     return true;
@@ -776,35 +767,39 @@ class AppHelper {
   }
 
   static String fromStartToEndTimeFromSlots(
-      BuildContext context, List<Slot> slots) {
+    BuildContext context,
+    List<Slot> slots,
+  ) {
     if (slots.isEmpty) return '';
-    final startTimes =
-        slots.map((slot) => slot.from).whereType<String>().toList();
+    final startTimes = slots.map((slot) => slot.from).whereType<String>().toList();
     final endTimes = slots.map((slot) => slot.to).whereType<String>().toList();
 
     if (startTimes.isEmpty || endTimes.isEmpty) return '';
 
     // Parse times and find earliest start and latest end
     final parsedStartTimes = startTimes
-        .map((time) => TimeOfDay(
-              hour: int.parse(time.split(':')[0]),
-              minute: int.parse(time.split(':')[1]),
-            ))
+        .map(
+          (time) => TimeOfDay(
+            hour: int.parse(time.split(':')[0]),
+            minute: int.parse(time.split(':')[1]),
+          ),
+        )
         .toList();
 
     final parsedEndTimes = endTimes
-        .map((time) => TimeOfDay(
-              hour: int.parse(time.split(':')[0]),
-              minute: int.parse(time.split(':')[1]),
-            ))
+        .map(
+          (time) => TimeOfDay(
+            hour: int.parse(time.split(':')[0]),
+            minute: int.parse(time.split(':')[1]),
+          ),
+        )
         .toList();
 
     // Find earliest start time
     var earliestStart = parsedStartTimes.first;
     for (final time in parsedStartTimes) {
       if (time.hour < earliestStart.hour ||
-          (time.hour == earliestStart.hour &&
-              time.minute < earliestStart.minute)) {
+          (time.hour == earliestStart.hour && time.minute < earliestStart.minute)) {
         earliestStart = time;
       }
     }
@@ -898,15 +893,14 @@ class AppHelper {
 
 /// Profile completion step information
 class ProfileStepInfo {
-  final String title;
-  final String description;
-  final PageRouteInfo route;
-  final int priority;
-
   ProfileStepInfo({
     required this.title,
     required this.description,
     required this.route,
     required this.priority,
   });
+  final String title;
+  final String description;
+  final PageRouteInfo route;
+  final int priority;
 }

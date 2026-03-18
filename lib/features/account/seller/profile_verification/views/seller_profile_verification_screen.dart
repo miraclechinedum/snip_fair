@@ -1,45 +1,41 @@
 import 'dart:io';
-
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
 import 'package:snip_fair/features/account/seller/profile_verification/cubit/seller_profile_verification_cubit.dart';
-import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
-import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
-class SellerProfileVerificationScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class SellerProfileVerificationScreen extends StatelessWidget implements AutoRouteWrapper {
   const SellerProfileVerificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final profile =
-        context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
+    final profile = context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
     final cubit = context.watch<SellerProfileVerificationCubit>();
-    final isProfileVerified =
-        profile?.profileCompleteness?.statusApproved ?? false;
+    final isProfileVerified = profile?.profileCompleteness?.statusApproved ?? false;
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Profile Verification',
@@ -51,15 +47,12 @@ class SellerProfileVerificationScreen extends StatelessWidget
                 height: 80,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: BlocListener<SellerProfileVerificationCubit,
-                      SellerProfileVerificationState>(
-                    listenWhen: (previous, current) =>
-                        previous.submitState != current.submitState,
+                  child:
+                      BlocListener<SellerProfileVerificationCubit, SellerProfileVerificationState>(
+                    listenWhen: (previous, current) => previous.submitState != current.submitState,
                     listener: (context, state) async {
                       if (state.submitState.hasSuccess) {
-                        await context
-                            .read<SellerProfileMgtCubit>()
-                            .getProfileDetails(true);
+                        await context.read<SellerProfileMgtCubit>().getProfileDetails(true);
 
                         // Optionally do something after refreshing profile details
                         final profileCompleteness = context
@@ -75,8 +68,7 @@ class SellerProfileVerificationScreen extends StatelessWidget
                         }
 
                         final isComplete =
-                            AppHelper.getAllIncompleteSteps(profileCompleteness)
-                                .isEmpty;
+                            AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
 
                         if (!isComplete) {
                           AppHelper.checkAndNavigateProfileCompletion(
@@ -92,11 +84,10 @@ class SellerProfileVerificationScreen extends StatelessWidget
                         AppHelper.showAppDialog<void>(
                           context,
                           OnFailDialogContent(
-                            subtext:
-                                (state.submitState.error! as RemoteException)
-                                        .errorResponse
-                                        ?.message ??
-                                    '',
+                            subtext: (state.submitState.error! as RemoteException)
+                                    .errorResponse
+                                    ?.message ??
+                                '',
                             onDoneCallback: (_) {},
                           ),
                         );
@@ -126,8 +117,7 @@ class SellerProfileVerificationScreen extends StatelessWidget
                 ),
                 12.verticalSpace,
                 SellerProfileCompletedCompactView(
-                  profileCompleteness:
-                      profile?.profileCompleteness ?? ProfileCompleteness(),
+                  profileCompleteness: profile?.profileCompleteness ?? ProfileCompleteness(),
                 ),
                 24.verticalSpace,
                 SellerProfileAvatar(
@@ -139,12 +129,10 @@ class SellerProfileVerificationScreen extends StatelessWidget
                   label: 'Bussiness name',
                   isRequired: true,
                   readOnly: isProfileVerified,
-                  initialText:
-                      profile?.user?.stylistProfile?.businessName ?? '',
+                  initialText: profile?.user?.stylistProfile?.businessName ?? '',
                   onChanged: cubit.onBusinessNameChanged,
                   isError: cubit.state.businessName.isNotValid,
-                  descriptionText:
-                      cubit.state.businessName.displayError?.message,
+                  descriptionText: cubit.state.businessName.displayError?.message,
                 ),
                 16.verticalSpace,
                 Column(
@@ -174,8 +162,7 @@ class SellerProfileVerificationScreen extends StatelessWidget
                               child: CustomButton(
                                 title: 'Set Up Portfolio',
                                 onPressed: () {
-                                  context.router
-                                      .push(const SellerPortfolioRoute());
+                                  context.router.push(const SellerPortfolioRoute());
                                 },
                               ),
                             )
@@ -207,16 +194,14 @@ class SellerProfileVerificationScreen extends StatelessWidget
                         alignment: Alignment.center,
                         children: [
                           SizedBox.expand(
-                            child: cubit.state.pastWorksFilePaths[index]
-                                    .isLocalFilePath
+                            child: cubit.state.pastWorksFilePaths[index].isLocalFilePath
                                 ? Image.file(
                                     File(cubit.state.pastWorksFilePaths[index]),
                                     fit: BoxFit.cover,
                                   )
                                 : CachedNetworkImage(
-                                    imageUrl: cubit
-                                        .state.pastWorksFilePaths[index]
-                                        .completeImagePath(),
+                                    imageUrl:
+                                        cubit.state.pastWorksFilePaths[index].completeImagePath(),
                                     fit: BoxFit.cover,
                                     errorWidget: (context, url, error) {
                                       return ColoredBox(
@@ -275,8 +260,7 @@ class SocialMediaAccountsView extends StatefulWidget {
   });
 
   @override
-  State<SocialMediaAccountsView> createState() =>
-      _SocialMediaAccountsViewState();
+  State<SocialMediaAccountsView> createState() => _SocialMediaAccountsViewState();
 }
 
 class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
@@ -285,10 +269,8 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.watch<SellerProfileVerificationCubit>();
-    final profile =
-        context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
-    final isProfileVerified =
-        profile?.profileCompleteness?.statusApproved ?? false;
+    final profile = context.watch<SellerProfileMgtCubit>().state.profileDetails.data;
+    final isProfileVerified = profile?.profileCompleteness?.statusApproved ?? false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -355,8 +337,7 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
                       isRequired: true,
                       onChanged: cubit.onSocialUrlChanged,
                       isError: cubit.state.socialLink.isNotValid,
-                      descriptionText:
-                          cubit.state.socialLink.displayError?.message,
+                      descriptionText: cubit.state.socialLink.displayError?.message,
                     ),
                   ),
                   10.horizontalSpace,
@@ -393,9 +374,9 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
 
 class MultiDocumentPicker extends StatefulWidget {
   const MultiDocumentPicker({
-    super.key,
     required this.label,
     required this.onSelected,
+    super.key,
     this.isError = false,
     this.descriptionText,
     this.initialFilePaths = const [],

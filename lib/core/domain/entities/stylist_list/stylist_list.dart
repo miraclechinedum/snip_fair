@@ -5,18 +5,6 @@ part 'stylist_list.g.dart';
 
 @JsonSerializable()
 class StylistList {
-  List<SellerDetails>? data;
-  String? path;
-  @JsonKey(name: 'per_page')
-  int? perPage;
-  @JsonKey(name: 'next_cursor')
-  String? nextCursor;
-  @JsonKey(name: 'next_page_url')
-  String? nextPageUrl;
-  @JsonKey(name: 'prev_cursor')
-  String? prevCursor;
-  @JsonKey(name: 'prev_page_url')
-  String? prevPageUrl;
   StylistList({
     this.data,
     this.path,
@@ -30,6 +18,18 @@ class StylistList {
   factory StylistList.fromJson(Map<String, dynamic> json) {
     return _$StylistListFromJson(json);
   }
+  List<SellerDetails>? data;
+  String? path;
+  @JsonKey(name: 'per_page')
+  int? perPage;
+  @JsonKey(name: 'next_cursor')
+  String? nextCursor;
+  @JsonKey(name: 'next_page_url')
+  String? nextPageUrl;
+  @JsonKey(name: 'prev_cursor')
+  String? prevCursor;
+  @JsonKey(name: 'prev_page_url')
+  String? prevPageUrl;
 
   Map<String, dynamic> toJson() => _$StylistListToJson(this);
 }

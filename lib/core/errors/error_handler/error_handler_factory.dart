@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
-import '../exception/local_exception.dart';
-import '../exception/remote_exception.dart';
-import 'error_listener.dart';
-import 'local/local_error_handler.dart';
-import 'local/local_error_listener.dart';
-import 'remote/remote_error_handler.dart';
-import 'remote/remote_error_listener.dart';
+import 'package:snip_fair/core/errors/exception/local_exception.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/errors/error_handler/error_listener.dart';
+import 'package:snip_fair/core/errors/error_handler/local/local_error_handler.dart';
+import 'package:snip_fair/core/errors/error_handler/local/local_error_listener.dart';
+import 'package:snip_fair/core/errors/error_handler/remote/remote_error_handler.dart';
+import 'package:snip_fair/core/errors/error_handler/remote/remote_error_listener.dart';
 
 class ErrorHandlerFactory {
   ErrorHandlerFactory._();

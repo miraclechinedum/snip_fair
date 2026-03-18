@@ -1,16 +1,16 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:calendar_view/calendar_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:calendar_view/calendar_view.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 
 enum CalendarViewType { month, week, day }
@@ -20,12 +20,10 @@ class SellerAppointmentsCalendarScreen extends StatefulWidget {
   const SellerAppointmentsCalendarScreen({super.key});
 
   @override
-  State<SellerAppointmentsCalendarScreen> createState() =>
-      _SellerAppointmentsCalendarScreenState();
+  State<SellerAppointmentsCalendarScreen> createState() => _SellerAppointmentsCalendarScreenState();
 }
 
-class _SellerAppointmentsCalendarScreenState
-    extends State<SellerAppointmentsCalendarScreen> {
+class _SellerAppointmentsCalendarScreenState extends State<SellerAppointmentsCalendarScreen> {
   final GlobalKey<MonthViewState> _monthViewKey = GlobalKey<MonthViewState>();
   final GlobalKey<WeekViewState> _weekViewKey = GlobalKey<WeekViewState>();
   final GlobalKey<DayViewState> _dayViewKey = GlobalKey<DayViewState>();
@@ -42,8 +40,7 @@ class _SellerAppointmentsCalendarScreenState
 
           // Build events
           final events = _toCalendarEvents(appointments);
-          final controller = EventController<StylistAppointment>()
-            ..addAll(events);
+          final controller = EventController<StylistAppointment>()..addAll(events);
 
           final monthView = MonthView<StylistAppointment>(
             key: _monthViewKey,
@@ -61,7 +58,6 @@ class _SellerAppointmentsCalendarScreenState
                     Expanded(
                       child: AppText(
                         text: '${AppHelper.monthName(date.month)} ${date.year}',
-                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -149,8 +145,7 @@ class _SellerAppointmentsCalendarScreenState
                   children: [
                     Expanded(
                       child: AppText(
-                        text:
-                            '${date.day} ${AppHelper.monthName(date.month)} ${date.year}',
+                        text: '${date.day} ${AppHelper.monthName(date.month)} ${date.year}',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -177,7 +172,7 @@ class _SellerAppointmentsCalendarScreenState
             },
           );
 
-          _switcher<T>(
+          switcher<T>(
             CalendarViewType key,
             Map<CalendarViewType, T> map,
           ) {
@@ -186,48 +181,54 @@ class _SellerAppointmentsCalendarScreenState
 
           return Column(
             children: [
-              if (state.calendarAppointments.isLoading)
-                const LinearProgressIndicator(),
+              if (state.calendarAppointments.isLoading) const LinearProgressIndicator(),
               8.verticalSpace,
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
                     ToggleButtons(
-                        isSelected: [
-                          _currentView == CalendarViewType.month,
-                          _currentView == CalendarViewType.week,
-                          _currentView == CalendarViewType.day,
-                        ],
-                        onPressed: (index) {
-                          setState(() {
-                            _currentView = CalendarViewType.values[index];
-                          });
-                        },
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
-                            child: const Text('Month'),
+                      isSelected: [
+                        _currentView == CalendarViewType.month,
+                        _currentView == CalendarViewType.week,
+                        _currentView == CalendarViewType.day,
+                      ],
+                      onPressed: (index) {
+                        setState(() {
+                          _currentView = CalendarViewType.values[index];
+                        });
+                      },
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
-                            child: const Text('Week'),
+                          child: const Text('Month'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
-                            child: const Text('Day'),
+                          child: const Text('Week'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
                           ),
-                        ]),
+                          child: const Text('Day'),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: CalendarControllerProvider(
                   controller: controller,
-                  child: _switcher<Widget>(
+                  child: switcher<Widget>(
                     _currentView,
                     {
                       CalendarViewType.month: monthView,
@@ -242,8 +243,7 @@ class _SellerAppointmentsCalendarScreenState
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            context.read<SellerAppointMgtCubit>().getCalendarAppointment(),
+        onPressed: () => context.read<SellerAppointMgtCubit>().getCalendarAppointment(),
         icon: const Icon(Icons.refresh),
         label: const Text('Refresh'),
       ),
@@ -346,10 +346,10 @@ class _SellerAppointmentsCalendarScreenState
 
 class DailyAppointmentDetails extends StatelessWidget {
   const DailyAppointmentDetails({
-    super.key,
     required this.date,
     required this.scrollController,
     required this.events,
+    super.key,
   });
 
   final DateTime date;
@@ -361,16 +361,18 @@ class DailyAppointmentDetails extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Text(DateFormat.yMMMMd().format(date),
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                DateFormat.yMMMMd().format(date),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.of(context).pop(),
-              )
+              ),
             ],
           ),
         ),
@@ -390,8 +392,9 @@ class DailyAppointmentDetails extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                        text:
-                            '${DateFormat.Hm().format(e.startTime!)} - ${DateFormat.Hm().format(e.endTime!)}'),
+                      text:
+                          '${DateFormat.Hm().format(e.startTime!)} - ${DateFormat.Hm().format(e.endTime!)}',
+                    ),
                     AppText(
                       text: e.event?.customer?.name != null
                           ? 'Customer: ${e.event!.customer!.name}'
@@ -402,17 +405,17 @@ class DailyAppointmentDetails extends StatelessWidget {
                   ],
                 ),
                 trailing: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: a.status.toStatusColor().withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: AppText(
-                      text: a.status.toStatusText(),
-                      fontSize: 10,
-                      color: a.status.toStatusColor(),
-                    )),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: a.status.toStatusColor().withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: AppText(
+                    text: a.status.toStatusText(),
+                    fontSize: 10,
+                    color: a.status.toStatusColor(),
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(context).pop();
                   context.router.push(

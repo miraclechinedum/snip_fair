@@ -1,20 +1,19 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 
 /// Callback invoked when auth token is expired (HTTP 401).
 /// Optionally receives the failed request's [RequestOptions].
 typedef OnAuthTokenExpired = FutureOr<void> Function(
-    RequestOptions failedRequest);
+  RequestOptions failedRequest,
+);
 
 /// Dio interceptor that detects 401 responses and invokes [onAuthTokenExpired].
 class ErrorInterceptor extends Interceptor {
+  ErrorInterceptor({this.onAuthTokenExpired});
   final OnAuthTokenExpired? onAuthTokenExpired;
 
-  ErrorInterceptor({this.onAuthTokenExpired});
-
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     final statusCode = err.response?.statusCode;
     if (statusCode == 401 && onAuthTokenExpired != null) {
       // Call the callback but don't block the error propagation.

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import '../../domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 
 /// A widget that displays a WebView for PayFast payment processing.
 ///
@@ -136,10 +135,7 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
           : null,
       body: Column(
         children: [
-          if (_isLoading)
-            const LinearProgressIndicator()
-          else
-            const SizedBox(height: 4),
+          if (_isLoading) const LinearProgressIndicator() else const SizedBox(height: 4),
           Expanded(
             child: WebViewWidget(controller: _controller),
           ),

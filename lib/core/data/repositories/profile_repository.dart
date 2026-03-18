@@ -255,8 +255,8 @@ abstract class ProfileRepository {
   Future<ApiResult<PaymentRequest>> createPaymentRequest({
     required int recipientId,
     required String title,
-    String? description,
     required List<Map<String, dynamic>> items,
+    String? description,
     int? expiresInHours,
   });
 
@@ -703,8 +703,8 @@ class ProfileRepoImpl implements ProfileRepository {
   Future<ApiResult<PaymentRequest>> createPaymentRequest({
     required int recipientId,
     required String title,
-    String? description,
     required List<Map<String, dynamic>> items,
+    String? description,
     int? expiresInHours,
   }) =>
       _remoteSource.createPaymentRequest(

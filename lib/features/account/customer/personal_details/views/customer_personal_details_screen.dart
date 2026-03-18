@@ -1,30 +1,30 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:phone_form_field/phone_form_field.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
-import 'package:snip_fair/core/domain/entities/dispute_list/customer.dart';
-import 'package:snip_fair/core/domain/entities/geo_place.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
-import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/customer/personal_details/cubit/customer_personal_details_cubit.dart';
+import 'package:phone_form_field/phone_form_field.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/utils/input/string_input.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/customer.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
 import 'package:snip_fair/features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart';
-import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/personal_details/cubit/seller_personal_details_cubit.dart';
+import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/customer/personal_details/cubit/customer_personal_details_cubit.dart';
 
 @RoutePage()
 class CustomerPersonalDetailsScreen
@@ -53,7 +53,7 @@ class CustomerPersonalDetailsScreen
         }
       },
       child: Scaffold(
-        appBar: CustomAppBar(),
+        appBar: const CustomAppBar(),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -345,8 +345,7 @@ class CustomerPersonalDetailsScreen
 
 class CustomerProfileAvatar extends StatelessWidget {
   const CustomerProfileAvatar({
-    super.key,
-    required this.profileDetails,
+    required this.profileDetails, super.key,
     this.radius = 30,
     this.isLoading = false,
   });

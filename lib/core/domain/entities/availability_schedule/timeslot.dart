@@ -4,8 +4,6 @@ part 'timeslot.g.dart';
 
 @JsonSerializable()
 class TimeSlot {
-  String? from;
-  String? to;
 
   TimeSlot({
     this.from,
@@ -15,6 +13,8 @@ class TimeSlot {
   factory TimeSlot.fromJson(Map<String, dynamic> json) {
     return _$TimeSlotFromJson(json);
   }
+  String? from;
+  String? to;
 
   Map<String, dynamic> toJson() => _$TimeSlotToJson(this);
 

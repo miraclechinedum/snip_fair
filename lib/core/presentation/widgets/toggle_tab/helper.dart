@@ -8,15 +8,15 @@ double _widthInPercent(double percent, BuildContext context) {
 
 const BoxShadow bsInner = BoxShadow(
   color: Colors.black12,
-  offset: Offset(0.0, 1.5),
-  blurRadius: 1.0,
-  spreadRadius: -1.0,
+  offset: Offset(0, 1.5),
+  blurRadius: 1,
+  spreadRadius: -1,
 );
 const BoxShadow bsOuter = BoxShadow(
   color: Colors.black12,
-  offset: Offset(0.0, 1.5),
-  blurRadius: 1.0,
-  spreadRadius: 1.0,
+  offset: Offset(0, 1.5),
+  blurRadius: 1,
+  spreadRadius: 1,
 );
 
 const BoxDecoration bdHeader = BoxDecoration(boxShadow: [bsOuter]);

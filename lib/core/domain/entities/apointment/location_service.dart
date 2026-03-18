@@ -4,6 +4,24 @@ part 'location_service.g.dart';
 
 @JsonSerializable()
 class LocationService {
+
+  LocationService({
+    this.id,
+    this.userId,
+    this.latitude,
+    this.longitude,
+    this.locationAccuracy,
+    this.locationUpdatedAt,
+    this.locationPermissionGranted,
+    this.locationConsentGiven,
+    this.locationConsentDate,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory LocationService.fromJson(Map<String, dynamic> json) {
+    return _$LocationServiceFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   dynamic userId;
@@ -23,24 +41,6 @@ class LocationService {
   DateTime? createdAt;
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
-
-  LocationService({
-    this.id,
-    this.userId,
-    this.latitude,
-    this.longitude,
-    this.locationAccuracy,
-    this.locationUpdatedAt,
-    this.locationPermissionGranted,
-    this.locationConsentGiven,
-    this.locationConsentDate,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory LocationService.fromJson(Map<String, dynamic> json) {
-    return _$LocationServiceFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$LocationServiceToJson(this);
 }

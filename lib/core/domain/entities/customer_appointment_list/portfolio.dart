@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/category.dart';
 
-import 'category.dart';
 
 part 'portfolio.g.dart';
 

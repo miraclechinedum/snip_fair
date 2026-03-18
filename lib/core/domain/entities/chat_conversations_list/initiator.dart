@@ -4,6 +4,39 @@ part 'initiator.g.dart';
 
 @JsonSerializable()
 class Initiator {
+
+  Initiator({
+    this.id,
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.emailVerifiedAt,
+    this.phoneVerifiedAt,
+    this.phone,
+    this.country,
+    this.bio,
+    this.type,
+    this.role,
+    this.avatar,
+    this.lastLoginAt,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.balance,
+    this.isFeatured,
+    this.useLocation,
+    this.isOnline,
+    this.subscriptionStatus,
+    this.availability,
+    this.plan,
+    this.stylistProfile,
+  });
+
+  factory Initiator.fromJson(Map<String, dynamic> json) {
+    return _$InitiatorFromJson(json);
+  }
   int? id;
   String? name;
   @JsonKey(name: 'first_name')
@@ -43,39 +76,6 @@ class Initiator {
   String? plan;
   @JsonKey(name: 'stylist_profile')
   dynamic stylistProfile;
-
-  Initiator({
-    this.id,
-    this.name,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.emailVerifiedAt,
-    this.phoneVerifiedAt,
-    this.phone,
-    this.country,
-    this.bio,
-    this.type,
-    this.role,
-    this.avatar,
-    this.lastLoginAt,
-    this.status,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.balance,
-    this.isFeatured,
-    this.useLocation,
-    this.isOnline,
-    this.subscriptionStatus,
-    this.availability,
-    this.plan,
-    this.stylistProfile,
-  });
-
-  factory Initiator.fromJson(Map<String, dynamic> json) {
-    return _$InitiatorFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$InitiatorToJson(this);
 }

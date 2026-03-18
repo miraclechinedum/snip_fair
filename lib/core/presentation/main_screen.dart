@@ -1,31 +1,29 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/routing/routes.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/services/location_service.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
-
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
-import 'package:snip_fair/core/routing/routes.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/services/location_service.dart';
-import 'package:snip_fair/core/services/notification_service.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
-import 'package:snip_fair/core/utils/environment/environment.dart';
-import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
-import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
 class MainScreen extends StatefulWidget {
@@ -47,8 +45,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _setupNotificationNavigation() {
-    NotificationService.instance.onNotificationTap =
-        (Map<String, dynamic> data) {
+    NotificationService.instance.onNotificationTap = (Map<String, dynamic> data) {
       final appRouter = getIt<AppRouter>();
       log('Notification tapped with data: $data');
 
@@ -85,7 +82,6 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               );
             }
-            break;
 
           case 'appointment':
             // Different routes for stylists vs customers
@@ -105,7 +101,6 @@ class _MainScreenState extends State<MainScreen> {
                 );
               }
             }
-            break;
 
           case 'payment':
           case 'wallet':
@@ -115,27 +110,23 @@ class _MainScreenState extends State<MainScreen> {
             } else {
               appRouter.push(const SellerEarningRoute());
             }
-            break;
 
           case 'dispute':
             // Navigate to disputes
             final token = getIt<LocalKeyStorage>().accessToken;
             if (token == null) return;
-            final supportUrl =
-                Environment().config.apiHost.replaceAll('api', 'disputes');
+            final supportUrl = Environment().config.apiHost.replaceAll('api', 'disputes');
             context.router.pushWidget(
               SupportWebViewWidget(
                 supportUrl: supportUrl,
                 authToken: token,
               ),
             );
-            break;
 
           case 'notification':
           case 'general':
             // Navigate to notifications list
             appRouter.push(const NotificationsRoute());
-            break;
 
           default:
             log('Unknown notification type: $type');
@@ -161,8 +152,7 @@ class _MainScreenState extends State<MainScreen> {
       consentGiven ??= false;
       locationService.sendConsentToUseLocation(consentGiven);
       if (consentGiven) {
-        final permissionGranted =
-            await locationService.requestLocationPermission();
+        final permissionGranted = await locationService.requestLocationPermission();
 
         if (permissionGranted) {
           locationService.sendLocationUpdateRequest();
@@ -229,8 +219,8 @@ class _MainScreenState extends State<MainScreen> {
           actions: [
             IconButton(
               onPressed: () {
-                final isAuthenticated = context.read<AppCubit>().state.status ==
-                    AuthStatus.authenticated;
+                final isAuthenticated =
+                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
                 if (!isAuthenticated) {
                   AppHelper.showAuthenticationRequired(context);
                   return;
@@ -245,15 +235,13 @@ class _MainScreenState extends State<MainScreen> {
             ),
             IconButton(
               onPressed: () {
-                final isAuthenticated = context.read<AppCubit>().state.status ==
-                    AuthStatus.authenticated;
+                final isAuthenticated =
+                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
                 if (!isAuthenticated) {
                   AppHelper.showAuthenticationRequired(context);
                   return;
                 }
-                context
-                    .read<NotificationsCubit>()
-                    .fetchNotifications(isInitial: true);
+                context.read<NotificationsCubit>().fetchNotifications(isInitial: true);
                 context.router.push(const NotificationsRoute());
               },
               icon: const Icon(
@@ -326,8 +314,8 @@ class _MainScreenState extends State<MainScreen> {
           onTap: (index) {
             if (appState.isCustomer) {
               if (index == 2) {
-                final isAuthenticated = context.read<AppCubit>().state.status ==
-                    AuthStatus.authenticated;
+                final isAuthenticated =
+                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
                 if (!isAuthenticated) {
                   AppHelper.showAuthenticationRequired(context);
                   return;
@@ -531,8 +519,7 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
     this.onLogin,
     this.onSignup,
     this.title = 'Sign in to continue',
-    this.subtitle =
-        'Create an account or log in to access this feature and get started.',
+    this.subtitle = 'Create an account or log in to access this feature and get started.',
     this.icon = Icons.lock_outline,
   });
 
@@ -560,8 +547,7 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
         onLogin: onLogin,
         onSignup: onSignup,
         title: title ?? 'Sign in to continue',
-        subtitle: subtitle ??
-            'Create an account or log in to access this feature and get started.',
+        subtitle: subtitle ?? 'Create an account or log in to access this feature and get started.',
         icon: icon ?? Icons.lock_outline,
       ),
     );
@@ -599,8 +585,7 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style:
-                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
             ),
             8.verticalSpace,
             Text(
@@ -728,8 +713,7 @@ class LocationPermissionBottomSheet extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style:
-                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
             ),
             8.verticalSpace,
             Text(

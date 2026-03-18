@@ -1,20 +1,17 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment_list.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
 import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 
 part 'seller_appoint_mgt_state.dart';
 
 @Injectable()
 class SellerAppointMgtCubit extends Cubit<SellerAppointMgtState> {
-  SellerAppointMgtCubit(this._appointmentRepository)
-      : super(const SellerAppointMgtState.initial());
+  SellerAppointMgtCubit(this._appointmentRepository) : super(const SellerAppointMgtState.initial());
 
   final AppointmentRepository _appointmentRepository;
 
@@ -83,12 +80,10 @@ class SellerAppointMgtCubit extends Cubit<SellerAppointMgtState> {
   Future<void> getCalendarAppointment() async {
     emit(
       state.copyWith(
-        calendarAppointments:
-            ProcessState.loading(state.calendarAppointments.data),
+        calendarAppointments: ProcessState.loading(state.calendarAppointments.data),
       ),
     );
-    final response =
-        await _appointmentRepository.getStylistAppointments(perPage: 50);
+    final response = await _appointmentRepository.getStylistAppointments(perPage: 50);
     response.when(
       success: (data) {
         emit(
@@ -100,8 +95,7 @@ class SellerAppointMgtCubit extends Cubit<SellerAppointMgtState> {
       failure: (error) {
         emit(
           state.copyWith(
-            calendarAppointments:
-                ProcessState.error(error, state.calendarAppointments.data),
+            calendarAppointments: ProcessState.error(error, state.calendarAppointments.data),
           ),
         );
       },

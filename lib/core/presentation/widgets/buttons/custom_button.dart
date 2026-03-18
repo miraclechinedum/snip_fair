@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void _unfocus(BuildContext context) =>
+    void unfocus(BuildContext context) =>
         WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
     Widget child;
     if (isLoading) {
@@ -58,7 +58,6 @@ class CustomButton extends StatelessWidget {
             ),
           AppText(
             text: title,
-            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: textColor,
           ),
@@ -77,9 +76,7 @@ class CustomButton extends StatelessWidget {
             disabledBackgroundColor: background.withValues(alpha: .4),
             disabledForegroundColor: textColor.withValues(alpha: .8),
             side: BorderSide(
-              color: borderColor == AppColors.transparent
-                  ? background
-                  : borderColor,
+              color: borderColor == AppColors.transparent ? background : borderColor,
               width: 2,
             ),
             elevation: 0,
@@ -94,7 +91,7 @@ class CustomButton extends StatelessWidget {
               ? null
               : () {
                   onPressed?.call();
-                  _unfocus(context);
+                  unfocus(context);
                 },
           child: child,
         ),
@@ -108,12 +105,12 @@ class CustomButton extends StatelessWidget {
             color: onPressed != null ? null : background.withValues(alpha: 0.4),
             gradient: onPressed != null ? gradient : null,
             borderRadius: BorderRadius.circular(
-                radius.r), // Optional: for rounded corners
+              radius.r,
+            ), // Optional: for rounded corners
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Colors.transparent, // Make button background transparent
+              backgroundColor: Colors.transparent, // Make button background transparent
               shadowColor: Colors.transparent,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -125,7 +122,7 @@ class CustomButton extends StatelessWidget {
                 ? null
                 : () {
                     onPressed?.call();
-                    _unfocus(context);
+                    unfocus(context);
                   },
             child: child,
           ),
@@ -149,7 +146,7 @@ class CustomButton extends StatelessWidget {
             ? null
             : () {
                 onPressed?.call();
-                _unfocus(context);
+                unfocus(context);
               },
         child: child,
       ),

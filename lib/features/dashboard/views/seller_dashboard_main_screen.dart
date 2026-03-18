@@ -1,24 +1,23 @@
-// ignore_for_file: unawaited_futures
-
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:snip_fair/core/domain/entities/stylist_stats/last12_month.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
-import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/domain/entities/stylist_stats/last12_month.dart';
+import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
+// ignore_for_file: unawaited_futures
 
 @RoutePage()
 class SellerDashboardMainScreen extends StatelessWidget {
@@ -41,8 +40,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
               children: [
                 BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                   builder: (context, state) {
-                    final profileCompleteness =
-                        state.profileDetails.data?.profileCompleteness;
+                    final profileCompleteness = state.profileDetails.data?.profileCompleteness;
 
                     if (profileCompleteness == null) return const SizedBox();
 
@@ -93,8 +91,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: BlocBuilder<SellerProfileMgtCubit,
-                          SellerProfileMgtState>(
+                      child: BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                         builder: (context, state) {
                           return Container(
                             width: double.infinity,
@@ -129,8 +126,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
                     ),
                     12.horizontalSpace,
                     Expanded(
-                      child: BlocBuilder<SellerProfileMgtCubit,
-                          SellerProfileMgtState>(
+                      child: BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                         builder: (context, state) {
                           return Container(
                             width: double.infinity,
@@ -221,8 +217,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
 
                           final upcomingAppointments = appointments
                               .where(
-                                (appointment) =>
-                                    AppHelper.isAppointmentUpcoming(
+                                (appointment) => AppHelper.isAppointmentUpcoming(
                                   appointment.appointmentDate!,
                                 ),
                               )
@@ -250,30 +245,26 @@ class SellerDashboardMainScreen extends StatelessWidget {
                                     onTap: () {
                                       context.router.push(
                                         SellerAppointmentDetailsRoute(
-                                          appointmentId:
-                                              appointment.id!.toString(),
+                                          appointmentId: appointment.id!.toString(),
                                         ),
                                       );
                                     },
                                     leading: CircleAvatar(
                                       radius: 24,
-                                      backgroundImage:
-                                          CachedNetworkImageProvider(
+                                      backgroundImage: CachedNetworkImageProvider(
                                         appointment.customer?.avatar
                                                 ?.toString()
                                                 .completeImagePath() ??
                                             '',
                                       ),
-                                      child:
-                                          appointment.customer?.avatar == null
-                                              ? ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(24),
-                                                  child: SvgPicture.asset(
-                                                    Assets.images.logo,
-                                                  ),
-                                                )
-                                              : null,
+                                      child: appointment.customer?.avatar == null
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius.circular(24),
+                                              child: SvgPicture.asset(
+                                                Assets.images.logo,
+                                              ),
+                                            )
+                                          : null,
                                     ),
                                     title: AppText(
                                       text:
@@ -282,7 +273,7 @@ class SellerDashboardMainScreen extends StatelessWidget {
                                     ),
                                     trailing: AppText(
                                       text:
-                                          '${(appointment.appointmentDate)} \nat ${TimeOfDay(hour: int.parse(appointment.appointmentTime!.split(':')[0]), minute: int.parse(appointment.appointmentTime!.split(':')[1])).format(context)}',
+                                          '${appointment.appointmentDate} \nat ${TimeOfDay(hour: int.parse(appointment.appointmentTime!.split(':')[0]), minute: int.parse(appointment.appointmentTime!.split(':')[1])).format(context)}',
                                       textAlign: TextAlign.right,
                                     ),
                                   ),
@@ -322,8 +313,8 @@ class SellerDashboardMainScreen extends StatelessWidget {
 
 class BookingTrendsWidget extends StatelessWidget {
   BookingTrendsWidget({
-    super.key,
     required this.data,
+    super.key,
   });
 
   final List<Last12Month> data;
@@ -349,7 +340,7 @@ class BookingTrendsWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Booking Trends',
               style: AppTextStyle.body2.copyWith(
@@ -412,8 +403,7 @@ class BookingTrendsWidget extends StatelessWidget {
             showTitles: true,
             interval: 1,
             reservedSize: 30,
-            getTitlesWidget: (value, meta) =>
-                _bottomTitleWidgets(value, meta, points),
+            getTitlesWidget: (value, meta) => _bottomTitleWidgets(value, meta, points),
           ),
         ),
         leftTitles: AxisTitles(
@@ -443,9 +433,7 @@ class BookingTrendsWidget extends StatelessWidget {
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
+              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
             ),
           ),
         ),
@@ -481,8 +469,7 @@ class BookingTrendsWidget extends StatelessWidget {
   }
 
   double _calculateMaxY(List<_ChartPoint> points) {
-    final maxY =
-        points.map((e) => e.y).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxY = points.map((e) => e.y).fold<double>(0, (a, b) => a > b ? a : b);
     if (maxY == 0) return 5;
     return (maxY * 1.2).ceilToDouble();
   }
@@ -497,8 +484,8 @@ class BookingTrendsWidget extends StatelessWidget {
 
 class AppointmentTrendsWidget extends StatelessWidget {
   AppointmentTrendsWidget({
-    super.key,
     required this.data,
+    super.key,
   });
 
   final List<Last12Month> data;
@@ -559,8 +546,7 @@ class AppointmentTrendsWidget extends StatelessWidget {
       final item = entry.value;
       final endDate = DateTime.parse(item['end_date'] as String);
       final monthLabel = dateFormat.format(endDate);
-      final count =
-          (item['confirmed_appointment_count'] as num?)?.toDouble() ?? 0;
+      final count = (item['confirmed_appointment_count'] as num?)?.toDouble() ?? 0;
       return _ChartPoint(x: index, y: count, label: monthLabel);
     }).toList();
   }
@@ -574,7 +560,6 @@ class AppointmentTrendsWidget extends StatelessWidget {
         ),
       ),
       gridData: FlGridData(
-        show: true,
         horizontalInterval: _calculateYInterval(points),
         getDrawingHorizontalLine: (value) => FlLine(
           color: Colors.grey.withOpacity(0.2),
@@ -593,8 +578,7 @@ class AppointmentTrendsWidget extends StatelessWidget {
             showTitles: true,
             interval: 1,
             reservedSize: 30,
-            getTitlesWidget: (value, meta) =>
-                _bottomTitleWidgets(value, meta, points),
+            getTitlesWidget: (value, meta) => _bottomTitleWidgets(value, meta, points),
           ),
         ),
         leftTitles: AxisTitles(
@@ -608,7 +592,7 @@ class AppointmentTrendsWidget extends StatelessWidget {
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border.all(color: Colors.grey.shade400, width: 1),
+        border: Border.all(color: Colors.grey.shade400),
       ),
       minX: 0,
       maxX: (points.length - 1).toDouble(),
@@ -621,13 +605,10 @@ class AppointmentTrendsWidget extends StatelessWidget {
           gradient: LinearGradient(colors: gradientColors),
           barWidth: 4,
           isStrokeCapRound: true,
-          dotData: const FlDotData(show: true),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
+              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
             ),
           ),
         ),
@@ -662,8 +643,7 @@ class AppointmentTrendsWidget extends StatelessWidget {
   }
 
   double _calculateMaxY(List<_ChartPoint> points) {
-    final maxY =
-        points.map((e) => e.y).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxY = points.map((e) => e.y).fold<double>(0, (a, b) => a > b ? a : b);
     if (maxY == 0) return 5;
     return (maxY * 1.2).ceilToDouble();
   }
@@ -678,13 +658,12 @@ class AppointmentTrendsWidget extends StatelessWidget {
 }
 
 class _ChartPoint {
-  final double x;
-  final double y;
-  final String label;
-
   _ChartPoint({
     required this.x,
     required this.y,
     required this.label,
   });
+  final double x;
+  final double y;
+  final String label;
 }

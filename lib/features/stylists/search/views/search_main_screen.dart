@@ -1,18 +1,18 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
-import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
 import 'package:snip_fair/features/stylists/search/cubit/search_cubit.dart';
+import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
 
 @RoutePage()
 class SearchMainScreen extends StatefulWidget implements AutoRouteWrapper {
@@ -23,8 +23,7 @@ class SearchMainScreen extends StatefulWidget implements AutoRouteWrapper {
 
   @override
   Widget wrappedRoute(BuildContext context) {
-    final settings =
-        context.select((AppCubit bloc) => bloc.state.platformSettings);
+    final settings = context.select((AppCubit bloc) => bloc.state.platformSettings);
     final priceRanges = settings?.portfolioPriceFilters ?? [];
     final defaultRange = priceRanges.firstWhere(
       (element) => element.isDefault ?? false,
@@ -154,8 +153,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                               width: 100.w,
                               height: 40.h,
                               decoration: BoxDecoration(
-                                color: Colors
-                                    .white, // This will be the "shimmered" area
+                                color: Colors.white, // This will be the "shimmered" area
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
@@ -171,23 +169,19 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                         scrollDirection: Axis.horizontal,
                         // padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemBuilder: (context, index) {
-                          final isSelected = state.selectedCategory?.id ==
-                                  categories[index].id ||
+                          final isSelected = state.selectedCategory?.id == categories[index].id ||
                               (state.selectedCategory == null && index == 0);
 
                           return AnimationButtonEffect(
                             child: GestureDetector(
                               onTap: () {
-                                context
-                                    .read<SearchCubit>()
-                                    .onSelectCategory(categories[index]);
+                                context.read<SearchCubit>().onSelectCategory(categories[index]);
                               },
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   color: isSelected
-                                      ? AppColors.primaryColor
-                                          .withValues(alpha: .1)
+                                      ? AppColors.primaryColor.withValues(alpha: .1)
                                       : null,
                                   border: Border.all(
                                     color: AppColors.grey1,
@@ -234,16 +228,13 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       BlocBuilder<SearchCubit, SearchState>(
-                        buildWhen: (previous, current) =>
-                            previous.services != current.services,
+                        buildWhen: (previous, current) => previous.services != current.services,
                         builder: (context, state) {
                           return buildServices(
                             label: 'Services',
                             portfolios: state.services.data?.data ?? [],
-                            isLoading: state.services.isLoading &&
-                                state.services.data == null,
-                            isLoadingMore:
-                                state.servicePagination.isLoadingMore,
+                            isLoading: state.services.isLoading && state.services.data == null,
+                            isLoadingMore: state.servicePagination.isLoadingMore,
                           );
                         },
                       ),
@@ -264,8 +255,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                             ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               itemBuilder: (context, index) {
                                 final stylist = stylists[index];
                                 return DefaultStylistCard(
@@ -277,8 +267,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                                   },
                                 );
                               },
-                              separatorBuilder: (context, index) =>
-                                  12.verticalSpace,
+                              separatorBuilder: (context, index) => 12.verticalSpace,
                               itemCount: stylists.length,
                             )
                           else
@@ -291,8 +280,8 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                               ),
                             ),
                           if (state.stylistPagination.isLoadingMore)
-                            Padding(
-                              padding: const EdgeInsets.all(16),
+                            const Padding(
+                              padding: EdgeInsets.all(16),
                               child: Center(
                                 child: CircularProgressIndicator(
                                   color: AppColors.primaryColor,
@@ -372,8 +361,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                             Container(
                               width: double.infinity,
                               height: 150.h,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             Positioned(
                               right: 12,
@@ -390,8 +378,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                                 child: Container(
                                   width: 150,
                                   height: 12,
-                                  color: Colors
-                                      .white, // This will be the "shimmered" area
+                                  color: Colors.white, // This will be the "shimmered" area
                                 ),
                               ),
                             ),
@@ -404,8 +391,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
                             Container(
                               width: 50,
                               height: 15,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             const Spacer(),
                             Container(
@@ -457,9 +443,9 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemBuilder: (context, index) {
               if (index == portfolios.length) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(
                       color: AppColors.primaryColor,
                     ),
@@ -470,9 +456,7 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
               return PopularStyleCard(
                 portfolio: portfolio,
                 onLikePressed: () {
-                  return context
-                      .read<SearchCubit>()
-                      .likePortfolio(portfolio.id!.toString());
+                  return context.read<SearchCubit>().likePortfolio(portfolio.id!.toString());
                 },
               );
             },
@@ -487,9 +471,9 @@ class _SearchMainScreenState extends State<SearchMainScreen> {
 
 class FilterSheet extends StatelessWidget {
   const FilterSheet({
-    super.key,
     required this.state,
     required this.cubit,
+    super.key,
   });
 
   final SearchState state;
@@ -502,8 +486,7 @@ class FilterSheet extends StatelessWidget {
     var highestRated = state.highestRated;
     var online = state.online;
     var lowestPriceFlag = state.lowestPriceFlag;
-    final settings =
-        context.select((AppCubit bloc) => bloc.state.platformSettings);
+    final settings = context.select((AppCubit bloc) => bloc.state.platformSettings);
     final priceRanges = settings?.portfolioPriceFilters ?? [];
     final defaultRange = priceRanges.firstWhere(
       (element) => element.isDefault ?? false,
@@ -616,8 +599,7 @@ class FilterSheet extends StatelessWidget {
                                   selectedRange = selected ? range : null;
                                 });
                               },
-                              selectedColor:
-                                  AppColors.primaryColor.withValues(alpha: .1),
+                              selectedColor: AppColors.primaryColor.withValues(alpha: .1),
                               backgroundColor: AppColors.grey1,
                               labelStyle: TextStyle(
                                 color: selectedRange == range
@@ -649,8 +631,7 @@ class FilterSheet extends StatelessWidget {
                       ),
                       SwitchListTile(
                         value: lowestPriceFlag,
-                        onChanged: (v) =>
-                            setModalState(() => lowestPriceFlag = v),
+                        onChanged: (v) => setModalState(() => lowestPriceFlag = v),
                         title: const Text('Lowest price'),
                       ),
                       const SizedBox(height: 8),

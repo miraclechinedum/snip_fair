@@ -1,13 +1,13 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/app_extensions.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/utils/app_extensions.dart';
 import 'package:snip_fair/features/account/seller/payment_methods/cubit/seller_payment_methods_cubit.dart';
 import 'package:snip_fair/features/account/seller/payment_methods/views/seller_payment_method_form_view.dart';
 
@@ -109,7 +109,7 @@ class SellerPaymentMethodsScreen extends StatelessWidget
                                 child: AppText(
                               text: method.bankName ?? 'N/A',
                               maxLines: 1,
-                            )),
+                            ),),
                             12.horizontalSpace,
                             // ignore: use_if_null_to_convert_nulls_to_bools
                             if (method.isDefault == true)

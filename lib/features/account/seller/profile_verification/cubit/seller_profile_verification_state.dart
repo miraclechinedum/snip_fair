@@ -1,7 +1,7 @@
 part of 'seller_profile_verification_cubit.dart';
 
 class SellerProfileVerificationState extends Equatable {
-  SellerProfileVerificationState._({
+  const SellerProfileVerificationState._({
     required this.businessName,
     required this.pastWorksFilePaths,
     required this.socials,
@@ -33,9 +33,7 @@ class SellerProfileVerificationState extends Equatable {
   bool get canAddSocial => Formz.validate([socialApp, socialLink]);
 
   bool get canSubmitRequirements =>
-      Formz.validate([businessName]) &&
-      pastWorksFilePaths.isNotEmpty &&
-      socials.isNotEmpty;
+      Formz.validate([businessName]) && pastWorksFilePaths.isNotEmpty && socials.isNotEmpty;
 
   SellerProfileVerificationState copyWith({
     StringInput? businessName,

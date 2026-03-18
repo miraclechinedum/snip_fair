@@ -28,8 +28,7 @@ class SellerAppointMgtState extends Equatable {
     return SellerAppointMgtState._(
       appointments: appointments ?? this.appointments,
       calendarAppointments: calendarAppointments ?? this.calendarAppointments,
-      updateAppointmentState:
-          updateAppointmentState ?? this.updateAppointmentState,
+      updateAppointmentState: updateAppointmentState ?? this.updateAppointmentState,
       paginationData: paginationData ?? this.paginationData,
     );
   }
@@ -39,6 +38,6 @@ class SellerAppointMgtState extends Equatable {
         appointments,
         updateAppointmentState,
         paginationData,
-        calendarAppointments
+        calendarAppointments,
       ];
 }

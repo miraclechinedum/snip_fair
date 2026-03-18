@@ -1,9 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import '../../../../core/domain/entities/chat_message_list/chat_message.dart';
+import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message.dart';
 import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_card.dart';
-
 
 class ChatMessageBubble extends StatelessWidget {
   const ChatMessageBubble({
@@ -19,8 +18,7 @@ class ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     // Payment request messages render as a full-width card
     if (message.isPaymentRequest) {
-      final paymentRequestId =
-          message.metadata?['payment_request_id'] as int?;
+      final paymentRequestId = message.metadata?['payment_request_id'] as int?;
       if (paymentRequestId != null) {
         return PaymentRequestCard(paymentRequestId: paymentRequestId);
       }
@@ -39,9 +37,7 @@ class ChatMessageBubble extends StatelessWidget {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isCurrentUser
-              ? AppColors.primaryColor
-              : theme.colorScheme.surfaceContainerHighest,
+          color: isCurrentUser ? AppColors.primaryColor : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -56,9 +52,7 @@ class ChatMessageBubble extends StatelessWidget {
             Text(
               message.text ?? '',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isCurrentUser
-                    ? theme.colorScheme.onPrimary
-                    : theme.colorScheme.onSurface,
+                color: isCurrentUser ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 4),

@@ -1,16 +1,15 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
 class SellerProfileCompletedCompactView extends StatelessWidget {
@@ -68,8 +67,7 @@ class SellerProfileCompletedCompactView extends StatelessWidget {
             ),
             12.verticalSpace,
             LinearProgressIndicator(
-              value:
-                  AppHelper.profilePercentCompletion(profileCompleteness) / 100,
+              value: AppHelper.profilePercentCompletion(profileCompleteness) / 100,
               backgroundColor: AppColors.grey300,
               borderRadius: BorderRadius.circular(4).r,
               valueColor: const AlwaysStoppedAnimation<Color>(
@@ -93,15 +91,14 @@ class SellerProfileCompletedCompactView extends StatelessWidget {
 class SellerProfileCompletenessFullView extends StatelessWidget {
   const SellerProfileCompletenessFullView({
     required this.profileCompleteness,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final ProfileCompleteness profileCompleteness;
 
   @override
   Widget build(BuildContext context) {
-    final complete =
-        AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
+    final complete = AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
 
     return SafeArea(
       child: Column(
@@ -180,8 +177,7 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
                       onTap: () {
                         Navigator.pop(context);
 
-                        context.router
-                            .push(const SellerProfileManagementRoute());
+                        context.router.push(const SellerProfileManagementRoute());
                       },
                     ),
                     _buildProfileStep(
@@ -190,8 +186,7 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
                       onTap: () {
                         Navigator.pop(context);
 
-                        context.router
-                            .push(const SellerProfileManagementRoute());
+                        context.router.push(const SellerProfileManagementRoute());
                       },
                     ),
                     _buildProfileStep(
@@ -217,12 +212,10 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
                       completed: profileCompleteness.socialLinks ?? false,
                       onTap: () {
                         Navigator.pop(context);
-                        if (context.router.current.name ==
-                            SellerProfileVerificationRoute.name) {
+                        if (context.router.current.name == SellerProfileVerificationRoute.name) {
                           return;
                         }
-                        context.router
-                            .push(const SellerProfileVerificationRoute());
+                        context.router.push(const SellerProfileVerificationRoute());
                       },
                     ),
                     _buildProfileStep(
@@ -231,8 +224,7 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
                       onTap: () {
                         Navigator.pop(context);
 
-                        context.router
-                            .push(const SellerProfileVerificationRoute());
+                        context.router.push(const SellerProfileVerificationRoute());
                       },
                     ),
                     _buildProfileStep(
@@ -248,11 +240,11 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: AppColors.grey200,
                   blurRadius: 10,
-                  offset: const Offset(0, -2),
+                  offset: Offset(0, -2),
                 ),
               ],
             ),
@@ -260,16 +252,12 @@ class SellerProfileCompletenessFullView extends StatelessWidget {
             child: BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
               builder: (context, state) {
                 return CustomButton(
-                  title: state.profileDetails.data?.user?.stylistProfile
-                              ?.status ==
-                          'unverified'
+                  title: state.profileDetails.data?.user?.stylistProfile?.status == 'unverified'
                       ? 'Complete verification'
                       : 'Verification ${state.profileDetails.data?.user?.stylistProfile?.status.capitalizeFirstLetter()}',
                   isLoading: state.profileDetails.isLoading,
                   onPressed: () {
-                    if (state.profileDetails.data?.user?.stylistProfile
-                            ?.status ==
-                        'unverified') {
+                    if (state.profileDetails.data?.user?.stylistProfile?.status == 'unverified') {
                       Navigator.pop(context);
 
                       AppHelper.checkAndNavigateProfileCompletion(

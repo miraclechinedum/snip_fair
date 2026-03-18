@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 class AppBarBottomSheet extends StatelessWidget {
   const AppBarBottomSheet({required this.title, super.key});
@@ -18,12 +17,10 @@ class AppBarBottomSheet extends StatelessWidget {
         ),
         Text(
           title,
-          style: AppTextStyle.headline6
-              .copyWith(color: AppColors.black, letterSpacing: -0.01),
+          style: AppTextStyle.headline6.copyWith(color: AppColors.black, letterSpacing: -0.01),
         ),
         IconButton(
-          padding:
-              const EdgeInsets.only(top: 16, right: 0, bottom: 16, left: 16),
+          padding: const EdgeInsets.only(top: 16, bottom: 16, left: 16),
           onPressed: () {
             Navigator.pop(context);
           },

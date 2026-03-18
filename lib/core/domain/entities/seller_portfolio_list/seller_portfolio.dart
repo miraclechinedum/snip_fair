@@ -1,12 +1,40 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'category.dart';
-import 'user.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/user.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/category.dart';
 
 part 'seller_portfolio.g.dart';
 
 @JsonSerializable()
 class SellerPortfolio {
+  SellerPortfolio({
+    this.id,
+    this.userId,
+    this.title,
+    this.categoryId,
+    this.price,
+    this.duration,
+    this.description,
+    this.tags,
+    this.mediaUrls,
+    this.visitsCount,
+    this.status,
+    this.isAvailable,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+    this.averageRating,
+    this.reviewsCount,
+    this.portfolioLikesCount,
+    this.trending,
+    this.appointmentsCount,
+    this.favourite,
+    this.category,
+    this.user,
+    this.distance,
+    this.sampleImages,
+  });
+
+  factory SellerPortfolio.fromJson(Map<String, dynamic> json) => _$SellerPortfolioFromJson(json);
   int? id;
   @JsonKey(name: 'user_id')
   String? userId;
@@ -45,37 +73,6 @@ class SellerPortfolio {
   dynamic distance;
   @JsonKey(name: 'sample_images')
   List<String>? sampleImages;
-
-  SellerPortfolio({
-    this.id,
-    this.userId,
-    this.title,
-    this.categoryId,
-    this.price,
-    this.duration,
-    this.description,
-    this.tags,
-    this.mediaUrls,
-    this.visitsCount,
-    this.status,
-    this.isAvailable,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-    this.averageRating,
-    this.reviewsCount,
-    this.portfolioLikesCount,
-    this.trending,
-    this.appointmentsCount,
-    this.favourite,
-    this.category,
-    this.user,
-    this.distance,
-    this.sampleImages,
-  });
-
-  factory SellerPortfolio.fromJson(Map<String, dynamic> json) =>
-      _$SellerPortfolioFromJson(json);
 
   Map<String, dynamic> toJson() => _$SellerPortfolioToJson(this);
 }

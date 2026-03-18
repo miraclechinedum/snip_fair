@@ -4,16 +4,6 @@ part 'datum.g.dart';
 
 @JsonSerializable()
 class UserTransaction {
-  int? id;
-  String? type;
-  double? amount;
-  String? description;
-  String? status;
-  String? reference;
-  @JsonKey(name: 'created_at')
-  DateTime? createdAt;
-  @JsonKey(name: 'updated_at')
-  DateTime? updatedAt;
 
   UserTransaction({
     this.id,
@@ -28,6 +18,16 @@ class UserTransaction {
 
   factory UserTransaction.fromJson(Map<String, dynamic> json) =>
       _$UserTransactionFromJson(json);
+  int? id;
+  String? type;
+  double? amount;
+  String? description;
+  String? status;
+  String? reference;
+  @JsonKey(name: 'created_at')
+  DateTime? createdAt;
+  @JsonKey(name: 'updated_at')
+  DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$UserTransactionToJson(this);
 }

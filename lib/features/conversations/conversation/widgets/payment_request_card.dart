@@ -38,11 +38,12 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     // Check cache first
     final cached = cubit.getCachedPaymentRequest(widget.paymentRequestId);
     if (cached != null) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _paymentRequest = cached;
           _isLoading = false;
         });
+      }
       return;
     }
     final result = await cubit.fetchPaymentRequest(widget.paymentRequestId);

@@ -184,7 +184,7 @@ class _PaymentRequestFormSheetState extends State<_PaymentRequestFormSheet> {
                 ),
               ),
 
-              Divider(color: AppColors.grey1, height: 1),
+              const Divider(color: AppColors.grey1, height: 1),
 
               // Scrollable form body
               Expanded(

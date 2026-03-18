@@ -1,23 +1,22 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
-import 'package:snip_fair/core/presentation/theme/theme.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
-import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
-import 'package:snip_fair/features/stylists/stylist_profile/cubit/stylist_seller_details_cubit.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/features/stylists/stylist_profile/cubit/stylist_seller_details_cubit.dart';
 
 @RoutePage()
-class StylistSellerDetailsScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWrapper {
   const StylistSellerDetailsScreen({super.key, this.seller, this.id});
   final String? id;
   final SellerDetails? seller;
@@ -98,8 +97,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
               tabs: tabs.map((String name) => Tab(text: name)).toList(),
               indicatorColor: AppColors.primaryColor,
               labelColor: AppColors.primaryColor,
-              labelStyle:
-                  AppTextStyle.body2.copyWith(fontWeight: FontWeight.w600),
+              labelStyle: AppTextStyle.body2.copyWith(fontWeight: FontWeight.w600),
               unselectedLabelStyle: AppTextStyle.body2,
             ),
           ),
@@ -127,23 +125,20 @@ class StylistSellerDetailsScreen extends StatelessWidget
                     ),
                     child: GestureDetector(
                       onTap: () {
-                        if (state.sellerDetails.data?.stylistProfile?.banner
-                                .completeImagePath() ==
+                        if (state.sellerDetails.data?.stylistProfile?.banner.completeImagePath() ==
                             null) {
                           return;
                         }
                         AppHelper.showImagePreview(
                           context,
-                          imageUrl: state
-                              .sellerDetails.data!.stylistProfile!.banner!
-                              .completeImagePath(),
+                          imageUrl:
+                              state.sellerDetails.data!.stylistProfile!.banner!.completeImagePath(),
                         );
                       },
                       child: CachedNetworkImage(
-                        imageUrl: state
-                                .sellerDetails.data?.stylistProfile?.banner
-                                ?.completeImagePath() ??
-                            '',
+                        imageUrl:
+                            state.sellerDetails.data?.stylistProfile?.banner?.completeImagePath() ??
+                                '',
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 150.h,
@@ -155,8 +150,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             ),
                           );
                         },
-                        placeholder: (context, url) =>
-                            const LinearProgressIndicator(),
+                        placeholder: (context, url) => const LinearProgressIndicator(),
                       ),
                     ),
                   );
@@ -175,15 +169,12 @@ class StylistSellerDetailsScreen extends StatelessWidget
                         children: [
                           GestureDetector(
                             onTap: () {
-                              if (state.sellerDetails.data?.avatar
-                                      .completeImagePath() ==
-                                  null) {
+                              if (state.sellerDetails.data?.avatar.completeImagePath() == null) {
                                 return;
                               }
                               AppHelper.showImagePreview(
                                 context,
-                                imageUrl: state.sellerDetails.data!.avatar!
-                                    .completeImagePath(),
+                                imageUrl: state.sellerDetails.data!.avatar!.completeImagePath(),
                               );
                             },
                             child: AnimatedContainer(
@@ -197,27 +188,19 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               ),
                               child: CircleAvatar(
                                 radius: 30.r,
-                                backgroundImage:
-                                    state.sellerDetails.data?.avatar != null
-                                        ? CachedNetworkImageProvider(
-                                            state.sellerDetails.data!.avatar!
-                                                .completeImagePath(),
-                                          )
-                                        : null,
+                                backgroundImage: state.sellerDetails.data?.avatar != null
+                                    ? CachedNetworkImageProvider(
+                                        state.sellerDetails.data!.avatar!.completeImagePath(),
+                                      )
+                                    : null,
                                 child: state.sellerDetails.data?.avatar != null
                                     ? null
                                     : AppText(
-                                        text: state.sellerDetails.data
-                                                        ?.firstName !=
-                                                    null &&
-                                                state.sellerDetails.data
-                                                        ?.lastName !=
-                                                    null
+                                        text: state.sellerDetails.data?.firstName != null &&
+                                                state.sellerDetails.data?.lastName != null
                                             ? AppHelper.initialsFromName(
-                                                state.sellerDetails.data!
-                                                    .firstName!,
-                                                state.sellerDetails.data!
-                                                    .lastName!,
+                                                state.sellerDetails.data!.firstName!,
+                                                state.sellerDetails.data!.lastName!,
                                               )
                                             : 'N/A',
                                         color: AppColors.white,
@@ -228,14 +211,11 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             ),
                           ),
                           LikeItemWidget(
-                            onLikePressed: () => context
-                                .read<StylistSellerDetailsCubit>()
-                                .likeStylist(
-                                  state.sellerDetails.data!.stylistProfile!.id
-                                      .toString(),
-                                ),
-                            isLiked:
-                                state.sellerDetails.data?.favourite ?? false,
+                            onLikePressed: () =>
+                                context.read<StylistSellerDetailsCubit>().likeStylist(
+                                      state.sellerDetails.data!.stylistProfile!.id.toString(),
+                                    ),
+                            isLiked: state.sellerDetails.data?.favourite ?? false,
                           ),
                         ],
                       ),
@@ -265,8 +245,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                 fontWeight: FontWeight.w600,
                               ),
                               10.horizontalSpace,
-                              if (state.sellerDetails.data?.status ==
-                                  'verified')
+                              if (state.sellerDetails.data?.status == 'verified')
                                 Icon(
                                   Iconsax.verify5,
                                   color: Colors.green.shade500,
@@ -274,9 +253,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             ],
                           ),
                           AppText(
-                            text: state.sellerDetails.data?.stylistProfile
-                                    ?.businessName ??
-                                '',
+                            text: state.sellerDetails.data?.stylistProfile?.businessName ?? '',
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryColor,
                           ),
@@ -291,16 +268,13 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               ),
                               5.horizontalSpace,
                               AppText(
-                                text: state.sellerDetails.data?.averageRating
-                                        ?.toString() ??
-                                    '0',
+                                text: state.sellerDetails.data?.averageRating?.toString() ?? '0',
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
                               5.horizontalSpace,
                               AppText(
-                                text:
-                                    '(${state.sellerDetails.data?.reviewsCount ?? 0} Reviews)',
+                                text: '(${state.sellerDetails.data?.reviewsCount ?? 0} Reviews)',
                                 fontSize: 12,
                                 color: AppColors.grey3,
                               ),
@@ -317,8 +291,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               4.horizontalSpace,
                               Expanded(
                                 child: AppText(
-                                  text: state.sellerDetails.data?.country ??
-                                      'N/A',
+                                  text: state.sellerDetails.data?.country ?? 'N/A',
                                   fontSize: 10,
                                   color: AppColors.grey3,
                                 ),
@@ -384,9 +357,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                   child: Column(
                                     children: [
                                       AppText(
-                                        text: state.sellerDetails.data
-                                                ?.responseTime ??
-                                            'N/A',
+                                        text: state.sellerDetails.data?.responseTime ?? 'N/A',
                                         fontSize: 20,
                                         maxLines: 1,
                                         fontWeight: FontWeight.w600,
@@ -433,9 +404,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                       ),
                                       5.verticalSpace,
                                       AppText(
-                                        text: state.sellerDetails.data
-                                                ?.nextAvailable ??
-                                            'N/A',
+                                        text: state.sellerDetails.data?.nextAvailable ?? 'N/A',
                                         color: Colors.green,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -461,15 +430,14 @@ class StylistSellerDetailsScreen extends StatelessWidget
   @override
   Widget wrappedRoute(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          getIt<StylistSellerDetailsCubit>()..init(seller: seller, id: id),
+      create: (context) => getIt<StylistSellerDetailsCubit>()..init(seller: seller, id: id),
       child: this,
     );
   }
 }
 
 class AboutView extends StatelessWidget {
-  const AboutView();
+  const AboutView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -508,15 +476,12 @@ class AboutView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        text:
-                            'About ${state.sellerDetails.data?.firstName ?? 'N/A'}',
+                        text: 'About ${state.sellerDetails.data?.firstName ?? 'N/A'}',
                         fontWeight: FontWeight.w600,
                       ),
                       8.verticalSpace,
                       AppText(
-                        text: state.sellerDetails.data?.bio ??
-                            'No about available',
-                        fontSize: 14,
+                        text: state.sellerDetails.data?.bio ?? 'No about available',
                         color: AppColors.blackShade1,
                       ),
                       12.verticalSpace,
@@ -536,8 +501,7 @@ class AboutView extends StatelessWidget {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryColor
-                                          .withOpacity(0.1),
+                                      color: AppColors.primaryColor.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: AppText(
@@ -561,7 +525,6 @@ class AboutView extends StatelessWidget {
                                 ?.map((cert) => cert ?? 'N/A')
                                 .join(', ') ??
                             'No education or certifications available',
-                        fontSize: 14,
                         color: AppColors.blackShade1,
                       ),
                     ],
@@ -588,17 +551,13 @@ class AboutView extends StatelessWidget {
                       ...List.generate(
                         state.sellerDetails.data?.workingHours?.length ?? 0,
                         (index) {
-                          final workingHour =
-                              state.sellerDetails.data?.workingHours?[index];
+                          final workingHour = state.sellerDetails.data?.workingHours?[index];
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               children: [
                                 AppText(
-                                  text: workingHour?.day
-                                          .capitalizeFirstLetter() ??
-                                      'N/A',
-                                  fontSize: 14,
+                                  text: workingHour?.day.capitalizeFirstLetter() ?? 'N/A',
                                   color: AppColors.black,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -610,7 +569,6 @@ class AboutView extends StatelessWidget {
                                           context,
                                           workingHour?.slots ?? [],
                                         ),
-                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.blackShade1,
                                 ),
@@ -698,7 +656,7 @@ class ReviewsView extends StatelessWidget {
             vertical: 8,
           ),
           sliver: SliverFixedExtentList(
-            itemExtent: 100.0,
+            itemExtent: 100,
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 final review = reviews[index];
@@ -737,10 +695,8 @@ class ReviewsView extends StatelessWidget {
                                     ),
                                   ),
                                   TextSpan(
-                                    text:
-                                        ' ${review.createdAt?.toTimeAgo() ?? ''}',
-                                    style: AppTextStyle.caption
-                                        .copyWith(color: Colors.grey),
+                                    text: ' ${review.createdAt?.toTimeAgo() ?? ''}',
+                                    style: AppTextStyle.caption.copyWith(color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -816,26 +772,20 @@ class PortfolioView extends StatelessWidget {
           ),
           sliver: SliverGrid(
             delegate: SliverChildListDelegate(
-              List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0,
-                  (index) {
+              List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0, (index) {
                 return GestureDetector(
                   onTap: () {
-                    if (state.sellerDetails.data?.mediaUrls?[index]
-                            .completeImagePath() ==
-                        null) {
+                    if (state.sellerDetails.data?.mediaUrls?[index].completeImagePath() == null) {
                       return;
                     }
                     context.router.pushWidget(
                       FullScreenImageView(
-                        imagePath: state.sellerDetails.data!.mediaUrls![index]
-                            .completeImagePath(),
+                        imagePath: state.sellerDetails.data!.mediaUrls![index].completeImagePath(),
                       ),
                     );
                   },
                   child: CachedNetworkImage(
-                    imageUrl: state.sellerDetails.data?.mediaUrls?[index]
-                            .completeImagePath() ??
-                        '',
+                    imageUrl: state.sellerDetails.data?.mediaUrls?[index].completeImagePath() ?? '',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       color: Colors.grey.shade200,
@@ -843,8 +793,7 @@ class PortfolioView extends StatelessWidget {
                     errorWidget: (context, url, error) {
                       return ColoredBox(
                         color: Colors.grey.shade200,
-                        child:
-                            Center(child: SvgPicture.asset(Assets.images.logo)),
+                        child: Center(child: SvgPicture.asset(Assets.images.logo)),
                       );
                     },
                   ),
@@ -888,24 +837,25 @@ class ServicesListView extends StatelessWidget {
               ),
             ),
             SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                sliver: SliverList.separated(
-                  separatorBuilder: (context, index) => 10.verticalSpace,
-                  itemBuilder: (context, index) {
-                    final service = services[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: PopularStyleCard(
-                        portfolio: service,
-                        showFullDescription: true,
-                      ),
-                    );
-                  },
-                  itemCount: services.length,
-                )),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              sliver: SliverList.separated(
+                separatorBuilder: (context, index) => 10.verticalSpace,
+                itemBuilder: (context, index) {
+                  final service = services[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: PopularStyleCard(
+                      portfolio: service,
+                      showFullDescription: true,
+                    ),
+                  );
+                },
+                itemCount: services.length,
+              ),
+            ),
           ],
         );
       },
@@ -914,7 +864,7 @@ class ServicesListView extends StatelessWidget {
 }
 
 class FullScreenImageView extends StatelessWidget {
-  const FullScreenImageView({super.key, required this.imagePath});
+  const FullScreenImageView({required this.imagePath, super.key});
 
   final String imagePath;
 

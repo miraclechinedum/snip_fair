@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-
-import '../theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 class RoundedIcon extends StatelessWidget {
   const RoundedIcon({
-    Key? key,
+    super.key,
     this.elevation = 0,
     this.backgroundColor = AppColors.white,
     this.icon,
     this.width,
     this.height,
     this.padding,
-  }) : super(key: key);
+  });
 
   final double elevation;
   final Color? backgroundColor;

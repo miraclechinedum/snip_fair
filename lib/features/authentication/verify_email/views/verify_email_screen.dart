@@ -1,28 +1,27 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:pinput/pinput.dart';
-import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart' show AppCubit;
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
-import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
-import 'package:snip_fair/core/utils/input/otp_input.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/authentication/verify_email/cubit/verify_email_cubit.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/utils/input/otp_input.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart' show AppCubit;
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/features/authentication/verify_email/cubit/verify_email_cubit.dart';
 
 @RoutePage()
-class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
-    implements AutoRouteWrapper {
+class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit> implements AutoRouteWrapper {
   const VerifyEmailScreen({
     required this.email,
     this.asStylist = false,
@@ -110,7 +109,9 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
                             height: 60.h,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: AppColors.primaryColor, width: 2.w),
+                                color: AppColors.primaryColor,
+                                width: 2.w,
+                              ),
                               borderRadius: BorderRadius.circular(16).r,
                             ),
                           ),
@@ -155,20 +156,18 @@ class VerifyEmailScreen extends BaseStatelessPage<VerifyEmailCubit>
 }
 
 class ResendVerificationButton extends StatefulWidget {
-  final int cooldownSeconds;
-  final String label;
-  final String email;
-
   const ResendVerificationButton({
     this.cooldownSeconds = 30,
     this.label = 'Resend code',
     required this.email,
     Key? key,
   }) : super(key: key);
+  final int cooldownSeconds;
+  final String label;
+  final String email;
 
   @override
-  State<ResendVerificationButton> createState() =>
-      _ResendVerificationButtonState();
+  State<ResendVerificationButton> createState() => _ResendVerificationButtonState();
 }
 
 class _ResendVerificationButtonState extends State<ResendVerificationButton> {
@@ -196,9 +195,7 @@ class _ResendVerificationButtonState extends State<ResendVerificationButton> {
     setState(() => _loading = true);
 
     try {
-      final maybeFuture = context
-          .read<VerifyEmailCubit>()
-          .resendVerificationEmail(widget.email);
+      final maybeFuture = context.read<VerifyEmailCubit>().resendVerificationEmail(widget.email);
       await maybeFuture;
       // start cooldown after attempting resend
       if (mounted) _startCooldown();
@@ -212,9 +209,7 @@ class _ResendVerificationButtonState extends State<ResendVerificationButton> {
 
   @override
   Widget build(BuildContext context) {
-    final text = _loading
-        ? null
-        : (_remaining > 0 ? 'Resend in $_remaining s' : widget.label);
+    final text = _loading ? null : (_remaining > 0 ? 'Resend in $_remaining s' : widget.label);
 
     return TextButton(
       onPressed: (_loading || _remaining > 0) ? null : _onPressed,
@@ -222,7 +217,7 @@ class _ResendVerificationButtonState extends State<ResendVerificationButton> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       child: _loading
-          ? SizedBox(
+          ? const SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(

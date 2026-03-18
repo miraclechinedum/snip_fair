@@ -1,22 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'slot.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
 
 part 'working_hour.g.dart';
 
 @JsonSerializable()
 class WorkingHour {
-  int? id;
-  @JsonKey(name: 'user_id')
-  String? userId;
-  String? day;
-  bool? available;
-  @JsonKey(name: 'created_at')
-  DateTime? createdAt;
-  @JsonKey(name: 'updated_at')
-  DateTime? updatedAt;
-  List<Slot>? slots;
-
   WorkingHour({
     this.id,
     this.userId,
@@ -30,6 +18,16 @@ class WorkingHour {
   factory WorkingHour.fromJson(Map<String, dynamic> json) {
     return _$WorkingHourFromJson(json);
   }
+  int? id;
+  @JsonKey(name: 'user_id')
+  String? userId;
+  String? day;
+  bool? available;
+  @JsonKey(name: 'created_at')
+  DateTime? createdAt;
+  @JsonKey(name: 'updated_at')
+  DateTime? updatedAt;
+  List<Slot>? slots;
 
   Map<String, dynamic> toJson() => _$WorkingHourToJson(this);
 }

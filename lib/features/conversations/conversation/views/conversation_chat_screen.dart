@@ -89,7 +89,7 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
 
     // Determine the other person's ID regardless of which params were passed.
     // Pick whichever of recipient/initiator doesn't belong to the current user.
-    final int? otherUserId = () {
+    final otherUserId = () {
       final recipientId = widget.recipient?.id;
       final initiatorId = widget.initiator?.id;
       if (recipientId != null && recipientId.toString() != _currentUserId) {

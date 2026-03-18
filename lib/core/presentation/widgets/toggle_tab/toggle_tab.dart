@@ -1,10 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 // You have generated a new plugin project without
 // specifying the `--platforms` flag. A plugin project supports no platforms is generated.
 // To add platforms, run `flutter create -t plugin --platforms <platforms> .` under the same
 // directory. You can also find a detailed instruction on how to add platforms in the `pubspec.yaml` at https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms.
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 part 'button_tab.dart';
 part 'data_tab.dart';
@@ -33,9 +32,10 @@ class ToggleTab extends StatefulWidget {
   /// [isShadowEnable] is optional to set the shadow of the widget.
   /// [isInnerShadowEnable] is optional to set the shadow of the selected tab.
   const ToggleTab({
-    super.key,
     required this.dataTabs,
     required this.selectedLabelIndex,
+    required this.selectedIndex,
+    super.key,
     this.selectedTextStyle,
     this.unSelectedTextStyle,
     this.height,
@@ -46,7 +46,6 @@ class ToggleTab extends StatefulWidget {
     this.borderRadius,
     this.begin,
     this.end,
-    required this.selectedIndex,
     this.isScroll = true,
     this.marginSelected,
     this.isShadowEnable = true,
@@ -90,7 +89,7 @@ class _ToggleTabState extends State<ToggleTab> {
 
     _updateSelected();
 
-    _labelsNotifier.addListener(() => _updateSelected());
+    _labelsNotifier.addListener(_updateSelected);
   }
 
   /// Update selected when selectedItem changed
@@ -121,7 +120,7 @@ class _ToggleTabState extends State<ToggleTab> {
     /// Show text error if length less 1
     return widget.dataTabs.length <= 1
         ? const Text(
-            "Error : Label should >1",
+            'Error : Label should >1',
             style: TextStyle(
               color: Colors.redAccent,
               fontWeight: FontWeight.bold,
@@ -185,8 +184,7 @@ class _ToggleTabState extends State<ToggleTab> {
                         /// If unSelectedBackground is not null
                         /// We check again if it's length only 1
                         /// Using same color for gradients
-                        unSelectedColors: widget.unSelectedBackgroundColors !=
-                                null
+                        unSelectedColors: widget.unSelectedBackgroundColors != null
                             ? (widget.unSelectedBackgroundColors!.length == 1
                                 ? [
                                     widget.unSelectedBackgroundColors![0],
@@ -205,8 +203,8 @@ class _ToggleTabState extends State<ToggleTab> {
                         isInnerShadowEnable: widget.isInnerShadowEnable,
 
                         /// default selectedTextStyle is Theme.of(context).textTheme.bodyMedium
-                        selectedTextStyle: widget.selectedTextStyle ??
-                            Theme.of(context).textTheme.bodyMedium,
+                        selectedTextStyle:
+                            widget.selectedTextStyle ?? Theme.of(context).textTheme.bodyMedium,
 
                         /// default unSelectedTextStyle is Theme.of(context).textTheme.bodyMedium
                         unSelectedTextStyle: widget.unSelectedTextStyle ??
@@ -238,7 +236,7 @@ class _ToggleTabState extends State<ToggleTab> {
                               ],
                         onPressed: () {
                           try {
-                            for (int x = 0; x < labels.length; x++) {
+                            for (var x = 0; x < labels.length; x++) {
                               if (labels[index] == labels[x]) {
                                 labels[x].isSelected = true;
 
@@ -250,7 +248,7 @@ class _ToggleTabState extends State<ToggleTab> {
                             }
                           } catch (e) {
                             if (kDebugMode) {
-                              print("err : $e");
+                              print('err : $e');
                             }
                           }
                         },

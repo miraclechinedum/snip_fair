@@ -1,25 +1,25 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/app_extensions.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
-import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
 @RoutePage()
 class SellerProfileManagementScreen extends StatelessWidget {
@@ -51,14 +51,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
 
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
-                final profileCompleteness =
-                    state.profileDetails.data?.profileCompleteness;
+                final profileCompleteness = state.profileDetails.data?.profileCompleteness;
 
                 if (profileCompleteness == null) return;
 
-                final isComplete =
-                    AppHelper.getAllIncompleteSteps(profileCompleteness)
-                        .isEmpty;
+                final isComplete = AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
 
                 if (!isComplete) {
                   AppHelper.checkAndNavigateProfileCompletion(
@@ -91,14 +88,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
               await context.read<SellerProfileMgtCubit>().getProfileDetails();
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
-                final profileCompleteness =
-                    state.profileDetails.data?.profileCompleteness;
+                final profileCompleteness = state.profileDetails.data?.profileCompleteness;
 
                 if (profileCompleteness == null) return;
 
-                final isComplete =
-                    AppHelper.getAllIncompleteSteps(profileCompleteness)
-                        .isEmpty;
+                final isComplete = AppHelper.getAllIncompleteSteps(profileCompleteness).isEmpty;
                 if (!isComplete) {
                   AppHelper.checkAndNavigateProfileCompletion(
                     context,
@@ -142,16 +136,14 @@ class SellerProfileManagementScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             children: [
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                                 builder: (context, state) {
-                                  final profileCompleteness = state
-                                      .profileDetails.data?.profileCompleteness;
+                                  final profileCompleteness =
+                                      state.profileDetails.data?.profileCompleteness;
                                   if (profileCompleteness == null) {
                                     return const SizedBox();
                                   }
-                                  final isProfileComplete =
-                                      AppHelper.isStylistProfileComplete(
+                                  final isProfileComplete = AppHelper.isStylistProfileComplete(
                                     profileCompleteness,
                                   );
                                   if (isProfileComplete) {
@@ -165,8 +157,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   );
                                 },
                               ),
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                                 builder: (context, state) {
                                   return Container(
                                     decoration: BoxDecoration(
@@ -183,30 +174,23 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                     padding: const EdgeInsets.all(12),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: AppColors.primaryColor
-                                            .withValues(alpha: 0.05),
-                                        borderRadius:
-                                            BorderRadius.circular(8).r,
+                                        color: AppColors.primaryColor.withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(8).r,
                                       ),
                                       padding: const EdgeInsets.all(12),
                                       child: Row(
                                         children: [
                                           Expanded(
                                             child: AppText(
-                                              text: state.profileDetails.data
-                                                      ?.profileLink ??
-                                                  '',
+                                              text: state.profileDetails.data?.profileLink ?? '',
                                             ),
                                           ),
                                           GestureDetector(
                                             onTap: () {
-                                              if (state.profileDetails.data
-                                                      ?.profileLink !=
-                                                  null) {
+                                              if (state.profileDetails.data?.profileLink != null) {
                                                 AppHelper.copyToClipboard(
                                                   context,
-                                                  state.profileDetails.data!
-                                                      .profileLink!,
+                                                  state.profileDetails.data!.profileLink!,
                                                 );
                                               }
                                             },
@@ -222,25 +206,21 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 },
                               ),
                               24.verticalSpace,
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                                 builder: (context, state) {
                                   return Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       color: Colors.white,
-                                      border:
-                                          Border.all(color: AppColors.grey1),
+                                      border: Border.all(color: AppColors.grey1),
                                     ),
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             const AppText(
                                               text: 'Services & Pricing',
@@ -259,69 +239,53 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                               },
                                               style: TextButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
+                                                  borderRadius: BorderRadius.circular(
                                                     8,
                                                   ),
                                                 ),
-                                                textStyle: AppTextStyle.caption
-                                                    .copyWith(
+                                                textStyle: AppTextStyle.caption.copyWith(
                                                   fontWeight: FontWeight.w600,
                                                 ),
-                                                foregroundColor:
-                                                    AppColors.black,
-                                                backgroundColor:
-                                                    const Color(0xffF6F7F8),
+                                                foregroundColor: AppColors.black,
+                                                backgroundColor: const Color(0xffF6F7F8),
                                               ),
                                               label: const Text('Manage All'),
                                             ),
                                           ],
                                         ),
                                         const Divider(),
-                                        if (state.profileDetails.data
-                                                ?.portfolios !=
-                                            null)
+                                        if (state.profileDetails.data?.portfolios != null)
                                           SizedBox(
                                             height: 100.h,
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
                                               itemBuilder: (context, index) {
-                                                final portfolio = state
-                                                    .profileDetails
-                                                    .data!
-                                                    .portfolios![index];
+                                                final portfolio =
+                                                    state.profileDetails.data!.portfolios![index];
                                                 return Container(
                                                   width: 200.w,
                                                   decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(8)
-                                                            .r,
+                                                    borderRadius: BorderRadius.circular(8).r,
                                                     border: Border.all(
                                                       color: AppColors.grey300,
                                                     ),
                                                   ),
-                                                  padding:
-                                                      const EdgeInsets.all(16)
-                                                          .r,
+                                                  padding: const EdgeInsets.all(16).r,
                                                   child: Column(
                                                     children: [
                                                       Row(
                                                         children: [
                                                           Expanded(
                                                             child: AppText(
-                                                              text: portfolio
-                                                                      .title ??
-                                                                  'N/A',
+                                                              text: portfolio.title ?? 'N/A',
                                                               maxLines: 1,
                                                             ),
                                                           ),
                                                           GestureDetector(
                                                             onTap: () {
-                                                              context.router
-                                                                  .push(
+                                                              context.router.push(
                                                                 SellerWorkRoute(
-                                                                  workItem: WorkItem
-                                                                      .fromPortfolio(
+                                                                  workItem: WorkItem.fromPortfolio(
                                                                     portfolio,
                                                                   ),
                                                                 ),
@@ -329,8 +293,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                             },
                                                             child: const Icon(
                                                               Iconsax.edit_2,
-                                                              color:
-                                                                  Colors.blue,
+                                                              color: Colors.blue,
                                                               size: 15,
                                                             ),
                                                           ),
@@ -348,28 +311,22 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                           Expanded(
                                                             child: FittedBox(
                                                               child: AppText(
-                                                                text: portfolio
-                                                                    .price!
-                                                                    .formatAmount(),
-                                                                color: AppColors
-                                                                    .primaryColor,
+                                                                text:
+                                                                    portfolio.price!.formatAmount(),
+                                                                color: AppColors.primaryColor,
                                                                 fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
+                                                                fontWeight: FontWeight.w600,
                                                               ),
                                                             ),
                                                           ),
                                                           20.horizontalSpace,
                                                           const Icon(
-                                                            Icons
-                                                                .access_time_outlined,
+                                                            Icons.access_time_outlined,
                                                             size: 15,
                                                           ),
                                                           5.horizontalSpace,
                                                           AppText(
-                                                            text:
-                                                                '${portfolio.duration}',
+                                                            text: '${portfolio.duration}',
                                                             fontSize: 10,
                                                           ),
                                                         ],
@@ -378,15 +335,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                   ),
                                                 );
                                               },
-                                              separatorBuilder:
-                                                  (context, index) =>
-                                                      12.horizontalSpace,
-                                              itemCount: state
-                                                      .profileDetails
-                                                      .data!
-                                                      .portfolios
-                                                      ?.length ??
-                                                  0,
+                                              separatorBuilder: (context, index) =>
+                                                  12.horizontalSpace,
+                                              itemCount:
+                                                  state.profileDetails.data!.portfolios?.length ??
+                                                      0,
                                             ),
                                           )
                                         else
@@ -397,21 +350,18 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 },
                               ),
                               24.verticalSpace,
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                                 builder: (context, state) {
                                   return Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       color: Colors.white,
-                                      border:
-                                          Border.all(color: AppColors.grey1),
+                                      border: Border.all(color: AppColors.grey1),
                                     ),
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         const AppText(
                                           text: 'About Me',
@@ -420,9 +370,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                         ),
                                         12.verticalSpace,
                                         AppText(
-                                          text: state.profileDetails.data?.user
-                                                  ?.bio ??
-                                              '',
+                                          text: state.profileDetails.data?.user?.bio ?? '',
                                         ),
                                       ],
                                     ),
@@ -453,14 +401,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       color: AppColors.grey3,
                                     ),
                                     12.verticalSpace,
-                                    BlocListener<SellerProfileMgtCubit,
-                                        SellerProfileMgtState>(
+                                    BlocListener<SellerProfileMgtCubit, SellerProfileMgtState>(
                                       listenWhen: (previous, current) =>
-                                          previous.deleteAccountState !=
-                                          current.deleteAccountState,
+                                          previous.deleteAccountState != current.deleteAccountState,
                                       listener: (context, state) {
-                                        if (state
-                                            .deleteAccountState.hasSuccess) {
+                                        if (state.deleteAccountState.hasSuccess) {
                                           Fluttertoast.showToast(
                                             msg: 'Account deleted successfully',
                                           );
@@ -478,8 +423,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                   'Are you sure you want to delete your account? This action cannot be undone.',
                                               onConfirmed: (ctx) {
                                                 context
-                                                    .read<
-                                                        SellerProfileMgtCubit>()
+                                                    .read<SellerProfileMgtCubit>()
                                                     .deleteAccount();
                                               },
                                             ),
@@ -488,13 +432,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                         style: TextButton.styleFrom(
                                           backgroundColor: Colors.red,
                                           foregroundColor: Colors.white,
-                                          textStyle:
-                                              AppTextStyle.body2.copyWith(
+                                          textStyle: AppTextStyle.body2.copyWith(
                                             fontWeight: FontWeight.w600,
                                           ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
                                         ),
                                         child: const Text('DELETE ACCOUNT'),
@@ -554,9 +496,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => context
-                        .read<SellerProfileMgtCubit>()
-                        .pickAndUploadBanner(),
+                    onTap: () => context.read<SellerProfileMgtCubit>().pickAndUploadBanner(),
                     child: Stack(
                       children: [
                         Container(
@@ -566,19 +506,16 @@ class SellerProfileManagementScreen extends StatelessWidget {
                           ),
                           child: state.updateBannerState.isLoading
                               ? const LinearProgressIndicator()
-                              : state.profileDetails.data?.user?.stylistProfile
-                                          ?.banner !=
-                                      null
+                              : state.profileDetails.data?.user?.stylistProfile?.banner != null
                                   ? CachedNetworkImage(
-                                      imageUrl: state.profileDetails.data?.user
-                                              ?.stylistProfile?.banner
+                                      imageUrl: state
+                                              .profileDetails.data?.user?.stylistProfile?.banner
                                               ?.completeImagePath() ??
                                           '',
                                       fit: BoxFit.cover,
                                       width: double.infinity,
                                       height: 150.h,
-                                      placeholder: (context, url) =>
-                                          const LinearProgressIndicator(
+                                      placeholder: (context, url) => const LinearProgressIndicator(
                                         valueColor: AlwaysStoppedAnimation(
                                           Colors.grey,
                                         ),
@@ -591,9 +528,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                           right: 12,
                           child: GestureDetector(
                             onTap: () {
-                              context
-                                  .read<SellerProfileMgtCubit>()
-                                  .pickAndUploadBanner();
+                              context.read<SellerProfileMgtCubit>().pickAndUploadBanner();
                             },
                             child: Container(
                               width: 24.w,
@@ -624,9 +559,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              context
-                                  .read<SellerProfileMgtCubit>()
-                                  .pickAndUploadAvatar();
+                              context.read<SellerProfileMgtCubit>().pickAndUploadAvatar();
                             },
                             child: Stack(
                               children: [
@@ -641,8 +574,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   ),
                                   child: SellerProfileAvatar(
                                     profileDetails: state.profileDetails.data,
-                                    isLoading:
-                                        state.updateAvatarState.isLoading,
+                                    isLoading: state.updateAvatarState.isLoading,
                                   ),
                                 ),
                                 Positioned(
@@ -650,9 +582,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   right: 0,
                                   child: GestureDetector(
                                     onTap: () {
-                                      context
-                                          .read<SellerProfileMgtCubit>()
-                                          .pickAndUploadAvatar();
+                                      context.read<SellerProfileMgtCubit>().pickAndUploadAvatar();
                                     },
                                     child: Container(
                                       width: 24.w,
@@ -677,8 +607,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                             width: 150.w,
                             child: CustomButton(
                               onPressed: () {
-                                context.router
-                                    .push(const SellerPersonalDetailsRoute());
+                                context.router.push(const SellerPersonalDetailsRoute());
                               },
                               title: 'Edit Profile',
                             ),
@@ -705,15 +634,13 @@ class SellerProfileManagementScreen extends StatelessWidget {
                             Row(
                               children: [
                                 AppText(
-                                  text: state.profileDetails.data?.user?.name ??
-                                      '',
+                                  text: state.profileDetails.data?.user?.name ?? '',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 10.horizontalSpace,
                                 // ignore: use_if_null_to_convert_nulls_to_bools
-                                if (state.profileDetails.data?.user
-                                        ?.stylistProfile?.status ==
+                                if (state.profileDetails.data?.user?.stylistProfile?.status ==
                                     'verified')
                                   Icon(
                                     Iconsax.verify5,
@@ -722,8 +649,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                               ],
                             ),
                             AppText(
-                              text: state.profileDetails.data?.user
-                                      ?.stylistProfile?.businessName ??
+                              text: state.profileDetails.data?.user?.stylistProfile?.businessName ??
                                   'N/A',
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryColor,
@@ -739,8 +665,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 ),
                                 5.horizontalSpace,
                                 AppText(
-                                  text: state.profileDetails.data?.statistics
-                                          ?.averageRating
+                                  text: state.profileDetails.data?.statistics?.averageRating
                                           ?.toString() ??
                                       '0',
                                   fontSize: 12,
@@ -786,9 +711,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 4.horizontalSpace,
                                 Expanded(
                                   child: AppText(
-                                    text: state.profileDetails.data?.user
-                                            ?.country ??
-                                        '',
+                                    text: state.profileDetails.data?.user?.country ?? '',
                                     color: AppColors.grey3,
                                     maxLines: 1,
                                   ),
@@ -805,9 +728,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 ),
                                 4.horizontalSpace,
                                 AppText(
-                                  text:
-                                      state.profileDetails.data?.user?.phone ??
-                                          '',
+                                  text: state.profileDetails.data?.user?.phone ?? '',
                                   color: AppColors.grey3,
                                 ),
                               ],
@@ -828,8 +749,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
 
 class SellerProfileAvatar extends StatelessWidget {
   const SellerProfileAvatar({
-    super.key,
     required this.profileDetails,
+    super.key,
     this.radius = 30,
     this.isLoading = false,
   });

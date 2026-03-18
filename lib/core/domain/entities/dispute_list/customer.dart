@@ -4,6 +4,38 @@ part 'customer.g.dart';
 
 @JsonSerializable()
 class Customer {
+
+  Customer({
+    this.id,
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.emailVerifiedAt,
+    this.phoneVerifiedAt,
+    this.phone,
+    this.country,
+    this.bio,
+    this.type,
+    this.role,
+    this.avatar,
+    this.lastLoginAt,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.balance,
+    this.isFeatured,
+    this.useLocation,
+    this.subscriptionStatus,
+    this.availability,
+    this.plan,
+    this.stylistProfile,
+  });
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return _$CustomerFromJson(json);
+  }
   int? id;
   String? name;
   @JsonKey(name: 'first_name')
@@ -41,38 +73,6 @@ class Customer {
   String? plan;
   @JsonKey(name: 'stylist_profile')
   dynamic stylistProfile;
-
-  Customer({
-    this.id,
-    this.name,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.emailVerifiedAt,
-    this.phoneVerifiedAt,
-    this.phone,
-    this.country,
-    this.bio,
-    this.type,
-    this.role,
-    this.avatar,
-    this.lastLoginAt,
-    this.status,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.balance,
-    this.isFeatured,
-    this.useLocation,
-    this.subscriptionStatus,
-    this.availability,
-    this.plan,
-    this.stylistProfile,
-  });
-
-  factory Customer.fromJson(Map<String, dynamic> json) {
-    return _$CustomerFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$CustomerToJson(this);
 }

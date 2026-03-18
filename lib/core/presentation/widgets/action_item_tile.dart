@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../theme/theme.dart';
-import 'app_text.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 
 class ActionItemTileWidget extends StatelessWidget {
   const ActionItemTileWidget({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
     required this.icon,
-  }) : super(key: key);
+  });
 
   final String label;
   final VoidCallback onPressed;
@@ -24,8 +23,9 @@ class ActionItemTileWidget extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-            color: AppColors.iconLemon.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12)),
+          color: AppColors.iconLemon.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
