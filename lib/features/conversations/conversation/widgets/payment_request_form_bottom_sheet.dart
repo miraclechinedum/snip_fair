@@ -12,6 +12,7 @@ void showPaymentRequestForm(
   BuildContext context, {
   required int recipientId,
   required String conversationId,
+  VoidCallback? onSuccess,
 }) {
   showModalBottomSheet<void>(
     context: context,
@@ -22,6 +23,7 @@ void showPaymentRequestForm(
       child: _PaymentRequestFormSheet(
         recipientId: recipientId,
         conversationId: conversationId,
+        onSuccess: onSuccess,
       ),
     ),
   );
@@ -55,10 +57,12 @@ class _PaymentRequestFormSheet extends StatefulWidget {
   const _PaymentRequestFormSheet({
     required this.recipientId,
     required this.conversationId,
+    this.onSuccess,
   });
 
   final int recipientId;
   final String conversationId;
+  final VoidCallback? onSuccess;
 
   @override
   State<_PaymentRequestFormSheet> createState() => _PaymentRequestFormSheetState();
@@ -128,6 +132,7 @@ class _PaymentRequestFormSheetState extends State<_PaymentRequestFormSheet> {
     if (state.createPaymentRequestState.hasSuccess) {
       cubit.resetCreatePaymentRequestState();
       Navigator.of(context).pop();
+      widget.onSuccess?.call();
     }
   }
 

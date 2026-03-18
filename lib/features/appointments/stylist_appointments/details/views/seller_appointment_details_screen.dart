@@ -17,6 +17,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/features/stylists/onboard/views/seller_business_id_verify.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
+import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_form_bottom_sheet.dart';
 import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart';
 
@@ -28,6 +29,13 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
   });
 
   final String? appointmentId;
+
+  void _navigateToConversation(BuildContext context, String customerId) {
+    context.read<ConversationsCubit>().startConversation(customerId).then((conversation) {
+      if (!context.mounted || conversation == null) return;
+      context.router.push(ConversationListRoute(chatConversation: conversation));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +49,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
             previous.updateAppointmentState != current.updateAppointmentState,
         listener: (context, state) {
           if (state.updateAppointmentState.hasError) {
-            AppHelper.showAppDialog(
+            AppHelper.showAppDialog<void>(
               context,
               OnFailDialogContent(
                 subtext: (state.updateAppointmentState.error! as RemoteException)
@@ -416,7 +424,46 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
                                 .fetchAppointmentDetailsState.data!.status.isPendingStatus) ...[
                               CustomButton(
                                 title: 'Accept Appointment',
-                                onPressed: cubit.acceptAppointment,
+                                isLoading: state.updateAppointmentState.isLoading,
+                                onPressed: state.updateAppointmentState.isLoading
+                                    ? null
+                                    : () async {
+                                        final wantsPayment = await showDialog<bool>(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                            title: const Text('Request Additional Payment?'),
+                                            content: const Text(
+                                              'Would you like to send a payment request to your customer?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(false),
+                                                child: const Text('No'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(true),
+                                                child: const Text('Yes'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (wantsPayment == null || !context.mounted) return;
+                                        await cubit.acceptAppointment();
+                                        if (!context.mounted) return;
+                                        if (wantsPayment &&
+                                            cubit.state.updateAppointmentState.hasSuccess) {
+                                          showPaymentRequestForm(
+                                            context,
+                                            recipientId:
+                                                int.parse(appointment.customerId!.toString()),
+                                            conversationId: '',
+                                            onSuccess: () => _navigateToConversation(
+                                              context,
+                                              appointment.customerId!.toString(),
+                                            ),
+                                          );
+                                        }
+                                      },
                               ),
                               12.verticalSpace,
                               CustomButton(
@@ -439,6 +486,19 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
                                     onSubmit: cubit.confirmAppointment,
                                   );
                                 },
+                              ),
+                              12.verticalSpace,
+                              CustomButton(
+                                title: 'Request Additional Payment',
+                                onPressed: () => showPaymentRequestForm(
+                                  context,
+                                  recipientId: int.parse(appointment.customerId!.toString()),
+                                  conversationId: '',
+                                  onSuccess: () => _navigateToConversation(
+                                    context,
+                                    appointment.customerId!.toString(),
+                                  ),
+                                ),
                               ),
                               12.verticalSpace,
                             ],
