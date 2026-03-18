@@ -39,7 +39,7 @@ CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) => 
           ? null
           : Customer.fromJson(json['customer'] as Map<String, dynamic>),
       distanceFromStylist: json['distance_from_stylist'] as String?,
-      tipAmount: (json['tip_amount'] as num?)?.toDouble(),
+      tipAmount: json['tip_amount'] == null ? null : double.parse(json['tip_amount'].toString()),
       tippedAt: json['tipped_at'] == null ? null : DateTime.parse(json['tipped_at'] as String),
     );
 
