@@ -105,24 +105,29 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                 topRight: Radius.circular(16.r),
               ),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.request_quote_outlined,
-                  color: AppColors.primaryColor,
-                  size: 20.sp,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    'Payment Request',
-                    style: AppTextStyle.subTitle2.copyWith(
+                Row(
+                  children: [
+                    Icon(
+                      Icons.request_quote_outlined,
                       color: AppColors.primaryColor,
-                      fontWeight: FontWeight.w600,
+                      size: 20.sp,
                     ),
-                  ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        'Payment Request',
+                        style: AppTextStyle.subTitle2.copyWith(
+                          color: AppColors.primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _StatusChip(status: pr.status),
+                  ],
                 ),
-                _StatusChip(status: pr.status),
               ],
             ),
           ),
@@ -140,6 +145,16 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                     color: AppColors.blackShade1,
                   ),
                 ),
+                if (pr.bookingId != null) ...[
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Booking ID: ${pr.bookingId}',
+                    style: AppTextStyle.caption.copyWith(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 if (pr.description != null && pr.description!.isNotEmpty) ...[
                   SizedBox(height: 4.h),
                   Text(

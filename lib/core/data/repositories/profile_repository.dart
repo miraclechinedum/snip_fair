@@ -257,6 +257,7 @@ abstract class ProfileRepository {
     required String title,
     required List<Map<String, dynamic>> items,
     String? description,
+    int? appointmentId,
     int? expiresInHours,
   });
 
@@ -705,6 +706,7 @@ class ProfileRepoImpl implements ProfileRepository {
     required String title,
     required List<Map<String, dynamic>> items,
     String? description,
+    int? appointmentId,
     int? expiresInHours,
   }) =>
       _remoteSource.createPaymentRequest(
@@ -712,6 +714,7 @@ class ProfileRepoImpl implements ProfileRepository {
         title: title,
         description: description,
         items: items,
+        appointmentId: appointmentId,
         expiresInHours: expiresInHours,
       );
 

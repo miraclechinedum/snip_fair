@@ -457,6 +457,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
                                             recipientId:
                                                 int.parse(appointment.customerId!.toString()),
                                             conversationId: '',
+                                            appointmentId: appointment.id,
                                             onSuccess: () => _navigateToConversation(
                                               context,
                                               appointment.customerId!.toString(),
@@ -494,6 +495,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRout
                                   context,
                                   recipientId: int.parse(appointment.customerId!.toString()),
                                   conversationId: '',
+                                  appointmentId: appointment.id,
                                   onSuccess: () => _navigateToConversation(
                                     context,
                                     appointment.customerId!.toString(),

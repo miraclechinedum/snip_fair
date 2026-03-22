@@ -1596,7 +1596,9 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   Future<ApiResult<PaymentRequest>> createPaymentRequest({
     required int recipientId,
     required String title,
-    required List<Map<String, dynamic>> items, String? description,
+    required List<Map<String, dynamic>> items,
+    String? description,
+    int? appointmentId,
     int? expiresInHours,
   }) {
     return run(() async {
@@ -1608,6 +1610,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           'title': title,
           if (description != null) 'description': description,
           'items': items,
+          if (appointmentId != null) 'appointment_id': appointmentId,
           if (expiresInHours != null) 'expires_in_hours': expiresInHours,
         },
       );
@@ -1626,6 +1629,8 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.paymentRequests}/$id',
       );
+      // ignore: avoid_print
+      print('PaymentRequest response: ${response.data}');
       return ApiResult.success(
         data: PaymentRequest.fromJson(
           response.data!['data'] as Map<String, dynamic>,

@@ -306,6 +306,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     required String title,
     required List<Map<String, dynamic>> items,
     String? description,
+    int? appointmentId,
     int? expiresInHours,
   }) async {
     emit(
@@ -318,6 +319,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
       title: title,
       description: description,
       items: items,
+      appointmentId: appointmentId,
       expiresInHours: expiresInHours,
     );
     result.when(

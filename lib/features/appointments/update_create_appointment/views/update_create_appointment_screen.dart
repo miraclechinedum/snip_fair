@@ -641,11 +641,6 @@ class BookingSummary extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                       12.verticalSpace,
-                      const AppText(
-                        text: 'Thank you for using Snipfair',
-                        textAlign: TextAlign.center,
-                      ),
-                      12.verticalSpace,
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
@@ -827,62 +822,59 @@ class BookingSummary extends StatelessWidget {
                 CustomButton(
                   title: 'Rate this service',
                   onPressed: () {
+                    final cubit = context.read<UpdateCreateAppointmentCubit>();
+                    final appointment = state.fetchAppointmentState.data!;
                     AppHelper.showCustomModalBottomSheet<void>(
                       context: context,
                       modal: SubmitReviewBottomSheet(
-                        onSubmit: (rating, comment) {
-                          return context.read<UpdateCreateAppointmentCubit>().reviewAppointment(
-                                rating: rating,
-                                comment: comment,
-                              );
+                        onSubmit: (rating, comment) =>
+                            cubit.reviewAppointment(rating: rating, comment: comment),
+                        onSuccess: () {
+                          final freshAppointment = cubit.state.fetchAppointmentState.data!;
+                          AppHelper.showAppDialog<void>(
+                            context,
+                            _ReviewSuccessDialog(
+                              onTipPressed: freshAppointment.hasBeenTipped
+                                  ? null
+                                  : () {
+                                      final walletBalance = (context
+                                                  .read<CustomerProfileMgtCubit>()
+                                                  .state
+                                                  .walletState
+                                                  .data
+                                                  ?.balance ??
+                                              0.0)
+                                          .toDouble();
+                                      AppHelper.showCustomModalBottomSheet<void>(
+                                        context: context,
+                                        modal: TipBottomSheet(
+                                          walletBalance: walletBalance,
+                                          onSubmit: (amount) async {
+                                            await cubit.tipAppointment(amount);
+                                            final tipState = cubit.state.tipAppointmentState;
+                                            if (tipState.hasSuccess) {
+                                              AppHelper.showSnackBar(
+                                                context,
+                                                message: tipState.data?.message ??
+                                                    'Tip sent successfully. Thank you for appreciating your stylist!',
+                                              );
+                                              context.read<CustomerProfileMgtCubit>().getWallet();
+                                            } else if (tipState.hasError) {
+                                              AppHelper.showSnackBar(
+                                                context,
+                                                message: 'Failed to send tip. Please try again.',
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        isDarkMode: false,
+                                      );
+                                    },
+                            ),
+                          );
                         },
                       ),
                       isDarkMode: false,
-                    );
-                  },
-                ),
-              ],
-              if (state.fetchAppointmentState.hasSuccess &&
-                  (state.fetchAppointmentState.data!.status.isConfirmedStatus ||
-                      state.fetchAppointmentState.data!.status.isCompletedStatus) &&
-                  !state.fetchAppointmentState.data!.hasBeenTipped) ...[
-                12.verticalSpace,
-                BlocConsumer<UpdateCreateAppointmentCubit, UpdateCreateAppointmentState>(
-                  listenWhen: (previous, current) =>
-                      previous.tipAppointmentState != current.tipAppointmentState,
-                  listener: (context, state) {
-                    if (state.tipAppointmentState.hasSuccess) {
-                      final msg = state.tipAppointmentState.data?.message ??
-                          'Tip sent successfully. Thank you for appreciating your stylist!';
-                      AppHelper.showSnackBar(context, message: msg);
-                      context.read<CustomerProfileMgtCubit>().getWallet();
-                    } else if (state.tipAppointmentState.hasError) {
-                      AppHelper.showSnackBar(
-                        context,
-                        message: 'Failed to send tip. Please try again.',
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    final profileState = context.read<CustomerProfileMgtCubit>().state;
-                    final walletBalance = profileState.walletState.data?.balance ?? 0.0;
-                    return CustomButton(
-                      title: 'Tip Your Stylist',
-                      isLoading: state.tipAppointmentState.isLoading,
-                      onPressed: state.tipAppointmentState.isLoading
-                          ? null
-                          : () {
-                              AppHelper.showCustomModalBottomSheet<void>(
-                                context: context,
-                                modal: TipBottomSheet(
-                                  walletBalance: walletBalance.toDouble(),
-                                  onSubmit: (amount) => context
-                                      .read<UpdateCreateAppointmentCubit>()
-                                      .tipAppointment(amount),
-                                ),
-                                isDarkMode: false,
-                              );
-                            },
                     );
                   },
                 ),
@@ -1480,13 +1472,64 @@ class PaymentSummaryWidget extends StatelessWidget {
   }
 }
 
+class _ReviewSuccessDialog extends StatelessWidget {
+  const _ReviewSuccessDialog({this.onTipPressed});
+
+  final VoidCallback? onTipPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Iconsax.tick_square, size: 64, color: Color(0xff008000)),
+          16.verticalSpace,
+          const AppText(
+            text: 'Thank you for your feedback!',
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            textAlign: TextAlign.center,
+          ),
+          8.verticalSpace,
+          const AppText(
+            text: 'Your review has been submitted.',
+            color: AppColors.grey3,
+            textAlign: TextAlign.center,
+          ),
+          24.verticalSpace,
+          if (onTipPressed != null) ...[
+            CustomButton(
+              title: 'Tip Your Stylist',
+              onPressed: () {
+                Navigator.of(context).pop();
+                onTipPressed!();
+              },
+            ),
+            12.verticalSpace,
+          ],
+          CustomButton(
+            title: 'Close',
+            gradient: null,
+            background: const Color(0xff374757),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class SubmitReviewBottomSheet extends StatefulWidget {
   const SubmitReviewBottomSheet({
     required this.onSubmit,
+    this.onSuccess,
     super.key,
   });
 
   final Future<void> Function(int rating, String comment) onSubmit;
+  final VoidCallback? onSuccess;
 
   @override
   State<SubmitReviewBottomSheet> createState() => _SubmitReviewBottomSheetState();
@@ -1522,7 +1565,11 @@ class _SubmitReviewBottomSheetState extends State<SubmitReviewBottomSheet> {
     setState(() => _isSubmitting = true);
     try {
       await widget.onSubmit(_rating, _comment.trim());
-      if (mounted) Navigator.of(context).pop(true);
+      final onSuccess = widget.onSuccess;
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        onSuccess?.call();
+      }
     } catch (e) {
       AppHelper.showSnackBar(
         context,
@@ -1536,49 +1583,54 @@ class _SubmitReviewBottomSheetState extends State<SubmitReviewBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          const ModalPill(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const AppText(
-                  text: 'Leave a Review',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              const ModalPill(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppText(
+                      text: 'Leave a Review',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                    12.verticalSpace,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (i) => _buildStar(i + 1)),
+                    ),
+                    12.verticalSpace,
+                    CustomTextField(
+                      label: 'Write a comment (optional)',
+                      onChanged: (v) => _comment = v,
+                      maxLines: 4,
+                    ),
+                    16.verticalSpace,
+                    CustomButton(
+                      title: 'Submit Review',
+                      isLoading: _isSubmitting,
+                      onPressed: _isSubmitting ? null : _handleSubmit,
+                    ),
+                    12.verticalSpace,
+                    CustomButton(
+                      title: 'Cancel',
+                      onPressed: () => Navigator.of(context).pop(false),
+                      gradient: null,
+                      background: const Color(0xff374757),
+                    ),
+                  ],
                 ),
-                12.verticalSpace,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(5, (i) => _buildStar(i + 1)),
-                ),
-                12.verticalSpace,
-                CustomTextField(
-                  label: 'Write a comment (optional)',
-                  onChanged: (v) => _comment = v,
-                  maxLines: 4,
-                ),
-                16.verticalSpace,
-                CustomButton(
-                  title: 'Submit Review',
-                  isLoading: _isSubmitting,
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                ),
-                12.verticalSpace,
-                CustomButton(
-                  title: 'Cancel',
-                  onPressed: () => Navigator.of(context).pop(false),
-                  gradient: null,
-                  background: const Color(0xff374757),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

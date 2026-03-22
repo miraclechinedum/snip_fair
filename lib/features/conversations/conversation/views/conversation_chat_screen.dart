@@ -117,7 +117,7 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
               ? [
                   IconButton(
                     tooltip: 'Request Payment',
-                    icon: const Icon(Icons.add_circle_outline),
+                    icon: const Icon(Icons.attach_money),
                     onPressed: () => showPaymentRequestForm(
                       context,
                       recipientId: otherUserId,

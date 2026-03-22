@@ -66,6 +66,7 @@ class PaymentRequest {
     this.conversationId,
     this.messageId,
     this.appointmentId,
+    this.bookingId,
     this.requester,
     this.payer,
     this.title,
@@ -95,6 +96,8 @@ class PaymentRequest {
   int? messageId;
   @JsonKey(name: 'appointment_id')
   int? appointmentId;
+  @JsonKey(name: 'booking_id')
+  String? bookingId;
   PaymentRequestUser? requester;
   PaymentRequestUser? payer;
   String? title;

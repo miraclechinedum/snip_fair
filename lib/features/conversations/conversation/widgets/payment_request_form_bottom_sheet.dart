@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/network/api_result.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/labeled_input.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 
@@ -12,6 +16,7 @@ void showPaymentRequestForm(
   BuildContext context, {
   required int recipientId,
   required String conversationId,
+  int? appointmentId,
   VoidCallback? onSuccess,
 }) {
   showModalBottomSheet<void>(
@@ -23,6 +28,7 @@ void showPaymentRequestForm(
       child: _PaymentRequestFormSheet(
         recipientId: recipientId,
         conversationId: conversationId,
+        appointmentId: appointmentId,
         onSuccess: onSuccess,
       ),
     ),
@@ -57,11 +63,13 @@ class _PaymentRequestFormSheet extends StatefulWidget {
   const _PaymentRequestFormSheet({
     required this.recipientId,
     required this.conversationId,
+    this.appointmentId,
     this.onSuccess,
   });
 
   final int recipientId;
   final String conversationId;
+  final int? appointmentId;
   final VoidCallback? onSuccess;
 
   @override
@@ -74,10 +82,38 @@ class _PaymentRequestFormSheetState extends State<_PaymentRequestFormSheet> {
   final _descriptionController = TextEditingController();
   final List<_LineItem> _items = [];
 
+  List<StylistAppointment> _appointments = [];
+  bool _loadingAppointments = true;
+  int? _selectedAppointmentId;
+
   @override
   void initState() {
     super.initState();
     _addItem(); // start with one blank item
+    _selectedAppointmentId = widget.appointmentId;
+    _fetchAppointments();
+  }
+
+  Future<void> _fetchAppointments() async {
+    final repo = getIt<AppointmentRepository>();
+    final result = await repo.getStylistAppointments(
+      customerId: widget.recipientId.toString(),
+      perPage: 50,
+    );
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _appointments = data.data ?? [];
+          _loadingAppointments = false;
+          // Auto-select if only one appointment and none pre-selected
+          if (_selectedAppointmentId == null && _appointments.length == 1) {
+            _selectedAppointmentId = _appointments.first.id;
+          }
+        });
+      case Failure():
+        setState(() => _loadingAppointments = false);
+    }
   }
 
   @override
@@ -124,6 +160,7 @@ class _PaymentRequestFormSheetState extends State<_PaymentRequestFormSheet> {
       description:
           _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       items: _items.map((i) => i.toMap()).toList(),
+      appointmentId: _selectedAppointmentId,
     );
 
     if (!mounted) return;
@@ -204,6 +241,53 @@ class _PaymentRequestFormSheetState extends State<_PaymentRequestFormSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Appointment selector
+                        Text(
+                          'Appointment *',
+                          style: AppTextStyle.body2.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        if (_loadingAppointments)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          DropdownButtonFormField<int>(
+                            value: _selectedAppointmentId,
+                            decoration: InputDecoration(
+                              hintText: 'Select an appointment',
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 12.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                                borderSide: const BorderSide(color: AppColors.grey1),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                                borderSide: const BorderSide(color: AppColors.grey1),
+                              ),
+                            ),
+                            isExpanded: true,
+                            items: _appointments.map((apt) {
+                              final label = [
+                                if (apt.bookingId != null) apt.bookingId.toString(),
+                                if (apt.appointmentDate != null) apt.appointmentDate,
+                              ].join(' — ');
+                              return DropdownMenuItem<int>(
+                                value: apt.id,
+                                child: Text(
+                                  label.isNotEmpty ? label : 'Appointment #${apt.id}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (v) => setState(() => _selectedAppointmentId = v),
+                            validator: (v) => v == null ? 'Please select an appointment' : null,
+                          ),
+                        SizedBox(height: 14.h),
+
                         // Title
                         LabeledInputField(
                           label: 'Title *',
