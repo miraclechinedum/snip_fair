@@ -56,9 +56,9 @@ class SellerProfileManagementScreen extends StatelessWidget {
 
                 if (profileCompleteness == null) return;
 
-                final isComplete =
-                    AppHelper.getAllIncompleteSteps(profileCompleteness)
-                        .isEmpty;
+                final isComplete = AppHelper.getAllIncompleteSteps(
+                  profileCompleteness,
+                ).isEmpty;
 
                 if (!isComplete) {
                   AppHelper.checkAndNavigateProfileCompletion(
@@ -85,9 +85,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
             }
 
             if (state.updateBannerState.hasSuccess) {
-              Fluttertoast.showToast(
-                msg: 'Banner image updated successfully',
-              );
+              Fluttertoast.showToast(msg: 'Banner image updated successfully');
               await context.read<SellerProfileMgtCubit>().getProfileDetails();
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
@@ -96,9 +94,9 @@ class SellerProfileManagementScreen extends StatelessWidget {
 
                 if (profileCompleteness == null) return;
 
-                final isComplete =
-                    AppHelper.getAllIncompleteSteps(profileCompleteness)
-                        .isEmpty;
+                final isComplete = AppHelper.getAllIncompleteSteps(
+                  profileCompleteness,
+                ).isEmpty;
                 if (!isComplete) {
                   AppHelper.checkAndNavigateProfileCompletion(
                     context,
@@ -114,9 +112,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         body: NestedScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              _buildAppBar(context, innerBoxIsScrolled),
-            ];
+            return [_buildAppBar(context, innerBoxIsScrolled)];
           },
           body: SafeArea(
             top: false,
@@ -142,18 +138,22 @@ class SellerProfileManagementScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             children: [
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<
+                                SellerProfileMgtCubit,
+                                SellerProfileMgtState
+                              >(
                                 builder: (context, state) {
                                   final profileCompleteness = state
-                                      .profileDetails.data?.profileCompleteness;
+                                      .profileDetails
+                                      .data
+                                      ?.profileCompleteness;
                                   if (profileCompleteness == null) {
                                     return const SizedBox();
                                   }
                                   final isProfileComplete =
                                       AppHelper.isStylistProfileComplete(
-                                    profileCompleteness,
-                                  );
+                                        profileCompleteness,
+                                      );
                                   if (isProfileComplete) {
                                     return const SizedBox();
                                   }
@@ -165,8 +165,10 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   );
                                 },
                               ),
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<
+                                SellerProfileMgtCubit,
+                                SellerProfileMgtState
+                              >(
                                 builder: (context, state) {
                                   return Container(
                                     decoration: BoxDecoration(
@@ -185,33 +187,72 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         color: AppColors.primaryColor
                                             .withValues(alpha: 0.05),
-                                        borderRadius:
-                                            BorderRadius.circular(8).r,
+                                        borderRadius: BorderRadius.circular(
+                                          8,
+                                        ).r,
                                       ),
                                       padding: const EdgeInsets.all(12),
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            child: AppText(
-                                              text: state.profileDetails.data
-                                                      ?.profileLink ??
-                                                  '',
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                final link = state
+                                                    .profileDetails
+                                                    .data
+                                                    ?.profileLink;
+                                                if (link != null &&
+                                                    link.isNotEmpty) {
+                                                  AppHelper.launchHttp(link);
+                                                }
+                                              },
+                                              child: AppText(
+                                                text:
+                                                    state
+                                                        .profileDetails
+                                                        .data
+                                                        ?.profileLink ??
+                                                    '',
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                           ),
                                           GestureDetector(
                                             onTap: () {
-                                              if (state.profileDetails.data
+                                              if (state
+                                                      .profileDetails
+                                                      .data
                                                       ?.profileLink !=
                                                   null) {
                                                 AppHelper.copyToClipboard(
                                                   context,
-                                                  state.profileDetails.data!
+                                                  state
+                                                      .profileDetails
+                                                      .data!
                                                       .profileLink!,
                                                 );
                                               }
                                             },
                                             child: const Icon(
                                               Iconsax.copy,
+                                              color: AppColors.primaryColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          GestureDetector(
+                                            onTap: () {
+                                              final link = state
+                                                  .profileDetails
+                                                  .data
+                                                  ?.profileLink;
+                                              if (link != null &&
+                                                  link.isNotEmpty) {
+                                                AppHelper.launchHttp(link);
+                                              }
+                                            },
+                                            child: const Icon(
+                                              Icons.open_in_new,
                                               color: AppColors.primaryColor,
                                             ),
                                           ),
@@ -222,16 +263,19 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 },
                               ),
                               24.verticalSpace,
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<
+                                SellerProfileMgtCubit,
+                                SellerProfileMgtState
+                              >(
                                 builder: (context, state) {
                                   return Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       color: Colors.white,
-                                      border:
-                                          Border.all(color: AppColors.grey1),
+                                      border: Border.all(
+                                        color: AppColors.grey1,
+                                      ),
                                     ),
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
@@ -260,25 +304,27 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                               style: TextButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                    8,
-                                                  ),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 textStyle: AppTextStyle.caption
                                                     .copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
                                                 foregroundColor:
                                                     AppColors.black,
-                                                backgroundColor:
-                                                    const Color(0xffF6F7F8),
+                                                backgroundColor: const Color(
+                                                  0xffF6F7F8,
+                                                ),
                                               ),
                                               label: const Text('Manage All'),
                                             ),
                                           ],
                                         ),
                                         const Divider(),
-                                        if (state.profileDetails.data
+                                        if (state
+                                                .profileDetails
+                                                .data
                                                 ?.portfolios !=
                                             null)
                                           SizedBox(
@@ -294,22 +340,24 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                   width: 200.w,
                                                   decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular(8)
-                                                            .r,
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ).r,
                                                     border: Border.all(
                                                       color: AppColors.grey300,
                                                     ),
                                                   ),
-                                                  padding:
-                                                      const EdgeInsets.all(16)
-                                                          .r,
+                                                  padding: const EdgeInsets.all(
+                                                    16,
+                                                  ).r,
                                                   child: Column(
                                                     children: [
                                                       Row(
                                                         children: [
                                                           Expanded(
                                                             child: AppText(
-                                                              text: portfolio
+                                                              text:
+                                                                  portfolio
                                                                       .title ??
                                                                   'N/A',
                                                               maxLines: 1,
@@ -317,13 +365,12 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                                           ),
                                                           GestureDetector(
                                                             onTap: () {
-                                                              context.router
-                                                                  .push(
+                                                              context.router.push(
                                                                 SellerWorkRoute(
-                                                                  workItem: WorkItem
-                                                                      .fromPortfolio(
-                                                                    portfolio,
-                                                                  ),
+                                                                  workItem:
+                                                                      WorkItem.fromPortfolio(
+                                                                        portfolio,
+                                                                      ),
                                                                 ),
                                                               );
                                                             },
@@ -381,7 +428,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                               separatorBuilder:
                                                   (context, index) =>
                                                       12.horizontalSpace,
-                                              itemCount: state
+                                              itemCount:
+                                                  state
                                                       .profileDetails
                                                       .data!
                                                       .portfolios
@@ -397,16 +445,19 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 },
                               ),
                               24.verticalSpace,
-                              BlocBuilder<SellerProfileMgtCubit,
-                                  SellerProfileMgtState>(
+                              BlocBuilder<
+                                SellerProfileMgtCubit,
+                                SellerProfileMgtState
+                              >(
                                 builder: (context, state) {
                                   return Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       color: Colors.white,
-                                      border:
-                                          Border.all(color: AppColors.grey1),
+                                      border: Border.all(
+                                        color: AppColors.grey1,
+                                      ),
                                     ),
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
@@ -420,7 +471,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                         ),
                                         12.verticalSpace,
                                         AppText(
-                                          text: state.profileDetails.data?.user
+                                          text:
+                                              state
+                                                  .profileDetails
+                                                  .data
+                                                  ?.user
                                                   ?.bio ??
                                               '',
                                         ),
@@ -453,14 +508,17 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       color: AppColors.grey3,
                                     ),
                                     12.verticalSpace,
-                                    BlocListener<SellerProfileMgtCubit,
-                                        SellerProfileMgtState>(
+                                    BlocListener<
+                                      SellerProfileMgtCubit,
+                                      SellerProfileMgtState
+                                    >(
                                       listenWhen: (previous, current) =>
                                           previous.deleteAccountState !=
                                           current.deleteAccountState,
                                       listener: (context, state) {
                                         if (state
-                                            .deleteAccountState.hasSuccess) {
+                                            .deleteAccountState
+                                            .hasSuccess) {
                                           Fluttertoast.showToast(
                                             msg: 'Account deleted successfully',
                                           );
@@ -479,7 +537,8 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                               onConfirmed: (ctx) {
                                                 context
                                                     .read<
-                                                        SellerProfileMgtCubit>()
+                                                      SellerProfileMgtCubit
+                                                    >()
                                                     .deleteAccount();
                                               },
                                             ),
@@ -488,13 +547,14 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                         style: TextButton.styleFrom(
                                           backgroundColor: Colors.red,
                                           foregroundColor: Colors.white,
-                                          textStyle:
-                                              AppTextStyle.body2.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          textStyle: AppTextStyle.body2
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                         child: const Text('DELETE ACCOUNT'),
@@ -531,10 +591,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         title: innerBoxIsScrolled
-            ? const AppText(
-                text: 'Profile Management',
-                color: AppColors.white,
-              )
+            ? const AppText(text: 'Profile Management', color: AppColors.white)
             : null,
         centerTitle: false,
         flexibleSpace: FlexibleSpaceBar(
@@ -566,25 +623,34 @@ class SellerProfileManagementScreen extends StatelessWidget {
                           ),
                           child: state.updateBannerState.isLoading
                               ? const LinearProgressIndicator()
-                              : state.profileDetails.data?.user?.stylistProfile
-                                          ?.banner !=
-                                      null
-                                  ? CachedNetworkImage(
-                                      imageUrl: state.profileDetails.data?.user
-                                              ?.stylistProfile?.banner
-                                              ?.completeImagePath() ??
-                                          '',
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: 150.h,
-                                      placeholder: (context, url) =>
-                                          const LinearProgressIndicator(
+                              : state
+                                        .profileDetails
+                                        .data
+                                        ?.user
+                                        ?.stylistProfile
+                                        ?.banner !=
+                                    null
+                              ? CachedNetworkImage(
+                                  imageUrl:
+                                      state
+                                          .profileDetails
+                                          .data
+                                          ?.user
+                                          ?.stylistProfile
+                                          ?.banner
+                                          ?.completeImagePath() ??
+                                      '',
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: 150.h,
+                                  placeholder: (context, url) =>
+                                      const LinearProgressIndicator(
                                         valueColor: AlwaysStoppedAnimation(
                                           Colors.grey,
                                         ),
                                       ),
-                                    )
-                                  : null,
+                                )
+                              : null,
                         ),
                         Positioned(
                           bottom: 12,
@@ -677,8 +743,9 @@ class SellerProfileManagementScreen extends StatelessWidget {
                             width: 150.w,
                             child: CustomButton(
                               onPressed: () {
-                                context.router
-                                    .push(const SellerPersonalDetailsRoute());
+                                context.router.push(
+                                  const SellerPersonalDetailsRoute(),
+                                );
                               },
                               title: 'Edit Profile',
                             ),
@@ -705,15 +772,20 @@ class SellerProfileManagementScreen extends StatelessWidget {
                             Row(
                               children: [
                                 AppText(
-                                  text: state.profileDetails.data?.user?.name ??
+                                  text:
+                                      state.profileDetails.data?.user?.name ??
                                       '',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 10.horizontalSpace,
                                 // ignore: use_if_null_to_convert_nulls_to_bools
-                                if (state.profileDetails.data?.user
-                                        ?.stylistProfile?.status ==
+                                if (state
+                                        .profileDetails
+                                        .data
+                                        ?.user
+                                        ?.stylistProfile
+                                        ?.status ==
                                     'verified')
                                   Icon(
                                     Iconsax.verify5,
@@ -722,8 +794,13 @@ class SellerProfileManagementScreen extends StatelessWidget {
                               ],
                             ),
                             AppText(
-                              text: state.profileDetails.data?.user
-                                      ?.stylistProfile?.businessName ??
+                              text:
+                                  state
+                                      .profileDetails
+                                      .data
+                                      ?.user
+                                      ?.stylistProfile
+                                      ?.businessName ??
                                   'N/A',
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryColor,
@@ -739,7 +816,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 ),
                                 5.horizontalSpace,
                                 AppText(
-                                  text: state.profileDetails.data?.statistics
+                                  text:
+                                      state
+                                          .profileDetails
+                                          .data
+                                          ?.statistics
                                           ?.averageRating
                                           ?.toString() ??
                                       '0',
@@ -786,7 +867,11 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 4.horizontalSpace,
                                 Expanded(
                                   child: AppText(
-                                    text: state.profileDetails.data?.user
+                                    text:
+                                        state
+                                            .profileDetails
+                                            .data
+                                            ?.user
                                             ?.country ??
                                         '',
                                     color: AppColors.grey3,
@@ -807,7 +892,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                 AppText(
                                   text:
                                       state.profileDetails.data?.user?.phone ??
-                                          '',
+                                      '',
                                   color: AppColors.grey3,
                                 ),
                               ],
@@ -850,19 +935,20 @@ class SellerProfileAvatar extends StatelessWidget {
       child: isLoading
           ? const CircularProgressIndicator()
           : profileDetails?.user?.avatar != null
-              ? null
-              : AppText(
-                  text: profileDetails?.user?.firstName != null &&
-                          profileDetails?.user?.lastName != null
-                      ? AppHelper.initialsFromName(
-                          profileDetails!.user!.firstName!,
-                          profileDetails!.user!.lastName!,
-                        )
-                      : 'N/A',
-                  color: AppColors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
+          ? null
+          : AppText(
+              text:
+                  profileDetails?.user?.firstName != null &&
+                      profileDetails?.user?.lastName != null
+                  ? AppHelper.initialsFromName(
+                      profileDetails!.user!.firstName!,
+                      profileDetails!.user!.lastName!,
+                    )
+                  : 'N/A',
+              color: AppColors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
     );
   }
 }

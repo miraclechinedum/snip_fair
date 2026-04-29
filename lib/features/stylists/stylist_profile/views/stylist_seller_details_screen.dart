@@ -28,7 +28,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
       'About',
       'Services & Pricing',
       'Portfolio & Work Samples',
-      'Recent Client Reviews',
+      'Reviews',
     ];
 
     final tabViews = [
@@ -44,15 +44,11 @@ class StylistSellerDetailsScreen extends StatelessWidget
         body: BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
           builder: (context, state) {
             if (state.sellerDetails.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
             return NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  _buildAppBar(context, innerBoxIsScrolled, tabs),
-                ];
+                return [_buildAppBar(context, innerBoxIsScrolled, tabs)];
               },
               body: TabBarView(
                 children: List.generate(tabs.length, (index) {
@@ -98,8 +94,9 @@ class StylistSellerDetailsScreen extends StatelessWidget
               tabs: tabs.map((String name) => Tab(text: name)).toList(),
               indicatorColor: AppColors.primaryColor,
               labelColor: AppColors.primaryColor,
-              labelStyle:
-                  AppTextStyle.body2.copyWith(fontWeight: FontWeight.w600),
+              labelStyle: AppTextStyle.body2.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
               unselectedLabelStyle: AppTextStyle.body2,
             ),
           ),
@@ -135,13 +132,16 @@ class StylistSellerDetailsScreen extends StatelessWidget
                         AppHelper.showImagePreview(
                           context,
                           imageUrl: state
-                              .sellerDetails.data!.stylistProfile!.banner!
+                              .sellerDetails
+                              .data!
+                              .stylistProfile!
+                              .banner!
                               .completeImagePath(),
                         );
                       },
                       child: CachedNetworkImage(
-                        imageUrl: state
-                                .sellerDetails.data?.stylistProfile?.banner
+                        imageUrl:
+                            state.sellerDetails.data?.stylistProfile?.banner
                                 ?.completeImagePath() ??
                             '',
                         fit: BoxFit.cover,
@@ -199,24 +199,33 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                 radius: 30.r,
                                 backgroundImage:
                                     state.sellerDetails.data?.avatar != null
-                                        ? CachedNetworkImageProvider(
-                                            state.sellerDetails.data!.avatar!
-                                                .completeImagePath(),
-                                          )
-                                        : null,
+                                    ? CachedNetworkImageProvider(
+                                        state.sellerDetails.data!.avatar!
+                                            .completeImagePath(),
+                                      )
+                                    : null,
                                 child: state.sellerDetails.data?.avatar != null
                                     ? null
                                     : AppText(
-                                        text: state.sellerDetails.data
+                                        text:
+                                            state
+                                                        .sellerDetails
+                                                        .data
                                                         ?.firstName !=
                                                     null &&
-                                                state.sellerDetails.data
+                                                state
+                                                        .sellerDetails
+                                                        .data
                                                         ?.lastName !=
                                                     null
                                             ? AppHelper.initialsFromName(
-                                                state.sellerDetails.data!
+                                                state
+                                                    .sellerDetails
+                                                    .data!
                                                     .firstName!,
-                                                state.sellerDetails.data!
+                                                state
+                                                    .sellerDetails
+                                                    .data!
                                                     .lastName!,
                                               )
                                             : 'N/A',
@@ -274,7 +283,11 @@ class StylistSellerDetailsScreen extends StatelessWidget
                             ],
                           ),
                           AppText(
-                            text: state.sellerDetails.data?.stylistProfile
+                            text:
+                                state
+                                    .sellerDetails
+                                    .data
+                                    ?.stylistProfile
                                     ?.businessName ??
                                 '',
                             fontWeight: FontWeight.w600,
@@ -291,7 +304,8 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               ),
                               5.horizontalSpace,
                               AppText(
-                                text: state.sellerDetails.data?.averageRating
+                                text:
+                                    state.sellerDetails.data?.averageRating
                                         ?.toString() ??
                                     '0',
                                 fontSize: 12,
@@ -317,7 +331,8 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               4.horizontalSpace,
                               Expanded(
                                 child: AppText(
-                                  text: state.sellerDetails.data?.country ??
+                                  text:
+                                      state.sellerDetails.data?.country ??
                                       'N/A',
                                   fontSize: 10,
                                   color: AppColors.grey3,
@@ -325,9 +340,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               ),
                             ],
                           ),
-                          Divider(
-                            color: Colors.grey.shade200,
-                          ),
+                          Divider(color: Colors.grey.shade200),
                           SizedBox(
                             height: 80.h,
                             child: Row(
@@ -353,9 +366,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                     ],
                                   ),
                                 ),
-                                VerticalDivider(
-                                  color: Colors.grey.shade200,
-                                ),
+                                VerticalDivider(color: Colors.grey.shade200),
                                 Expanded(
                                   child: Column(
                                     children: [
@@ -377,14 +388,15 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                     ],
                                   ),
                                 ),
-                                VerticalDivider(
-                                  color: Colors.grey.shade200,
-                                ),
+                                VerticalDivider(color: Colors.grey.shade200),
                                 Expanded(
                                   child: Column(
                                     children: [
                                       AppText(
-                                        text: state.sellerDetails.data
+                                        text:
+                                            state
+                                                .sellerDetails
+                                                .data
                                                 ?.responseTime ??
                                             'N/A',
                                         fontSize: 20,
@@ -411,9 +423,7 @@ class StylistSellerDetailsScreen extends StatelessWidget
                               Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppColors.grey1,
-                                  ),
+                                  border: Border.all(color: AppColors.grey1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Padding(
@@ -433,7 +443,10 @@ class StylistSellerDetailsScreen extends StatelessWidget
                                       ),
                                       5.verticalSpace,
                                       AppText(
-                                        text: state.sellerDetails.data
+                                        text:
+                                            state
+                                                .sellerDetails
+                                                .data
                                                 ?.nextAvailable ??
                                             'N/A',
                                         color: Colors.green,
@@ -475,24 +488,17 @@ class AboutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return CustomScrollView(
       key: const PageStorageKey<String>('about'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverToBoxAdapter(
             child: Column(
               children: [
@@ -514,7 +520,8 @@ class AboutView extends StatelessWidget {
                       ),
                       8.verticalSpace,
                       AppText(
-                        text: state.sellerDetails.data?.bio ??
+                        text:
+                            state.sellerDetails.data?.bio ??
                             'No about available',
                         fontSize: 14,
                         color: AppColors.blackShade1,
@@ -528,7 +535,8 @@ class AboutView extends StatelessWidget {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: state.sellerDetails.data?.categories
+                        children:
+                            state.sellerDetails.data?.categories
                                 ?.map(
                                   (tag) => Container(
                                     padding: const EdgeInsets.symmetric(
@@ -536,8 +544,9 @@ class AboutView extends StatelessWidget {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryColor
-                                          .withOpacity(0.1),
+                                      color: AppColors.primaryColor.withOpacity(
+                                        0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: AppText(
@@ -557,7 +566,8 @@ class AboutView extends StatelessWidget {
                       ),
                       8.verticalSpace,
                       AppText(
-                        text: state.sellerDetails.data?.stylistCertifications
+                        text:
+                            state.sellerDetails.data?.stylistCertifications
                                 ?.map((cert) => cert ?? 'N/A')
                                 .join(', ') ??
                             'No education or certifications available',
@@ -595,7 +605,8 @@ class AboutView extends StatelessWidget {
                             child: Row(
                               children: [
                                 AppText(
-                                  text: workingHour?.day
+                                  text:
+                                      workingHour?.day
                                           .capitalizeFirstLetter() ??
                                       'N/A',
                                   fontSize: 14,
@@ -663,123 +674,109 @@ class AboutView extends StatelessWidget {
 }
 
 class ReviewsView extends StatelessWidget {
-  const ReviewsView({
-    super.key,
-  });
+  const ReviewsView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
     final reviews = state.sellerDetails.data?.reviews ?? [];
     if (reviews.isEmpty) {
       return const Center(
-        child: AppText(
-          text: 'No reviews yet',
-          color: AppColors.grey3,
-        ),
+        child: AppText(text: 'No reviews yet', color: AppColors.grey3),
       );
     }
     return CustomScrollView(
       key: const PageStorageKey<String>('services'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverFixedExtentList(
             itemExtent: 100.0,
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                final review = reviews[index];
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    boxShadow: AppColors.defaultBoxShadow,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText(
-                              text: review.appointment?.customer?.name ?? 'N/A',
-                              fontWeight: FontWeight.bold,
-                            ),
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  ...List.generate(
-                                    int.tryParse(review.rating.toString()) ?? 0,
-                                    (index) => const WidgetSpan(
-                                      child: Icon(
-                                        Iconsax.star1,
-                                        color: Colors.amber,
-                                        size: 15,
-                                      ),
+            delegate: SliverChildBuilderDelegate((
+              BuildContext context,
+              int index,
+            ) {
+              final review = reviews[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  boxShadow: AppColors.defaultBoxShadow,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            text: review.appointment?.customer?.name ?? 'N/A',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                ...List.generate(
+                                  int.tryParse(review.rating.toString()) ?? 0,
+                                  (index) => const WidgetSpan(
+                                    child: Icon(
+                                      Iconsax.star1,
+                                      color: Colors.amber,
+                                      size: 15,
                                     ),
                                   ),
-                                  TextSpan(
-                                    text:
-                                        ' ${review.createdAt?.toTimeAgo() ?? ''}',
-                                    style: AppTextStyle.caption
-                                        .copyWith(color: Colors.grey),
+                                ),
+                                TextSpan(
+                                  text:
+                                      ' ${review.createdAt?.toTimeAgo() ?? ''}',
+                                  style: AppTextStyle.caption.copyWith(
+                                    color: Colors.grey,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            5.verticalSpace,
-                            AppText(
-                              text: review.comment ?? 'N/A',
-                              fontSize: 12,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            child: const AppText(
-                              text: 'Customer',
-                              fontSize: 12,
-                            ),
+                          ),
+                          5.verticalSpace,
+                          AppText(
+                            text: review.comment ?? 'N/A',
+                            fontSize: 12,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                );
-              },
-              childCount: reviews.length,
-            ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          child: const AppText(text: 'Customer', fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }, childCount: reviews.length),
           ),
         ),
       ],
@@ -788,36 +785,28 @@ class ReviewsView extends StatelessWidget {
 }
 
 class PortfolioView extends StatelessWidget {
-  const PortfolioView({
-    super.key,
-  });
+  const PortfolioView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return CustomScrollView(
       key: const PageStorageKey<String>('portfolio'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverGrid(
             delegate: SliverChildListDelegate(
-              List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0,
-                  (index) {
+              List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0, (
+                index,
+              ) {
                 return GestureDetector(
                   onTap: () {
                     if (state.sellerDetails.data?.mediaUrls?[index]
@@ -833,18 +822,19 @@ class PortfolioView extends StatelessWidget {
                     );
                   },
                   child: CachedNetworkImage(
-                    imageUrl: state.sellerDetails.data?.mediaUrls?[index]
+                    imageUrl:
+                        state.sellerDetails.data?.mediaUrls?[index]
                             .completeImagePath() ??
                         '',
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey.shade200,
-                    ),
+                    placeholder: (context, url) =>
+                        Container(color: Colors.grey.shade200),
                     errorWidget: (context, url, error) {
                       return ColoredBox(
                         color: Colors.grey.shade200,
-                        child:
-                            Center(child: SvgPicture.asset(Assets.images.logo)),
+                        child: Center(
+                          child: SvgPicture.asset(Assets.images.logo),
+                        ),
                       );
                     },
                   ),
@@ -864,18 +854,14 @@ class PortfolioView extends StatelessWidget {
 }
 
 class ServicesListView extends StatelessWidget {
-  const ServicesListView({
-    super.key,
-  });
+  const ServicesListView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
       builder: (context, state) {
         if (state.sellePortfolio.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         final services = state.sellePortfolio.data?.data ?? [];
@@ -883,29 +869,25 @@ class ServicesListView extends StatelessWidget {
           key: const PageStorageKey<String>('services'),
           slivers: <Widget>[
             SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                context,
-              ),
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             ),
             SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                sliver: SliverList.separated(
-                  separatorBuilder: (context, index) => 10.verticalSpace,
-                  itemBuilder: (context, index) {
-                    final service = services[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: PopularStyleCard(
-                        portfolio: service,
-                        showFullDescription: true,
-                      ),
-                    );
-                  },
-                  itemCount: services.length,
-                )),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList.separated(
+                separatorBuilder: (context, index) => 10.verticalSpace,
+                itemBuilder: (context, index) {
+                  final service = services[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: PopularStyleCard(
+                      portfolio: service,
+                      showFullDescription: true,
+                    ),
+                  );
+                },
+                itemCount: services.length,
+              ),
+            ),
           ],
         );
       },
