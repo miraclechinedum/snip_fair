@@ -27,7 +27,7 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
       'About',
       'Services & Pricing',
       'Portfolio & Work Samples',
-      'Recent Client Reviews',
+      'Reviews',
     ];
 
     final tabViews = [
@@ -43,15 +43,11 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
         body: BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
           builder: (context, state) {
             if (state.sellerDetails.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
             return NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  _buildAppBar(context, innerBoxIsScrolled, tabs),
-                ];
+                return [_buildAppBar(context, innerBoxIsScrolled, tabs)];
               },
               body: TabBarView(
                 children: List.generate(tabs.length, (index) {
@@ -298,9 +294,7 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
                               ),
                             ],
                           ),
-                          Divider(
-                            color: Colors.grey.shade200,
-                          ),
+                          Divider(color: Colors.grey.shade200),
                           SizedBox(
                             height: 80.h,
                             child: Row(
@@ -326,9 +320,7 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
                                     ],
                                   ),
                                 ),
-                                VerticalDivider(
-                                  color: Colors.grey.shade200,
-                                ),
+                                VerticalDivider(color: Colors.grey.shade200),
                                 Expanded(
                                   child: Column(
                                     children: [
@@ -350,9 +342,7 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
                                     ],
                                   ),
                                 ),
-                                VerticalDivider(
-                                  color: Colors.grey.shade200,
-                                ),
+                                VerticalDivider(color: Colors.grey.shade200),
                                 Expanded(
                                   child: Column(
                                     children: [
@@ -382,9 +372,7 @@ class StylistSellerDetailsScreen extends StatelessWidget implements AutoRouteWra
                               Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppColors.grey1,
-                                  ),
+                                  border: Border.all(color: AppColors.grey1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Padding(
@@ -443,24 +431,17 @@ class AboutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return CustomScrollView(
       key: const PageStorageKey<String>('about'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverToBoxAdapter(
             child: Column(
               children: [
@@ -482,6 +463,7 @@ class AboutView extends StatelessWidget {
                       8.verticalSpace,
                       AppText(
                         text: state.sellerDetails.data?.bio ?? 'No about available',
+                        fontSize: 14,
                         color: AppColors.blackShade1,
                       ),
                       12.verticalSpace,
@@ -558,6 +540,7 @@ class AboutView extends StatelessWidget {
                               children: [
                                 AppText(
                                   text: workingHour?.day.capitalizeFirstLetter() ?? 'N/A',
+                                  fontSize: 14,
                                   color: AppColors.black,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -621,40 +604,28 @@ class AboutView extends StatelessWidget {
 }
 
 class ReviewsView extends StatelessWidget {
-  const ReviewsView({
-    super.key,
-  });
+  const ReviewsView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
     final reviews = state.sellerDetails.data?.reviews ?? [];
     if (reviews.isEmpty) {
       return const Center(
-        child: AppText(
-          text: 'No reviews yet',
-          color: AppColors.grey3,
-        ),
+        child: AppText(text: 'No reviews yet', color: AppColors.grey3),
       );
     }
     return CustomScrollView(
       key: const PageStorageKey<String>('services'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverFixedExtentList(
             itemExtent: 100,
             delegate: SliverChildBuilderDelegate(
@@ -723,10 +694,7 @@ class ReviewsView extends StatelessWidget {
                               horizontal: 10,
                               vertical: 5,
                             ),
-                            child: const AppText(
-                              text: 'Customer',
-                              fontSize: 12,
-                            ),
+                            child: const AppText(text: 'Customer', fontSize: 12),
                           ),
                         ],
                       ),
@@ -744,32 +712,23 @@ class ReviewsView extends StatelessWidget {
 }
 
 class PortfolioView extends StatelessWidget {
-  const PortfolioView({
-    super.key,
-  });
+  const PortfolioView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<StylistSellerDetailsCubit>().state;
     if (state.sellePortfolio.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return CustomScrollView(
       key: const PageStorageKey<String>('portfolio'),
       slivers: <Widget>[
         SliverOverlapInjector(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-            context,
-          ),
+          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           sliver: SliverGrid(
             delegate: SliverChildListDelegate(
               List.generate(state.sellerDetails.data?.mediaUrls?.length ?? 0, (index) {
@@ -787,9 +746,7 @@ class PortfolioView extends StatelessWidget {
                   child: CachedNetworkImage(
                     imageUrl: state.sellerDetails.data?.mediaUrls?[index].completeImagePath() ?? '',
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey.shade200,
-                    ),
+                    placeholder: (context, url) => Container(color: Colors.grey.shade200),
                     errorWidget: (context, url, error) {
                       return ColoredBox(
                         color: Colors.grey.shade200,
@@ -813,18 +770,14 @@ class PortfolioView extends StatelessWidget {
 }
 
 class ServicesListView extends StatelessWidget {
-  const ServicesListView({
-    super.key,
-  });
+  const ServicesListView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StylistSellerDetailsCubit, StylistSellerDetailsState>(
       builder: (context, state) {
         if (state.sellePortfolio.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         final services = state.sellePortfolio.data?.data ?? [];
@@ -832,9 +785,7 @@ class ServicesListView extends StatelessWidget {
           key: const PageStorageKey<String>('services'),
           slivers: <Widget>[
             SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                context,
-              ),
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(

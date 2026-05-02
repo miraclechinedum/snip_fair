@@ -4,5 +4,8 @@ import 'package:snip_fair/core/utils/environment/environment.dart';
 
 void main() {
   Environment().initConfig(Environment.dev);
-  bootstrap(() => const App());
+
+  bootstrap(() async {
+    return const App();
+  });
 }

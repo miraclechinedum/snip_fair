@@ -82,9 +82,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
             }
 
             if (state.updateBannerState.hasSuccess) {
-              Fluttertoast.showToast(
-                msg: 'Banner image updated successfully',
-              );
+              Fluttertoast.showToast(msg: 'Banner image updated successfully');
               await context.read<SellerProfileMgtCubit>().getProfileDetails();
               if (state.profileDetails.hasSuccess) {
                 // Optionally do something after refreshing profile details
@@ -108,9 +106,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         body: NestedScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              _buildAppBar(context, innerBoxIsScrolled),
-            ];
+            return [_buildAppBar(context, innerBoxIsScrolled)];
           },
           body: SafeArea(
             top: false,
@@ -181,8 +177,18 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            child: AppText(
-                                              text: state.profileDetails.data?.profileLink ?? '',
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                final link = state.profileDetails.data?.profileLink;
+                                                if (link != null && link.isNotEmpty) {
+                                                  AppHelper.launchHttp(link);
+                                                }
+                                              },
+                                              child: AppText(
+                                                text: state.profileDetails.data?.profileLink ?? '',
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                           ),
                                           GestureDetector(
@@ -196,6 +202,19 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                             },
                                             child: const Icon(
                                               Iconsax.copy,
+                                              color: AppColors.primaryColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          GestureDetector(
+                                            onTap: () {
+                                              final link = state.profileDetails.data?.profileLink;
+                                              if (link != null && link.isNotEmpty) {
+                                                AppHelper.launchHttp(link);
+                                              }
+                                            },
+                                            child: const Icon(
+                                              Icons.open_in_new,
                                               color: AppColors.primaryColor,
                                             ),
                                           ),
@@ -473,10 +492,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
         forceElevated: innerBoxIsScrolled,
         pinned: true,
         title: innerBoxIsScrolled
-            ? const AppText(
-                text: 'Profile Management',
-                color: AppColors.white,
-              )
+            ? const AppText(text: 'Profile Management', color: AppColors.white)
             : null,
         centerTitle: false,
         flexibleSpace: FlexibleSpaceBar(
