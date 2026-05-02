@@ -63,22 +63,22 @@ class PlatformSettings {
         json['appointment_reschedule_threshold'] is int
             ? json['appointment_reschedule_threshold'] as int
             : int.tryParse(
-                json['appointment_reschedule_threshold']?.toString() ?? '');
+                json['appointment_reschedule_threshold']?.toString() ?? '',);
     appointmentReschedulePercentage =
         json['appointment_reschedule_percentage'] is int
             ? json['appointment_reschedule_percentage'] as int
             : int.tryParse(
-                json['appointment_reschedule_percentage']?.toString() ?? '');
+                json['appointment_reschedule_percentage']?.toString() ?? '',);
     appointmentCancelingThreshold =
         json['appointment_canceling_threshold'] is int
             ? json['appointment_canceling_threshold'] as int
             : int.tryParse(
-                json['appointment_canceling_threshold']?.toString() ?? '');
+                json['appointment_canceling_threshold']?.toString() ?? '',);
     appointmentCancelingPercentage =
         json['appointment_canceling_percentage'] is int
             ? json['appointment_canceling_percentage'] as int
             : int.tryParse(
-                json['appointment_canceling_percentage']?.toString() ?? '');
+                json['appointment_canceling_percentage']?.toString() ?? '',);
     updatedBy = json['updated_by'] as String?;
     createdAt = json['created_at'] as String?;
     updatedAt = json['updated_at'] as String?;
@@ -147,7 +147,7 @@ class PlatformSettings {
   List<PortfolioPriceFilters>? portfolioPriceFilters;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['terms'] = terms;
     data['privacy_policy'] = privacyPolicy;
@@ -207,7 +207,7 @@ class PortfolioPriceFilters {
   bool? isDefault;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final data = <String, dynamic>{};
     data['label'] = label;
     data['max'] = max;
     data['min'] = min;

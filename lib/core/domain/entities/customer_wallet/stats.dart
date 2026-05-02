@@ -4,10 +4,6 @@ part 'stats.g.dart';
 
 @JsonSerializable()
 class Stats {
-  int? currentBalance;
-  int? totalTopups;
-  int? totalRefunds;
-  int? pendingTransactions;
 
   Stats({
     this.currentBalance,
@@ -17,6 +13,10 @@ class Stats {
   });
 
   factory Stats.fromJson(Map<String, dynamic> json) => _$StatsFromJson(json);
+  int? currentBalance;
+  int? totalTopups;
+  int? totalRefunds;
+  int? pendingTransactions;
 
   Map<String, dynamic> toJson() => _$StatsToJson(this);
 }

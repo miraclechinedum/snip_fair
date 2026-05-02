@@ -1,13 +1,44 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
-
-import 'portfolio.dart';
-import 'stylist.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/stylist.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/portfolio.dart';
 
 part 'customer_appointment.g.dart';
 
 @JsonSerializable()
 class CustomerAppointment {
+
+  CustomerAppointment({
+    this.id,
+    this.stylistId,
+    this.customerId,
+    this.bookingId,
+    this.portfolioId,
+    this.amount,
+    this.duration,
+    this.extra,
+    this.appointmentCode,
+    this.completionCode,
+    this.status,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+    this.appointmentDate,
+    this.appointmentTime,
+    this.stylistNote,
+    this.serviceNotes,
+    this.completedAt,
+    this.appointmentDateTime,
+    this.stylist,
+    this.portfolio,
+    this.customer,
+    this.distanceFromStylist,
+    this.tipAmount,
+    this.tippedAt,
+  });
+
+  factory CustomerAppointment.fromJson(Map<String, dynamic> json) =>
+      _$CustomerAppointmentFromJson(json);
   int? id;
   @JsonKey(name: 'stylist_id')
   String? stylistId;
@@ -48,36 +79,12 @@ class CustomerAppointment {
   Customer? customer;
   @JsonKey(name: 'distance_from_stylist')
   String? distanceFromStylist;
+  @JsonKey(name: 'tip_amount')
+  double? tipAmount;
+  @JsonKey(name: 'tipped_at')
+  DateTime? tippedAt;
 
-  CustomerAppointment({
-    this.id,
-    this.stylistId,
-    this.customerId,
-    this.bookingId,
-    this.portfolioId,
-    this.amount,
-    this.duration,
-    this.extra,
-    this.appointmentCode,
-    this.completionCode,
-    this.status,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-    this.appointmentDate,
-    this.appointmentTime,
-    this.stylistNote,
-    this.serviceNotes,
-    this.completedAt,
-    this.appointmentDateTime,
-    this.stylist,
-    this.portfolio,
-    this.customer,
-    this.distanceFromStylist,
-  });
-
-  factory CustomerAppointment.fromJson(Map<String, dynamic> json) =>
-      _$CustomerAppointmentFromJson(json);
+  bool get hasBeenTipped => tippedAt != null;
 
   Map<String, dynamic> toJson() => _$CustomerAppointmentToJson(this);
 }

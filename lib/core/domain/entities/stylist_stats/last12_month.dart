@@ -4,6 +4,19 @@ part 'last12_month.g.dart';
 
 @JsonSerializable()
 class Last12Month {
+  Last12Month({
+    this.startDate,
+    this.endDate,
+    this.appointmentCount,
+    this.confirmedAppointmentCount,
+    this.canceledAppointmentCount,
+    this.completedAppointmentCount,
+    this.premiumAppointmentCount,
+  });
+
+  factory Last12Month.fromJson(Map<String, dynamic> json) {
+    return _$Last12MonthFromJson(json);
+  }
   @JsonKey(name: 'start_date')
   DateTime? startDate;
   @JsonKey(name: 'end_date')
@@ -18,20 +31,6 @@ class Last12Month {
   int? completedAppointmentCount;
   @JsonKey(name: 'premium_appointment_count')
   int? premiumAppointmentCount;
-
-  Last12Month({
-    this.startDate,
-    this.endDate,
-    this.appointmentCount,
-    this.confirmedAppointmentCount,
-    this.canceledAppointmentCount,
-    this.completedAppointmentCount,
-    this.premiumAppointmentCount,
-  });
-
-  factory Last12Month.fromJson(Map<String, dynamic> json) {
-    return _$Last12MonthFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$Last12MonthToJson(this);
 }

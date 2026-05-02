@@ -4,6 +4,27 @@ part 'portfolio.g.dart';
 
 @JsonSerializable()
 class Portfolio {
+  Portfolio({
+    this.id,
+    this.userId,
+    this.title,
+    this.categoryId,
+    this.price,
+    this.duration,
+    this.description,
+    this.tags,
+    this.mediaUrls,
+    this.visitsCount,
+    this.status,
+    this.isAvailable,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory Portfolio.fromJson(Map<String, dynamic> json) {
+    return _$PortfolioFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   String? userId;
@@ -27,28 +48,6 @@ class Portfolio {
   DateTime? createdAt;
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
-
-  Portfolio({
-    this.id,
-    this.userId,
-    this.title,
-    this.categoryId,
-    this.price,
-    this.duration,
-    this.description,
-    this.tags,
-    this.mediaUrls,
-    this.visitsCount,
-    this.status,
-    this.isAvailable,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Portfolio.fromJson(Map<String, dynamic> json) {
-    return _$PortfolioFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$PortfolioToJson(this);
 }

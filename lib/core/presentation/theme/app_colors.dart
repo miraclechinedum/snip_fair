@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
@@ -58,7 +57,6 @@ class AppColors {
   static List<BoxShadow> defaultBoxShadow = [
     BoxShadow(
       color: Colors.grey.withOpacity(0.1),
-      spreadRadius: 0,
       blurRadius: 10,
       offset: const Offset(1, 1),
     ),
@@ -66,7 +64,6 @@ class AppColors {
   static List<BoxShadow> yellowBoxShadow = [
     BoxShadow(
       color: Colors.amber.withOpacity(0.8),
-      spreadRadius: 0,
       blurRadius: 16,
       offset: const Offset(0, -4),
     ),
@@ -85,7 +82,7 @@ class AppColors {
 
   static const Color success = Color.fromARGB(255, 7, 172, 18);
 
-  static var inputDecoration = InputDecoration(
+  static InputDecoration inputDecoration = InputDecoration(
     hintStyle: AppTextStyle.body1.copyWith(
       color: AppColors.grey2,
     ),
@@ -97,7 +94,7 @@ class AppColors {
 
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide(color: AppColors.grey2),
+      borderSide: const BorderSide(color: AppColors.grey2),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
@@ -112,11 +109,11 @@ class AppColors {
     ),
     disabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide(color: AppColors.grey2),
+      borderSide: const BorderSide(color: AppColors.grey2),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10).r,
-      borderSide: BorderSide(color: AppColors.primaryColor),
+      borderSide: const BorderSide(color: AppColors.primaryColor),
     ),
   );
 }

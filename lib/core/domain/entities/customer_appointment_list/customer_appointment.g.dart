@@ -6,8 +6,7 @@ part of 'customer_appointment.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) =>
-    CustomerAppointment(
+CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) => CustomerAppointment(
       id: (json['id'] as num?)?.toInt(),
       stylistId: json['stylist_id'] as String?,
       customerId: json['customer_id'],
@@ -20,12 +19,8 @@ CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) =>
       completionCode: json['completion_code'] as String?,
       status: json['status'] as String?,
       deletedAt: json['deleted_at'],
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] == null ? null : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null ? null : DateTime.parse(json['updated_at'] as String),
       appointmentDate: json['appointment_date'] as String?,
       appointmentTime: json['appointment_time'] as String?,
       stylistNote: json['stylist_note'],
@@ -44,11 +39,11 @@ CustomerAppointment _$CustomerAppointmentFromJson(Map<String, dynamic> json) =>
           ? null
           : Customer.fromJson(json['customer'] as Map<String, dynamic>),
       distanceFromStylist: json['distance_from_stylist'] as String?,
+      tipAmount: json['tip_amount'] == null ? null : double.parse(json['tip_amount'].toString()),
+      tippedAt: json['tipped_at'] == null ? null : DateTime.parse(json['tipped_at'] as String),
     );
 
-Map<String, dynamic> _$CustomerAppointmentToJson(
-        CustomerAppointment instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CustomerAppointmentToJson(CustomerAppointment instance) => <String, dynamic>{
       'id': instance.id,
       'stylist_id': instance.stylistId,
       'customer_id': instance.customerId,
@@ -73,4 +68,6 @@ Map<String, dynamic> _$CustomerAppointmentToJson(
       'portfolio': instance.portfolio,
       'customer': instance.customer,
       'distance_from_stylist': instance.distanceFromStylist,
+      'tip_amount': instance.tipAmount,
+      'tipped_at': instance.tippedAt?.toIso8601String(),
     };

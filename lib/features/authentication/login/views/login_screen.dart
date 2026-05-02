@@ -1,32 +1,30 @@
 import 'dart:io';
-
-import 'package:auth_buttons/auth_buttons.dart';
-import 'package:auto_route/auto_route.dart';
+import 'package:flutter/widgets.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:auth_buttons/auth_buttons.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:snip_fair/core/utils/input/input.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/base/base_stateless_page.dart';
-import 'package:snip_fair/core/utils/input/input.dart';
 import 'package:snip_fair/features/authentication/login/cubit/login_cubit.dart';
-import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
-class LoginScreen extends BaseStatelessPage<LoginCubit>
-    implements AutoRouteWrapper {
+class LoginScreen extends BaseStatelessPage<LoginCubit> implements AutoRouteWrapper {
   const LoginScreen({super.key, this.isStylist = false});
 
   final bool isStylist;
@@ -38,8 +36,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
     return MultiBlocListener(
       listeners: [
         BlocListener<LoginCubit, LoginState>(
-          listenWhen: (previous, current) =>
-              previous.loginResult != current.loginResult,
+          listenWhen: (previous, current) => previous.loginResult != current.loginResult,
           listener: (context, state) {
             if (state.loginResult.hasSuccess) {
               context.read<AppCubit>().onLogin();
@@ -54,7 +51,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
               final error = state.googleLoginResult.error;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Google Sign-In failed: ${error.toString()}'),
+                  content: Text('Google Sign-In failed: ${error}'),
                 ),
               );
             }
@@ -106,8 +103,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                         return state.showPassword;
                       },
                       builder: (context, showPassword) {
-                        return BlocSelector<LoginCubit, LoginState,
-                            StringInput>(
+                        return BlocSelector<LoginCubit, LoginState, StringInput>(
                           selector: (state) {
                             return state.password;
                           },
@@ -190,10 +186,9 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                       },
                     ),
                     12.verticalSpace,
-                    Divider(),
+                    const Divider(),
                     12.verticalSpace,
-                    if (appState.platformSettings?.allowRegistrationCustomers ??
-                        false)
+                    if (appState.platformSettings?.allowRegistrationCustomers ?? false)
                       Center(
                         child: Text.rich(
                           TextSpan(
@@ -217,8 +212,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                           ),
                         ),
                       ),
-                    if (appState.platformSettings?.allowRegistrationStylists ==
-                            true &&
+                    if ((appState.platformSettings?.allowRegistrationStylists ?? false) &&
                         isStylist)
                       Center(
                         child: TextButton(
@@ -226,8 +220,7 @@ class LoginScreen extends BaseStatelessPage<LoginCubit>
                             foregroundColor: AppColors.primaryColor,
                           ),
                           onPressed: () {
-                            context.router
-                                .replace(SignupRoute(asStylist: true));
+                            context.router.replace(SignupRoute(asStylist: true));
                           },
                           child: const Text(
                             'Sign Up as a Stylist',

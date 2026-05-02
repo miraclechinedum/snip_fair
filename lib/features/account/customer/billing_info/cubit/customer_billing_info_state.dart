@@ -1,7 +1,7 @@
 part of 'customer_billing_info_cubit.dart';
 
 class CustomerBillingInfoState extends BaseState {
-  CustomerBillingInfoState._({
+  const CustomerBillingInfoState._({
     required this.name,
     required this.email,
     required this.city,

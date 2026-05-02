@@ -1,20 +1,17 @@
 import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:formz/formz.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
-
-import 'package:snip_fair/core/data/models/remote/login_response.dart';
-import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
-import 'package:snip_fair/core/domain/params/login_params.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
-import 'package:snip_fair/core/utils/input/password_input.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/domain/params/login_params.dart';
+import 'package:snip_fair/core/data/models/remote/login_response.dart';
+import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
 
 part 'login_state.dart';
 
@@ -31,7 +28,7 @@ class LoginCubit extends BaseCubit<LoginState> {
   }
 
   void onPasswordChanged(String value) {
-    emit(state.copyWith(password: StringInput.dirty( value.trim())));
+    emit(state.copyWith(password: StringInput.dirty(value.trim())));
   }
 
   void onTogglePassword() {
@@ -52,12 +49,9 @@ class LoginCubit extends BaseCubit<LoginState> {
                 : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
           ),
         ),
-        doOnLoading: () =>
-            emit(state.copyWith(loginResult: const ProcessState.loading())),
-        doOnError: (p0) =>
-            emit(state.copyWith(loginResult: ProcessState.error(p0))),
-        doOnSuccess: (p0) =>
-            emit(state.copyWith(loginResult: ProcessState.success(p0))),
+        doOnLoading: () => emit(state.copyWith(loginResult: const ProcessState.loading())),
+        doOnError: (p0) => emit(state.copyWith(loginResult: ProcessState.error(p0))),
+        doOnSuccess: (p0) => emit(state.copyWith(loginResult: ProcessState.success(p0))),
       );
     } catch (e) {
       emit(state.copyWith(loginResult: ProcessState.error(e)));
@@ -95,8 +89,7 @@ class LoginCubit extends BaseCubit<LoginState> {
       );
       // Get authorization for Firebase scopes if needed
       final authClient = _googleSignIn.authorizationClient;
-      final authorization =
-          await authClient.authorizationForScopes(['email', 'profile']);
+      final authorization = await authClient.authorizationForScopes(['email', 'profile']);
 
       if (authorization == null) return;
 
@@ -126,12 +119,9 @@ class LoginCubit extends BaseCubit<LoginState> {
               ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
               : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
         ),
-        doOnLoading: () =>
-            emit(state.copyWith(loginResult: const ProcessState.loading())),
-        doOnError: (p0) =>
-            emit(state.copyWith(loginResult: ProcessState.error(p0))),
-        doOnSuccess: (p0) =>
-            emit(state.copyWith(loginResult: ProcessState.success(p0))),
+        doOnLoading: () => emit(state.copyWith(loginResult: const ProcessState.loading())),
+        doOnError: (p0) => emit(state.copyWith(loginResult: ProcessState.error(p0))),
+        doOnSuccess: (p0) => emit(state.copyWith(loginResult: ProcessState.success(p0))),
       );
     } catch (e) {
       emit(state.copyWith(loginResult: ProcessState.error(e)));

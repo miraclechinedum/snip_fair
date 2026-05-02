@@ -1,13 +1,12 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:video_player/video_player.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class LandingScreen extends StatefulWidget {
@@ -98,9 +97,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       title: 'Book an Appointment',
                     ),
                     12.verticalSpace,
-                    if (cubit.state.platformSettings
-                            ?.allowRegistrationStylists ??
-                        false)
+                    if (cubit.state.platformSettings?.allowRegistrationStylists ?? false)
                       CustomButton(
                         title: 'Continue as Stylist',
                         onPressed: () {

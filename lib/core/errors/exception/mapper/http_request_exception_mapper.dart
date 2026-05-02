@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-
-import '../../../data/models/remote/error_response.dart';
-import '../../../data/models/remote/mapper/error_response_mapper.dart';
-import '../../../data/models/server_error.dart';
-import '../remote_exception.dart';
-import 'exception_mapper.dart';
+import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/data/models/server_error.dart';
+import 'package:snip_fair/core/data/models/remote/error_response.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/errors/exception/mapper/exception_mapper.dart';
+import 'package:snip_fair/core/data/models/remote/mapper/error_response_mapper.dart';
 
 @Injectable()
 class HttpRequestExceptionMapper extends ExceptionMapper<RemoteException> {

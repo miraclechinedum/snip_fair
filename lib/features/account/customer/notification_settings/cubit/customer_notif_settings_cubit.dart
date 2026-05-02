@@ -1,12 +1,11 @@
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
+
 
 part 'customer_notif_settings_state.dart';
 

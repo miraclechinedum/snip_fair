@@ -1,40 +1,17 @@
-import 'package:drop_down_search_field/drop_down_search_field.dart';
+import 'package:intl/intl.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iconsax/iconsax.dart';
-import 'package:phone_form_field/phone_form_field.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/geo_place.dart';
-import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/services/location_service.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:drop_down_search_field/drop_down_search_field.dart';
 
 class CustomTextField extends StatelessWidget {
-  final String? label;
-  final String? hint;
-  final Widget? suffixIcon;
-  final Widget? prefixIcon;
-  final bool obscure;
-  final TextEditingController? textController;
-  final void Function(String)? onChanged;
-  final VoidCallback? onTap;
-  final String? Function(String?)? validation;
-  final TextInputType? inputType;
-  final String? initialText;
-  final String? descriptionText;
-  final bool readOnly;
-  final bool isError;
-  final bool isSuccess;
-  final int? minLines;
-  final int? maxLines;
-  final TextCapitalization? textCapitalization;
-  final TextInputAction? textInputAction;
-  final List<TextInputFormatter>? inputFormatters;
-  final bool isRequired;
-  final FocusNode? focusNode;
-
   const CustomTextField({
     Key? key,
     this.label,
@@ -60,6 +37,28 @@ class CustomTextField extends StatelessWidget {
     this.isRequired = false,
     this.focusNode,
   }) : super(key: key);
+  final String? label;
+  final String? hint;
+  final Widget? suffixIcon;
+  final Widget? prefixIcon;
+  final bool obscure;
+  final TextEditingController? textController;
+  final void Function(String)? onChanged;
+  final VoidCallback? onTap;
+  final String? Function(String?)? validation;
+  final TextInputType? inputType;
+  final String? initialText;
+  final String? descriptionText;
+  final bool readOnly;
+  final bool isError;
+  final bool isSuccess;
+  final int? minLines;
+  final int? maxLines;
+  final TextCapitalization? textCapitalization;
+  final TextInputAction? textInputAction;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool isRequired;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +120,7 @@ class CustomTextField extends StatelessWidget {
           textInputAction: textInputAction,
           decoration: InputDecoration(
             prefixIcon: prefixIcon,
-            prefixIconConstraints:
-                BoxConstraints(maxHeight: 30.h, minWidth: 50.w),
+            prefixIconConstraints: BoxConstraints(maxHeight: 30.h, minWidth: 50.w),
 
             suffixIcon: Padding(
               padding: const EdgeInsets.only(right: 12).dg,
@@ -139,8 +137,7 @@ class CustomTextField extends StatelessWidget {
 
             alignLabelWithHint: true,
 
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 14).r,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14).r,
             // floatingLabelBehavior: FloatingLabelBehavior.always,
 
             enabledBorder: OutlineInputBorder(
@@ -194,7 +191,7 @@ class CustomTextField extends StatelessWidget {
 }
 
 class CustomDatePickerField extends StatefulWidget {
-  CustomDatePickerField({
+  const CustomDatePickerField({
     required this.onDateofBirthSet,
     super.key,
     this.label,
@@ -259,7 +256,7 @@ class _CustomDatePickerFieldState extends State<CustomDatePickerField> {
 
 class CustomPhoneTextField extends StatelessWidget {
   const CustomPhoneTextField({
-    Key? key,
+    super.key,
     this.controller,
     this.dialCode,
     this.contentPadding,
@@ -267,7 +264,7 @@ class CustomPhoneTextField extends StatelessWidget {
     this.isRequired = false,
     this.label,
     this.initialPhone,
-  }) : super(key: key);
+  });
 
   final TextEditingController? controller;
 
@@ -310,8 +307,8 @@ class CustomPhoneTextField extends StatelessWidget {
           5.verticalSpace,
         ],
         PhoneFormField(
-          initialValue: initialPhone ??
-              PhoneNumber.parse(dialCode ?? '+27'), // or use the controller
+          initialValue:
+              initialPhone ?? PhoneNumber.parse(dialCode ?? '+27'), // or use the controller
           validator: PhoneValidator.compose(
             [
               PhoneValidator.required(context),
@@ -333,8 +330,8 @@ class CustomPhoneTextField extends StatelessWidget {
               color: AppColors.grey2,
             ),
             alignLabelWithHint: true,
-            contentPadding: contentPadding ??
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14).dg,
+            contentPadding:
+                contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14).dg,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10).r,
               borderSide: const BorderSide(color: AppColors.grey2),
@@ -367,7 +364,7 @@ class CustomPhoneTextField extends StatelessWidget {
 
 class CustomPlaceSearchField extends StatefulWidget {
   const CustomPlaceSearchField({
-    Key? key,
+    super.key,
     this.label = '',
     this.hintText = '',
     required this.onSelected,
@@ -375,7 +372,7 @@ class CustomPlaceSearchField extends StatefulWidget {
     this.descriptionText,
     this.readOnly = false,
     this.initialPlace,
-  }) : super(key: key);
+  });
 
   final String label;
   final String hintText;
@@ -440,7 +437,7 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
               tileColor: AppColors.grey5,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: AppColors.grey1),
+                side: const BorderSide(color: AppColors.grey1),
               ),
               trailing: widget.readOnly
                   ? null
@@ -460,8 +457,8 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
             displayAllSuggestionWhenTap: true,
             isMultiSelectDropdown: false,
             textFieldConfiguration: (() {
-              String lastTyped = '';
-              int changeId = 0;
+              var lastTyped = '';
+              var changeId = 0;
 
               void selectIfValid() {
                 final t = lastTyped.trim();

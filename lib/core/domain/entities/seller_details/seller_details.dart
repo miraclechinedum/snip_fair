@@ -1,15 +1,65 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'availability.dart';
-import 'category.dart';
-import 'review.dart';
-import 'stylist_profile.dart';
-import 'working_hour.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/review.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/category.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/availability.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/working_hour.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/stylist_profile.dart';
 
 part 'seller_details.g.dart';
 
 @JsonSerializable()
 class SellerDetails {
+  SellerDetails({
+    this.id,
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.emailVerifiedAt,
+    this.phoneVerifiedAt,
+    this.phone,
+    this.country,
+    this.bio,
+    this.type,
+    this.role,
+    this.avatar,
+    this.lastLoginAt,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.balance,
+    this.isFeatured,
+    this.useLocation,
+    this.categories,
+    this.portfolioVisitsCount,
+    this.profileVisitsCount,
+    this.yearsOfExperience,
+    this.averageRating,
+    this.reviewsCount,
+    this.portfolioLikesCount,
+    this.trending,
+    this.appointmentsCount,
+    this.minPrice,
+    this.maxPrice,
+    this.favourite,
+    this.distance,
+    this.profileLikesCount,
+    this.subscriptionStatus,
+    this.availability,
+    this.plan,
+    this.stylistProfile,
+    this.stylistCertifications,
+    this.responseTime,
+    this.nextAvailable,
+    this.mediaUrls,
+    this.reviews,
+    this.workingHours,
+  });
+
+  factory SellerDetails.fromJson(Map<String, dynamic> json) {
+    return _$SellerDetailsFromJson(json);
+  }
   int? id;
   String? name;
   @JsonKey(name: 'first_name')
@@ -84,58 +134,6 @@ class SellerDetails {
   List<Review>? reviews;
   @JsonKey(name: 'working_hours')
   List<WorkingHour>? workingHours;
-
-  SellerDetails({
-    this.id,
-    this.name,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.emailVerifiedAt,
-    this.phoneVerifiedAt,
-    this.phone,
-    this.country,
-    this.bio,
-    this.type,
-    this.role,
-    this.avatar,
-    this.lastLoginAt,
-    this.status,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.balance,
-    this.isFeatured,
-    this.useLocation,
-    this.categories,
-    this.portfolioVisitsCount,
-    this.profileVisitsCount,
-    this.yearsOfExperience,
-    this.averageRating,
-    this.reviewsCount,
-    this.portfolioLikesCount,
-    this.trending,
-    this.appointmentsCount,
-    this.minPrice,
-    this.maxPrice,
-    this.favourite,
-    this.distance,
-    this.profileLikesCount,
-    this.subscriptionStatus,
-    this.availability,
-    this.plan,
-    this.stylistProfile,
-    this.stylistCertifications,
-    this.responseTime,
-    this.nextAvailable,
-    this.mediaUrls,
-    this.reviews,
-    this.workingHours,
-  });
-
-  factory SellerDetails.fromJson(Map<String, dynamic> json) {
-    return _$SellerDetailsFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$SellerDetailsToJson(this);
 }

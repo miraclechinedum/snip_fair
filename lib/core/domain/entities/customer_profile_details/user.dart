@@ -4,6 +4,35 @@ part 'user.g.dart';
 
 @JsonSerializable()
 class User {
+
+  User({
+    this.id,
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.emailVerifiedAt,
+    this.phoneVerifiedAt,
+    this.password,
+    this.phone,
+    this.country,
+    this.bio,
+    this.type,
+    this.role,
+    this.avatar,
+    this.gender,
+    this.lastLoginAt,
+    this.status,
+    this.rememberToken,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.balance,
+    this.isFeatured,
+    this.useLocation,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   int? id;
   String? name;
   @JsonKey(name: 'first_name')
@@ -39,35 +68,6 @@ class User {
   bool? isFeatured;
   @JsonKey(name: 'use_location')
   bool? useLocation;
-
-  User({
-    this.id,
-    this.name,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.emailVerifiedAt,
-    this.phoneVerifiedAt,
-    this.password,
-    this.phone,
-    this.country,
-    this.bio,
-    this.type,
-    this.role,
-    this.avatar,
-    this.gender,
-    this.lastLoginAt,
-    this.status,
-    this.rememberToken,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.balance,
-    this.isFeatured,
-    this.useLocation,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 }

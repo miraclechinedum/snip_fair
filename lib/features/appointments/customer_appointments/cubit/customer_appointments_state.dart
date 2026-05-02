@@ -1,11 +1,12 @@
 part of 'customer_appointments_cubit.dart';
 
 class CustomerAppointmentsState extends Equatable {
-  const CustomerAppointmentsState._(
-      {required this.appointments,
-      required this.updateAppointmentState,
-      required this.paginationData,
-      required this.calendarAppointments});
+  const CustomerAppointmentsState._({
+    required this.appointments,
+    required this.updateAppointmentState,
+    required this.paginationData,
+    required this.calendarAppointments,
+  });
 
   const CustomerAppointmentsState.initial()
       : appointments = const ProcessState.init(null),
@@ -25,11 +26,11 @@ class CustomerAppointmentsState extends Equatable {
     PaginationData? paginationData,
   }) {
     return CustomerAppointmentsState._(
-        appointments: appointments ?? this.appointments,
-        calendarAppointments: calendarAppointments ?? this.calendarAppointments,
-        updateAppointmentState:
-            updateAppointmentState ?? this.updateAppointmentState,
-        paginationData: paginationData ?? this.paginationData);
+      appointments: appointments ?? this.appointments,
+      calendarAppointments: calendarAppointments ?? this.calendarAppointments,
+      updateAppointmentState: updateAppointmentState ?? this.updateAppointmentState,
+      paginationData: paginationData ?? this.paginationData,
+    );
   }
 
   @override
@@ -37,6 +38,6 @@ class CustomerAppointmentsState extends Equatable {
         appointments,
         updateAppointmentState,
         paginationData,
-        calendarAppointments
+        calendarAppointments,
       ];
 }

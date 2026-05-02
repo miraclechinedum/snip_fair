@@ -1,25 +1,25 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/animation_button_effect.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/animation_button_effect.dart';
 
 class TopStylistCard extends StatelessWidget {
   const TopStylistCard({
-    super.key,
     required this.seller,
-    this.isTopRated = false,
     required this.onLikePressed,
+    super.key,
+    this.isTopRated = false,
   });
 
   final SellerDetails seller;
@@ -54,20 +54,17 @@ class TopStylistCard extends StatelessWidget {
                             top: Radius.circular(12),
                           ),
                           child: CachedNetworkImage(
-                            imageUrl: seller.stylistProfile?.banner
-                                    ?.completeImagePath() ??
-                                '',
+                            imageUrl: seller.stylistProfile?.banner?.completeImagePath() ?? '',
                             fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Assets.images.loading.image(
+                            placeholder: (context, url) => Assets.images.loading.image(
                               fit: BoxFit.cover,
                             ),
                             errorWidget: (context, url, error) {
                               return ColoredBox(
                                 color: Colors.grey.shade200,
                                 child: Center(
-                                    child:
-                                        SvgPicture.asset(Assets.images.logo)),
+                                  child: SvgPicture.asset(Assets.images.logo),
+                                ),
                               );
                             },
                           ),
@@ -161,8 +158,7 @@ class TopStylistCard extends StatelessWidget {
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(bottom: Radius.circular(12)),
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
                     ),
                     padding: const EdgeInsets.all(8),
                     child: Row(
@@ -178,8 +174,7 @@ class TopStylistCard extends StatelessWidget {
                                 fontSize: 16,
                               ),
                               AppText(
-                                text: seller.stylistProfile?.businessName ??
-                                    'N/A',
+                                text: seller.stylistProfile?.businessName ?? 'N/A',
                                 fontSize: 12,
                                 color: AppColors.primaryColor,
                                 fontWeight: FontWeight.w600,

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/account/seller/earnings/cubit/earnings_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart';
 
 class SellerPayoutSettingsFormWidget extends StatelessWidget {
   const SellerPayoutSettingsFormWidget({super.key});
@@ -60,8 +60,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                           ),
                           contentPadding: EdgeInsets.zero,
                           subtitle: const AppText(
-                            text:
-                                'Automatically transfer earnings to your bank account',
+                            text: 'Automatically transfer earnings to your bank account',
                             fontSize: 12,
                             color: AppColors.grey3,
                           ),
@@ -82,8 +81,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                           ),
                           contentPadding: EdgeInsets.zero,
                           subtitle: const AppText(
-                            text:
-                                'Choose to submit your payment request at your convenience',
+                            text: 'Choose to submit your payment request at your convenience',
                             fontSize: 12,
                             color: AppColors.grey3,
                           ),
@@ -129,7 +127,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                         ];
 
                         return DropdownButtonFormField<String>(
-                          value: state.settings?.payoutFrequency?.toLowerCase(),
+                          initialValue: state.settings?.payoutFrequency?.toLowerCase(),
                           isExpanded: true,
                           items: List.generate(freq.length, (index) {
                             return DropdownMenuItem<String>(
@@ -149,8 +147,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                             color: AppColors.grey900,
                             fontWeight: FontWeight.w400,
                           ),
-                          decoration: AppColors.inputDecoration
-                              .copyWith(hintText: 'Select option'),
+                          decoration: AppColors.inputDecoration.copyWith(hintText: 'Select option'),
                         );
                       },
                     ),
@@ -182,7 +179,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                         final day = scheduleDays;
 
                         return DropdownButtonFormField<String>(
-                          value: state.settings?.payoutDay?.toLowerCase(),
+                          initialValue: state.settings?.payoutDay?.toLowerCase(),
                           isExpanded: true,
                           items: List.generate(day.length, (index) {
                             return DropdownMenuItem<String>(
@@ -202,8 +199,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                             color: AppColors.grey900,
                             fontWeight: FontWeight.w400,
                           ),
-                          decoration: AppColors.inputDecoration
-                              .copyWith(hintText: 'Select option'),
+                          decoration: AppColors.inputDecoration.copyWith(hintText: 'Select option'),
                         );
                       },
                     ),
@@ -228,8 +224,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: BlocListener<EarningsCubit, EarningsState>(
               listenWhen: (previous, current) =>
-                  previous.updatePayoutSettingState !=
-                  current.updatePayoutSettingState,
+                  previous.updatePayoutSettingState != current.updatePayoutSettingState,
               listener: (context, state) async {
                 if (state.updatePayoutSettingState.hasSuccess) {
                   context.read<SellerProfileMgtCubit>().getProfileDetails(true);
@@ -240,8 +235,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
                   AppHelper.showAppDialog<void>(
                     context,
                     OnFailDialogContent(
-                      subtext: (state.updatePayoutSettingState.error!
-                                  as RemoteException)
+                      subtext: (state.updatePayoutSettingState.error! as RemoteException)
                               .errorResponse
                               ?.message ??
                           '',
@@ -253,9 +247,7 @@ class SellerPayoutSettingsFormWidget extends StatelessWidget {
               child: CustomButton(
                 isLoading: cubit.state.updatePayoutSettingState.isLoading,
                 title: 'Save Changes',
-                onPressed: cubit.state.settings != null
-                    ? cubit.updatePayoutSettings
-                    : null,
+                onPressed: cubit.state.settings != null ? cubit.updatePayoutSettings : null,
               ),
             ),
           ),

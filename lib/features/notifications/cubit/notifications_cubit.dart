@@ -1,20 +1,19 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
-import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/services/notification_service.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
-import 'package:snip_fair/core/utils/pagination_data.dart';
 
 part 'notifications_state.dart';
 
 @Injectable()
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit(this._profileRepository)
-      : super(NotificationsState.initial());
+  NotificationsCubit(this._profileRepository) : super(NotificationsState.initial());
 
   final ProfileRepository _profileRepository;
 
@@ -28,8 +27,8 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     if (isInitial) {
       emit(
         state.copyWith(
-          notificationsListState: ProcessState.loading(null),
-          paginationData: PaginationData(),
+          notificationsListState: const ProcessState.loading(),
+          paginationData: const PaginationData(),
         ),
       );
     } else {
@@ -75,8 +74,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       failure: (error) {
         emit(
           state.copyWith(
-            notificationsListState:
-                ProcessState.error(error, state.notificationsListState.data),
+            notificationsListState: ProcessState.error(error, state.notificationsListState.data),
           ),
         );
       },
@@ -88,8 +86,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   }
 
   Future<void> markNotificationAsRead(int id) async {
-    final response =
-        await _profileRepository.markNotificationAsRead(id.toString());
+    final response = await _profileRepository.markNotificationAsRead(id.toString());
     response.when(
       success: (data) {
         // Optionally handle success response

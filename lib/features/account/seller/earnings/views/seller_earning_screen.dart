@@ -1,29 +1,29 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
-import 'package:keyboard_actions/keyboard_actions_config.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+import 'package:snip_fair/core/utils/app_extensions.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:keyboard_actions/keyboard_actions_config.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/app_extensions.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/features/account/seller/earnings/cubit/earnings_cubit.dart';
 import 'package:snip_fair/features/account/seller/earnings/views/seller_payout_settings_form_view.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 
 @RoutePage()
 class SellerEarningScreen extends StatelessWidget implements AutoRouteWrapper {
@@ -192,8 +192,7 @@ class SellerEarningScreen extends StatelessWidget implements AutoRouteWrapper {
 
 class TransactionsWidget extends StatefulWidget {
   const TransactionsWidget({
-    super.key,
-    required this.cubit,
+    required this.cubit, super.key,
   });
 
   final EarningsCubit cubit;
@@ -305,7 +304,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
             child: InfiniteList(
               physics: const AlwaysScrollableScrollPhysics(),
               shrinkWrap: true,
-              padding: EdgeInsets.only(bottom: 50),
+              padding: const EdgeInsets.only(bottom: 50),
               emptyBuilder: (context) => const Center(
                 child: AppText(
                   text: 'No transactions found',
@@ -362,7 +361,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                             style: const TextStyle(
                               color: AppColors.black,
                               fontSize: 12,
-                            )),
+                            ),),
                         const TextSpan(text: '\n'),
                         TextSpan(
                           text: transaction.createdAt != null
@@ -439,8 +438,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
 
 class OverviewWidget extends StatelessWidget {
   const OverviewWidget({
-    super.key,
-    required this.cubit,
+    required this.cubit, super.key,
   });
 
   final EarningsCubit cubit;
@@ -707,7 +705,6 @@ class _RequestPayoutFormWidgetState extends State<RequestPayoutFormWidget> {
 
   KeyboardActionsConfig get _keyboardActionsConfig {
     return KeyboardActionsConfig(
-      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
       keyboardBarColor: const Color(0xFFCAD1D9), //Apple keyboard color
       actions: [
         KeyboardActionsItem(
@@ -717,10 +714,10 @@ class _RequestPayoutFormWidgetState extends State<RequestPayoutFormWidget> {
               return GestureDetector(
                 onTap: () => node.unfocus(),
                 child: Container(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
+                  padding: const EdgeInsets.all(12),
+                  child: const Text(
                     'Done',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primaryColor, //Done button color
                       fontWeight: FontWeight.bold,
                     ),
@@ -805,7 +802,7 @@ class _RequestPayoutFormWidgetState extends State<RequestPayoutFormWidget> {
                         label: 'Withdrawal Amount (R)',
                         onChanged: (v) => _amount = double.tryParse(v) ?? 0,
                         inputType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                            decimal: true,),
                         hint: '0.00',
                         textInputAction: TextInputAction.done,
                       ),

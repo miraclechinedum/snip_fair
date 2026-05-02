@@ -43,7 +43,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
         border: Border(
           top: BorderSide(
             color: theme.colorScheme.outlineVariant,
-            width: 1,
           ),
         ),
       ),

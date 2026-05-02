@@ -1,15 +1,14 @@
 import 'dart:io';
-
-import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-
-import '../../utils/utils.dart';
-import '../theme/theme.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 
 class LabeledInputField extends StatefulWidget {
   const LabeledInputField({
+    super.key,
     required this.label,
     required this.onChanged,
     this.errorText,
@@ -84,11 +83,11 @@ class _LabeledInputFieldState extends State<LabeledInputField> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      ((time) {
+      (time) {
         if (widget.onInit != null) {
           widget.onInit!();
         }
-      }),
+      },
     );
   }
 
@@ -121,8 +120,7 @@ class _LabeledInputFieldState extends State<LabeledInputField> {
             onChanged: widget.onChanged,
             obscureText: widget.obscureText,
             maxLength: widget.maxLength,
-            initialValue:
-                widget.controller != null ? null : widget.initialValue,
+            initialValue: widget.controller != null ? null : widget.initialValue,
             style: widget.style ?? const TextStyle(color: AppColors.grey4),
             autovalidateMode: widget.autoValidateMode,
             inputFormatters: widget.inputFormatters,
@@ -135,7 +133,6 @@ class _LabeledInputFieldState extends State<LabeledInputField> {
               floatingLabelBehavior: widget.floatingLabelBehavior,
               disabledBorder: OutlineInputBorder(
                 borderSide: const BorderSide(
-                  width: 1,
                   color: AppColors.grey2,
                 ),
                 borderRadius: BorderRadius.circular(
@@ -154,23 +151,6 @@ class _LabeledInputFieldState extends State<LabeledInputField> {
 }
 
 class LabeledModalInputForm extends StatefulWidget {
-  final int? minLines;
-  final int? maxLines;
-  final int? maxLength;
-  final String label;
-  final Widget? labelWidget;
-  final Function()? onInit;
-  final String? Function(String?)? validator;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final Text? placeholder;
-  final Color? labelColor;
-  final double? height;
-  final List<String>? autofillHints;
-  final TextStyle? style;
-  final Widget? suffix;
-  final TextEditingController? controller;
-
   const LabeledModalInputForm({
     Key? key,
     required this.label,
@@ -190,6 +170,22 @@ class LabeledModalInputForm extends StatefulWidget {
     this.controller,
     this.validator,
   }) : super(key: key);
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
+  final String label;
+  final Widget? labelWidget;
+  final Function()? onInit;
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final Text? placeholder;
+  final Color? labelColor;
+  final double? height;
+  final List<String>? autofillHints;
+  final TextStyle? style;
+  final Widget? suffix;
+  final TextEditingController? controller;
 
   @override
   State<LabeledModalInputForm> createState() => _LabeledModalInputFormState();
@@ -200,11 +196,11 @@ class _LabeledModalInputFormState extends State<LabeledModalInputForm> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      ((time) {
+      (time) {
         if (widget.onInit != null) {
           widget.onInit!();
         }
-      }),
+      },
     );
   }
 
@@ -248,7 +244,7 @@ class _LabeledModalInputFormState extends State<LabeledModalInputForm> {
 
 class LabeledInputFieldPassword extends StatefulWidget {
   const LabeledInputFieldPassword({
-    Key? key,
+    super.key,
     required this.label,
     required this.onChanged,
     this.errorText,
@@ -259,7 +255,7 @@ class LabeledInputFieldPassword extends StatefulWidget {
     this.height,
     this.autofillHints,
     this.style,
-  }) : super(key: key);
+  });
 
   final String label;
   final Function(String text) onChanged;
@@ -273,8 +269,7 @@ class LabeledInputFieldPassword extends StatefulWidget {
   final TextStyle? style;
 
   @override
-  State<LabeledInputFieldPassword> createState() =>
-      _LabeledInputFieldPasswordState();
+  State<LabeledInputFieldPassword> createState() => _LabeledInputFieldPasswordState();
 }
 
 class _LabeledInputFieldPasswordState extends State<LabeledInputFieldPassword> {
@@ -316,7 +311,7 @@ class _LabeledInputFieldPasswordState extends State<LabeledInputFieldPassword> {
 
 class LabeledAmountInputField extends StatelessWidget {
   const LabeledAmountInputField({
-    Key? key,
+    super.key,
     required this.label,
     required this.onChanged,
     this.onTap,
@@ -337,7 +332,7 @@ class LabeledAmountInputField extends StatelessWidget {
     this.initialValue,
     this.autoValidateMode,
     this.onFieldSubmitted,
-  }) : super(key: key);
+  });
 
   final String label;
   final Function(String text) onChanged;
@@ -423,7 +418,7 @@ class LabeledModalInputField extends StatelessWidget {
   final TextEditingController? controller;
 
   const LabeledModalInputField({
-    Key? key,
+    super.key,
     required this.label,
     this.enabled = true,
     this.placeholder,
@@ -431,7 +426,7 @@ class LabeledModalInputField extends StatelessWidget {
     this.controller,
     this.validator,
     this.keyboardType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -472,7 +467,7 @@ class LabeledModalInputField extends StatelessWidget {
 
 class AccountNumberInputField extends StatefulWidget {
   const AccountNumberInputField({
-    Key? key,
+    super.key,
     required this.label,
     required this.onChanged,
     required this.counter,
@@ -496,7 +491,7 @@ class AccountNumberInputField extends StatefulWidget {
     this.onTap,
     this.validator,
     this.formKey,
-  }) : super(key: key);
+  });
 
   final int? minLines;
   final int? maxLines;
@@ -523,8 +518,7 @@ class AccountNumberInputField extends StatefulWidget {
   final Key? formKey;
 
   @override
-  State<AccountNumberInputField> createState() =>
-      _AccountNumberInputFieldState();
+  State<AccountNumberInputField> createState() => _AccountNumberInputFieldState();
 }
 
 class _AccountNumberInputFieldState extends State<AccountNumberInputField> {
@@ -532,11 +526,11 @@ class _AccountNumberInputFieldState extends State<AccountNumberInputField> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      ((time) {
+      (time) {
         if (widget.onInit != null) {
           widget.onInit!();
         }
-      }),
+      },
     );
   }
 
@@ -585,10 +579,10 @@ class _AccountNumberInputFieldState extends State<AccountNumberInputField> {
 
 class LoadingAmountInputField extends StatelessWidget {
   const LoadingAmountInputField({
-    Key? key,
+    super.key,
     required this.label,
     this.message,
-  }) : super(key: key);
+  });
 
   final String label;
   final String? message;
@@ -608,7 +602,7 @@ class LoadingAmountInputField extends StatelessWidget {
         SizedBox(
           child: TextFormField(
             readOnly: true,
-            initialValue: message ?? "Loading...",
+            initialValue: message ?? 'Loading...',
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.pending_actions),
             ),
@@ -621,11 +615,11 @@ class LoadingAmountInputField extends StatelessWidget {
 
 class LabeledDropdownField extends StatefulWidget {
   const LabeledDropdownField({
-    Key? key,
+    super.key,
     required this.label,
     required this.onChanged,
     this.errorText,
-  }) : super(key: key);
+  });
 
   final String label;
   final Function(String text) onChanged;
@@ -653,9 +647,9 @@ class _LabeledDropdownFieldState extends State<LabeledDropdownField> {
           child: Container(
             padding: const EdgeInsets.all(17),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const Text('Cash')],
+              children: [Text('Cash')],
             ),
           ),
         ),

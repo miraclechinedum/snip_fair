@@ -1,7 +1,7 @@
 part of 'login_cubit.dart';
 
 class LoginState extends BaseState {
-  LoginState._({
+  const LoginState._({
     required this.email,
     required this.password,
     required this.loginResult,
@@ -26,8 +26,7 @@ class LoginState extends BaseState {
   final ProcessState<LoginResponse> loginResult;
   final ProcessState<LoginResponse> googleLoginResult;
 
-  bool get canLogin =>
-      Formz.validate([email, password]) && !loginResult.isLoading;
+  bool get canLogin => Formz.validate([email, password]) && !loginResult.isLoading;
 
   @override
   LoginState copyWith({
@@ -38,7 +37,6 @@ class LoginState extends BaseState {
     bool? showPassword,
     Exception? exception,
     bool? isLoading,
-
   }) {
     return LoginState._(
       email: email ?? this.email,

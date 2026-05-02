@@ -1,4 +1,4 @@
-import '../../data/models/server_error.dart';
+import 'package:snip_fair/core/data/models/server_error.dart';
 
 class RemoteException implements Exception {
   const RemoteException._(
@@ -25,13 +25,11 @@ class RemoteException implements Exception {
   const RemoteException.networkError(int statusCode)
       : this._(RemoteExceptionKind.network, statusCode: statusCode);
 
-  const RemoteException.noInternetError()
-      : this._(RemoteExceptionKind.noInternet);
+  const RemoteException.noInternetError() : this._(RemoteExceptionKind.noInternet);
 
   const RemoteException.timeoutError() : this._(RemoteExceptionKind.timeout);
 
-  const RemoteException.cancellationError()
-      : this._(RemoteExceptionKind.cancellation);
+  const RemoteException.cancellationError() : this._(RemoteExceptionKind.cancellation);
 
   RemoteException.unexpectedError(Object? exception)
       : this._(
@@ -44,8 +42,7 @@ class RemoteException implements Exception {
   final ServerError? errorResponse;
   final Object? exception;
 
-  bool get isServerInternalError =>
-      statusCode != null && statusCode! >= 500 && statusCode! <= 599;
+  bool get isServerInternalError => statusCode != null && statusCode! >= 500 && statusCode! <= 599;
 
   @override
   String toString() {
@@ -53,12 +50,4 @@ class RemoteException implements Exception {
   }
 }
 
-enum RemoteExceptionKind {
-  noInternet,
-  network,
-  http,
-  server,
-  timeout,
-  cancellation,
-  unexpected
-}
+enum RemoteExceptionKind { noInternet, network, http, server, timeout, cancellation, unexpected }

@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Concise notification service that
@@ -41,10 +40,7 @@ class NotificationService {
 
     // Ask for permission (iOS/macOS)
     await FirebaseMessaging.instance.requestPermission(
-      alert: true,
       badge: true,
-      sound: true,
-      provisional: false,
     );
 
     // Initialize local notifications
@@ -78,8 +74,7 @@ class NotificationService {
       _updatesController.add(data);
 
       await _showLocalNotification(
-        id: message.messageId?.hashCode ??
-            DateTime.now().millisecondsSinceEpoch,
+        id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
         title: message.notification?.title ?? (data['title'] as String?),
         body: message.notification?.body ?? (data['body'] as String?),
         payload: jsonEncode(data),

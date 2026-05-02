@@ -1,35 +1,41 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
-import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
-import 'package:snip_fair/features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart';
-import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/features/stylists/onboard/views/seller_business_id_verify.dart';
+import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
+import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_form_bottom_sheet.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/views/update_create_appointment_screen.dart';
+import 'package:snip_fair/features/appointments/stylist_appointments/details/cubit/seller_appointment_details_cubit.dart';
 
 @RoutePage()
-class SellerAppointmentDetailsScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class SellerAppointmentDetailsScreen extends StatelessWidget implements AutoRouteWrapper {
   const SellerAppointmentDetailsScreen({
     required this.appointmentId,
     super.key,
   });
 
   final String? appointmentId;
+
+  void _navigateToConversation(BuildContext context, String customerId) {
+    context.read<ConversationsCubit>().startConversation(customerId).then((conversation) {
+      if (!context.mounted || conversation == null) return;
+      context.router.push(ConversationListRoute(chatConversation: conversation));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,20 +44,18 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
       appBar: const CustomAppBar(
         title: 'Appointment Details',
       ),
-      body: BlocListener<SellerAppointmentDetailsCubit,
-          SellerAppointmentDetailsState>(
+      body: BlocListener<SellerAppointmentDetailsCubit, SellerAppointmentDetailsState>(
         listenWhen: (previous, current) =>
             previous.updateAppointmentState != current.updateAppointmentState,
         listener: (context, state) {
           if (state.updateAppointmentState.hasError) {
-            AppHelper.showAppDialog(
+            AppHelper.showAppDialog<void>(
               context,
               OnFailDialogContent(
-                subtext:
-                    (state.updateAppointmentState.error! as RemoteException)
-                            .errorResponse
-                            ?.message ??
-                        '',
+                subtext: (state.updateAppointmentState.error! as RemoteException)
+                        .errorResponse
+                        ?.message ??
+                    '',
                 onDoneCallback: (_) {},
               ),
             );
@@ -68,8 +72,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
             },
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: BlocBuilder<SellerAppointmentDetailsCubit,
-                  SellerAppointmentDetailsState>(
+              child: BlocBuilder<SellerAppointmentDetailsCubit, SellerAppointmentDetailsState>(
                 builder: (context, state) {
                   if (state.fetchAppointmentDetailsState.isLoading) {
                     return const Center(
@@ -121,8 +124,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 80.horizontalSpace,
                                 Expanded(
                                   child: AppText(
-                                    text: appointment.createdAt
-                                        .toShortDateString(),
+                                    text: appointment.createdAt.toShortDateString(),
                                     textAlign: TextAlign.end,
                                   ),
                                 ),
@@ -142,8 +144,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     SelectableText(
-                                      appointment.bookingId?.toString() ??
-                                          'N/A',
+                                      appointment.bookingId?.toString() ?? 'N/A',
                                       textAlign: TextAlign.end,
                                     ),
                                     4.horizontalSpace,
@@ -151,8 +152,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                       onTap: () {
                                         AppHelper.copyToClipboard(
                                           context,
-                                          appointment.bookingId?.toString() ??
-                                              'N/A',
+                                          appointment.bookingId?.toString() ?? 'N/A',
                                         );
                                       },
                                       child: const Icon(
@@ -180,28 +180,21 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                   },
                                   child: CircleAvatar(
                                     radius: 20,
-                                    backgroundImage:
-                                        appointment.customer?.avatar != null
-                                            ? CachedNetworkImageProvider(
-                                                appointment.customer!.avatar!
-                                                    .toString()
-                                                    .completeImagePath(),
-                                              )
-                                            : null,
+                                    backgroundImage: appointment.customer?.avatar != null
+                                        ? CachedNetworkImageProvider(
+                                            appointment.customer!.avatar!
+                                                .toString()
+                                                .completeImagePath(),
+                                          )
+                                        : null,
                                     child: appointment.customer?.avatar != null
                                         ? null
                                         : AppText(
-                                            text: appointment.customer
-                                                            ?.firstName !=
-                                                        null &&
-                                                    appointment.customer
-                                                            ?.lastName !=
-                                                        null
+                                            text: appointment.customer?.firstName != null &&
+                                                    appointment.customer?.lastName != null
                                                 ? AppHelper.initialsFromName(
-                                                    appointment
-                                                        .customer!.firstName!,
-                                                    appointment
-                                                        .customer!.lastName!,
+                                                    appointment.customer!.firstName!,
+                                                    appointment.customer!.lastName!,
                                                   )
                                                 : 'N/A',
                                             color: AppColors.grey3,
@@ -213,8 +206,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 8.horizontalSpace,
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       AppText(
                                         text: appointment.customer?.name ?? '',
@@ -233,17 +225,14 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(23),
-                                    color: appointment.status
-                                        ?.toStatusColor()
-                                        .withOpacity(0.1),
+                                    color: appointment.status?.toStatusColor().withOpacity(0.1),
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                     vertical: 5,
                                   ),
                                   child: AppText(
-                                    text: appointment.status?.toStatusText() ??
-                                        '',
+                                    text: appointment.status?.toStatusText() ?? '',
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: appointment.status.toStatusColor(),
@@ -284,9 +273,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 40.horizontalSpace,
                                 Expanded(
                                   child: AppText(
-                                    text: appointment.portfolio?.price
-                                            ?.formatAmount() ??
-                                        'N/A',
+                                    text: appointment.portfolio?.price?.formatAmount() ?? 'N/A',
                                     textAlign: TextAlign.end,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -349,13 +336,10 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                       context,
                                       TimeOfDay(
                                         hour: int.parse(
-                                          appointment.appointmentTime!
-                                              .split(':')[0],
+                                          appointment.appointmentTime!.split(':')[0],
                                         ),
                                         minute: int.parse(
-                                          appointment.appointmentTime!
-                                              .split(':')[1]
-                                              .removeAMPM(),
+                                          appointment.appointmentTime!.split(':')[1].removeAMPM(),
                                         ),
                                       ),
                                     ),
@@ -413,14 +397,10 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                         ),
                         child: Center(
                           child: AppText(
-                            text: state
-                                    .fetchAppointmentDetailsState.data!.status
-                                    ?.toStatusText() ??
+                            text: state.fetchAppointmentDetailsState.data!.status?.toStatusText() ??
                                 '',
                             fontWeight: FontWeight.w600,
-                            color: state
-                                .fetchAppointmentDetailsState.data!.status
-                                .toStatusColor(),
+                            color: state.fetchAppointmentDetailsState.data!.status.toStatusColor(),
                           ),
                         ),
                       ),
@@ -440,11 +420,51 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                             ),
                             const Divider(),
                             12.verticalSpace,
-                            if (state.fetchAppointmentDetailsState.data!.status
-                                .isPendingStatus) ...[
+                            if (state
+                                .fetchAppointmentDetailsState.data!.status.isPendingStatus) ...[
                               CustomButton(
                                 title: 'Accept Appointment',
-                                onPressed: cubit.acceptAppointment,
+                                isLoading: state.updateAppointmentState.isLoading,
+                                onPressed: state.updateAppointmentState.isLoading
+                                    ? null
+                                    : () async {
+                                        final wantsPayment = await showDialog<bool>(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                            title: const Text('Request Additional Payment?'),
+                                            content: const Text(
+                                              'Would you like to send a payment request to your customer?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(false),
+                                                child: const Text('No'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(true),
+                                                child: const Text('Yes'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (wantsPayment == null || !context.mounted) return;
+                                        await cubit.acceptAppointment();
+                                        if (!context.mounted) return;
+                                        if (wantsPayment &&
+                                            cubit.state.updateAppointmentState.hasSuccess) {
+                                          showPaymentRequestForm(
+                                            context,
+                                            recipientId:
+                                                int.parse(appointment.customerId!.toString()),
+                                            conversationId: '',
+                                            appointmentId: appointment.id,
+                                            onSuccess: () => _navigateToConversation(
+                                              context,
+                                              appointment.customerId!.toString(),
+                                            ),
+                                          );
+                                        }
+                                      },
                               ),
                               12.verticalSpace,
                               CustomButton(
@@ -455,8 +475,8 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                               ),
                               12.verticalSpace,
                             ],
-                            if (state.fetchAppointmentDetailsState.data!.status
-                                .isApprovedStatus) ...[
+                            if (state
+                                .fetchAppointmentDetailsState.data!.status.isApprovedStatus) ...[
                               CustomButton(
                                 title: 'Verify Appointment',
                                 onPressed: () {
@@ -469,9 +489,23 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 },
                               ),
                               12.verticalSpace,
+                              CustomButton(
+                                title: 'Request Additional Payment',
+                                onPressed: () => showPaymentRequestForm(
+                                  context,
+                                  recipientId: int.parse(appointment.customerId!.toString()),
+                                  conversationId: '',
+                                  appointmentId: appointment.id,
+                                  onSuccess: () => _navigateToConversation(
+                                    context,
+                                    appointment.customerId!.toString(),
+                                  ),
+                                ),
+                              ),
+                              12.verticalSpace,
                             ],
-                            if (state.fetchAppointmentDetailsState.data!.status
-                                .isConfirmedStatus) ...[
+                            if (state
+                                .fetchAppointmentDetailsState.data!.status.isConfirmedStatus) ...[
                               CustomButton(
                                 title: 'Mark as Completed',
                                 onPressed: () {
@@ -485,8 +519,8 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                               ),
                               12.verticalSpace,
                             ],
-                            if (state.fetchAppointmentDetailsState.data!.status
-                                .isCompletedStatus) ...[
+                            if (state
+                                .fetchAppointmentDetailsState.data!.status.isCompletedStatus) ...[
                               CustomButton(
                                 title: 'Upload Proof of Completion',
                                 onPressed: () {
@@ -495,8 +529,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                     modal: SubmitProofBottomSheet(
                                       onSubmit: (comment, images) {
                                         return context
-                                            .read<
-                                                SellerAppointmentDetailsCubit>()
+                                            .read<SellerAppointmentDetailsCubit>()
                                             .submitAppointmentProof(
                                               images: images,
                                               comment: comment,
@@ -515,8 +548,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                 context
                                     .read<ConversationsCubit>()
                                     .startConversation(
-                                      state.fetchAppointmentDetailsState.data!
-                                          .customerId!
+                                      state.fetchAppointmentDetailsState.data!.customerId!
                                           .toString(),
                                     )
                                     .then(
@@ -543,8 +575,7 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
                                     modal: SubmitDisputeBottomSheet(
                                       onSubmit: (comment, images) {
                                         return context
-                                            .read<
-                                                SellerAppointmentDetailsCubit>()
+                                            .read<SellerAppointmentDetailsCubit>()
                                             .submitDispute(
                                               images: images,
                                               comment: comment,
@@ -579,8 +610,8 @@ class SellerAppointmentDetailsScreen extends StatelessWidget
   @override
   Widget wrappedRoute(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<SellerAppointmentDetailsCubit>()
-        ..getAppointmentDetails(appointmentId!),
+      create: (context) =>
+          getIt<SellerAppointmentDetailsCubit>()..getAppointmentDetails(appointmentId!),
       child: this,
     );
   }
@@ -639,8 +670,7 @@ class _CodeEntryBottomSheetState extends State<CodeEntryBottomSheet> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           decoration: const BoxDecoration(
@@ -766,8 +796,7 @@ class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
       if (e is RemoteException) {
         AppHelper.showSnackBar(
           context,
-          message: e.errorResponse?.message ??
-              'Failed to submit proof. Please try again.',
+          message: e.errorResponse?.message ?? 'Failed to submit proof. Please try again.',
         );
         return;
       }
@@ -798,9 +827,7 @@ class _SubmitProofBottomSheetState extends State<SubmitProofBottomSheet> {
               8.horizontalSpace,
               Expanded(
                 child: AppText(
-                  text: p.split(RegExp(r'[\\/]').toString()).isNotEmpty
-                      ? p.split('/').last
-                      : p,
+                  text: p.split(RegExp(r'[\\/]').toString()).isNotEmpty ? p.split('/').last : p,
                 ),
               ),
               GestureDetector(

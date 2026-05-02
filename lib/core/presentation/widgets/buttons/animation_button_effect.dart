@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AnimationButtonEffect extends StatefulWidget {
+  const AnimationButtonEffect({super.key, this.disabled = true, required this.child});
   final bool disabled;
 
   final Widget child;
-
-  const AnimationButtonEffect(
-      {super.key, this.disabled = true, required this.child});
 
   @override
   State createState() => _AnimationButtonEffectState();
@@ -16,14 +14,13 @@ class _AnimationButtonEffectState extends State<AnimationButtonEffect>
     with TickerProviderStateMixin {
   AnimationController? _controllerA;
 
-  var squareScaleA = 0.95;
+  double squareScaleA = 0.95;
 
   @override
   void initState() {
     _controllerA = AnimationController(
       vsync: this,
       lowerBound: 0.95,
-      upperBound: 1.0,
       duration: const Duration(milliseconds: 80),
     );
     _controllerA!.addListener(() {
@@ -32,7 +29,7 @@ class _AnimationButtonEffectState extends State<AnimationButtonEffect>
       });
     });
 
-    _controllerA!.forward(from: 0.0);
+    _controllerA!.forward(from: 0);
     super.initState();
   }
 
@@ -50,7 +47,7 @@ class _AnimationButtonEffectState extends State<AnimationButtonEffect>
               _controllerA!.reverse();
             },
             onPointerUp: (_) {
-              _controllerA!.forward(from: 1.0);
+              _controllerA!.forward(from: 1);
               if (!widget.disabled) {}
             },
             child: Transform.scale(

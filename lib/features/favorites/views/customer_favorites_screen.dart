@@ -1,19 +1,18 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/features/favorites/cubit/customer_favorites_cubit.dart';
 
 @RoutePage()
-class CustomerFavoritesScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class CustomerFavoritesScreen extends StatelessWidget implements AutoRouteWrapper {
   const CustomerFavoritesScreen({super.key});
 
   @override
@@ -26,38 +25,39 @@ class CustomerFavoritesScreen extends StatelessWidget
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-          appBar: AppBar(
-            leading: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: const CircleBorder(),
-                side: BorderSide.none,
-                foregroundColor: AppColors.primaryGrey,
-                fixedSize: const Size(46, 46),
-                alignment: Alignment.center,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppColors.black,
-              ),
+        appBar: AppBar(
+          leading: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              shape: const CircleBorder(),
+              side: BorderSide.none,
+              foregroundColor: AppColors.primaryGrey,
+              fixedSize: const Size(46, 46),
+              alignment: Alignment.center,
             ),
-            title: AppText(
-              text: 'Favorites',
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryColor,
-            ),
-            centerTitle: true,
-            bottom: TabBar(
-              tabs: tabs,
-              indicatorColor: AppColors.primaryColor,
-              labelColor: AppColors.primaryColor,
-              unselectedLabelColor: AppColors.grey2,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.black,
             ),
           ),
-          body: TabBarView(children: [
+          title: AppText(
+            text: 'Favorites',
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primaryColor,
+          ),
+          centerTitle: true,
+          bottom: TabBar(
+            tabs: tabs,
+            indicatorColor: AppColors.primaryColor,
+            labelColor: AppColors.primaryColor,
+            unselectedLabelColor: AppColors.grey2,
+          ),
+        ),
+        body: TabBarView(
+          children: [
             BlocBuilder<CustomerFavoritesCubit, CustomerFavoritesState>(
               builder: (context, state) {
                 if (state.fetchFavoriteStylistsState.isLoading) {
@@ -68,8 +68,7 @@ class CustomerFavoritesScreen extends StatelessWidget
                   );
                 }
 
-                final stylists =
-                    state.fetchFavoriteStylistsState.data?.data ?? [];
+                final stylists = state.fetchFavoriteStylistsState.data?.data ?? [];
                 if (stylists.isEmpty) {
                   return const Center(
                     child: Padding(
@@ -83,13 +82,13 @@ class CustomerFavoritesScreen extends StatelessWidget
                   );
                 }
                 return RefreshIndicator(
-                  onRefresh: () => context
-                      .read<CustomerFavoritesCubit>()
-                      .getFavouriteSellers(),
+                  onRefresh: () => context.read<CustomerFavoritesCubit>().getFavouriteSellers(),
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 24),
+                      horizontal: 16,
+                      vertical: 24,
+                    ),
                     itemBuilder: (context, index) {
                       final stylist = stylists[index];
                       return DefaultStylistCard(
@@ -117,8 +116,7 @@ class CustomerFavoritesScreen extends StatelessWidget
                   );
                 }
 
-                final portfolios =
-                    state.fetchFavoritePortfoliosState.data ?? [];
+                final portfolios = state.fetchFavoritePortfoliosState.data ?? [];
                 if (portfolios.isEmpty) {
                   return const Center(
                     child: Padding(
@@ -132,13 +130,13 @@ class CustomerFavoritesScreen extends StatelessWidget
                   );
                 }
                 return RefreshIndicator(
-                  onRefresh: () => context
-                      .read<CustomerFavoritesCubit>()
-                      .getFavouriteSellers(),
+                  onRefresh: () => context.read<CustomerFavoritesCubit>().getFavouriteSellers(),
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 24),
+                      horizontal: 16,
+                      vertical: 24,
+                    ),
                     itemBuilder: (context, index) {
                       final portfolio = portfolios[index];
                       return PopularStyleCard(
@@ -156,7 +154,9 @@ class CustomerFavoritesScreen extends StatelessWidget
                 );
               },
             ),
-          ])),
+          ],
+        ),
+      ),
     );
   }
 

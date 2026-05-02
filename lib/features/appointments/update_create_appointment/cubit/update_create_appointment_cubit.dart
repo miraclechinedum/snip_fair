@@ -1,17 +1,16 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart'
-    show BuildContext, MaterialLocalizations, TimeOfDay;
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/domain/entities/tip/tip_response.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
-import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
-import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/utils/app_extensions.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 
 part 'update_create_appointment_state.dart';
 
@@ -71,8 +70,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
         ),
       );
     }
-    final response =
-        await _appointmentRepository.getCustomerAppointmentById(appointmentId);
+    final response = await _appointmentRepository.getCustomerAppointmentById(appointmentId);
     response.when(
       success: (data) {
         emit(
@@ -118,8 +116,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
         ),
       );
     }
-    final response =
-        await _appointmentRepository.customerFetchStylistById(stylistId);
+    final response = await _appointmentRepository.customerFetchStylistById(stylistId);
     response.when(
       success: (data) {
         emit(
@@ -253,8 +250,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     );
   }
 
-  Future<void> submitDispute(
-      {required String comment, required List<String> images}) async {
+  Future<void> submitDispute({required String comment, required List<String> images}) async {
     Fluttertoast.showToast(msg: 'Initiating dispute...');
     final response = await _appointmentRepository.disputeCustomerAppointment(
       state.fetchAppointmentState.data!.id!.toString(),
@@ -268,6 +264,32 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
       },
       failure: (error) {
         Fluttertoast.showToast(msg: 'Failed to submit dispute');
+      },
+    );
+  }
+
+  Future<void> tipAppointment(double amount) async {
+    emit(state.copyWith(tipAppointmentState: const ProcessState.loading()));
+    final id = state.fetchAppointmentState.data!.id!.toString();
+    final response = await _appointmentRepository.tipCustomerAppointment(
+      id,
+      amount: amount,
+    );
+
+    response.when(
+      success: (TipResponse data) {
+        final appointment = state.fetchAppointmentState.data!;
+        appointment.tipAmount = data.tipAmount;
+        appointment.tippedAt = DateTime.now();
+        emit(
+          state.copyWith(
+            tipAppointmentState: ProcessState.success(data),
+            fetchAppointmentState: ProcessState.success(appointment),
+          ),
+        );
+      },
+      failure: (error) {
+        emit(state.copyWith(tipAppointmentState: ProcessState.error(error)));
       },
     );
   }

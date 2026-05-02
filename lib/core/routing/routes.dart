@@ -22,7 +22,9 @@ class AppRouter extends RootStackRouter {
           ],
         ),
         AutoRoute(
-            path: '/seller-profile', page: StylistSellerDetailsRoute.page),
+          path: '/seller-profile',
+          page: StylistSellerDetailsRoute.page,
+        ),
         AutoRoute(path: '/stylist-more-info', page: StylistMoreInfoRoute.page),
 
         //Shared

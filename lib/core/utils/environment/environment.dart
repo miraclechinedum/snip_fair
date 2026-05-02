@@ -1,7 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'base_config.dart';
-import 'environment_configs.dart';
+import 'package:snip_fair/core/utils/environment/base_config.dart';
+import 'package:snip_fair/core/utils/environment/environment_configs.dart';
 
 class Environment {
   factory Environment() {

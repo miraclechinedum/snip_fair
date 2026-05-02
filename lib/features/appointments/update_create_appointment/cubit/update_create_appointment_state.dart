@@ -13,6 +13,7 @@ class UpdateCreateAppointmentState extends Equatable {
       fetchSellerDetailsState: ProcessState.init(null),
       cancelBookingState: ProcessState.init(null),
       rescheduleBookingState: ProcessState.init(null),
+      tipAppointmentState: ProcessState.init(null),
     );
   }
 
@@ -27,6 +28,7 @@ class UpdateCreateAppointmentState extends Equatable {
     required this.fetchSellerDetailsState,
     required this.cancelBookingState,
     required this.rescheduleBookingState,
+    required this.tipAppointmentState,
   });
 
   final ProcessState<SellerPortfolio> fetchPortfolioState;
@@ -35,6 +37,7 @@ class UpdateCreateAppointmentState extends Equatable {
   final ProcessState<void> updateOrCreateAppointmentState;
   final ProcessState<void> cancelBookingState;
   final ProcessState<void> rescheduleBookingState;
+  final ProcessState<TipResponse> tipAppointmentState;
 
   final DateTime? selectedDate;
   final TimeOfDay? selectedTime;
@@ -63,6 +66,7 @@ class UpdateCreateAppointmentState extends Equatable {
         fetchSellerDetailsState,
         cancelBookingState,
         rescheduleBookingState,
+        tipAppointmentState,
       ];
 
   UpdateCreateAppointmentState copyWith({
@@ -76,22 +80,21 @@ class UpdateCreateAppointmentState extends Equatable {
     ProcessState<SellerDetails>? fetchSellerDetailsState,
     ProcessState<void>? cancelBookingState,
     ProcessState<void>? rescheduleBookingState,
+    ProcessState<TipResponse>? tipAppointmentState,
   }) {
     return UpdateCreateAppointmentState._(
       fetchPortfolioState: fetchPortfolioState ?? this.fetchPortfolioState,
-      fetchAppointmentState:
-          fetchAppointmentState ?? this.fetchAppointmentState,
+      fetchAppointmentState: fetchAppointmentState ?? this.fetchAppointmentState,
       updateOrCreateAppointmentState:
           updateOrCreateAppointmentState ?? this.updateOrCreateAppointmentState,
       selectedDate: selectedDate ?? this.selectedDate,
       selectedTime: selectedTime ?? this.selectedTime,
       address: address ?? this.address,
       notes: notes ?? this.notes,
-      fetchSellerDetailsState:
-          fetchSellerDetailsState ?? this.fetchSellerDetailsState,
+      fetchSellerDetailsState: fetchSellerDetailsState ?? this.fetchSellerDetailsState,
       cancelBookingState: cancelBookingState ?? this.cancelBookingState,
-      rescheduleBookingState:
-          rescheduleBookingState ?? this.rescheduleBookingState,
+      rescheduleBookingState: rescheduleBookingState ?? this.rescheduleBookingState,
+      tipAppointmentState: tipAppointmentState ?? this.tipAppointmentState,
     );
   }
 }

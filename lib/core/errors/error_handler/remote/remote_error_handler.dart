@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../exception/remote_exception.dart';
-import '../error_handler.dart';
-import 'remote_error_listener.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/errors/error_handler/error_handler.dart';
+import 'package:snip_fair/core/errors/error_handler/remote/remote_error_listener.dart';
 
-class RemoteErrorHandler
-    extends ErrorHandler<RemoteException, RemoteErrorListener> {
+class RemoteErrorHandler extends ErrorHandler<RemoteException, RemoteErrorListener> {
   @override
   void proceed(
     BuildContext context,

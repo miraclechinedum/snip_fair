@@ -1,22 +1,22 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
-import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 
 @RoutePage()
@@ -551,8 +551,7 @@ class CustomerProfileMgtScreen extends StatelessWidget {
 
 class SellerProfileAvatar extends StatelessWidget {
   const SellerProfileAvatar({
-    super.key,
-    required this.profileDetails,
+    required this.profileDetails, super.key,
     this.radius = 30,
     this.isLoading = false,
   });

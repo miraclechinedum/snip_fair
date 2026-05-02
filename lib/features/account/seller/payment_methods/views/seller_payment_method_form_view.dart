@@ -1,22 +1,22 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
-import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/seller/payment_methods/cubit/seller_payment_methods_cubit.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/payment_methods/cubit/seller_payment_methods_cubit.dart';
+// ignore_for_file: use_build_context_synchronously
+
 
 class SellerPaymentMethodFormWidget extends StatelessWidget {
   const SellerPaymentMethodFormWidget({super.key, this.paymentMethod});
@@ -24,7 +24,7 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
   final PaymentMethod? paymentMethod;
 
   static Future<void> show(BuildContext context,
-      [PaymentMethod? paymentMethod]) {
+      [PaymentMethod? paymentMethod,]) {
     return AppHelper.showCustomModalBottomSheet(
       context: context,
       modal: BlocProvider.value(
@@ -108,7 +108,7 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
                             .where((e) => e.name == paymentMethod?.bankName)
                             .firstOrNull;
                         return DropdownButtonFormField<Bank>(
-                          value: state.selectedBank ?? editBank,
+                          initialValue: state.selectedBank ?? editBank,
                           isExpanded: true,
                           items: List.generate(banks.length, (index) {
                             return DropdownMenuItem<Bank>(

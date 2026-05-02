@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 
 class AppText extends StatelessWidget {
   const AppText({
+    required this.text,
     super.key,
     this.fontSize = 14,
     this.fontWeight = FontWeight.w400,
     this.textAlign = TextAlign.left,
-    required this.text,
     this.textTheme,
     this.overflow,
     this.letterSpacing = 1,

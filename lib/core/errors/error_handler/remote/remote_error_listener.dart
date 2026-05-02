@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../exception/remote_exception.dart';
-import '../error_listener.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/errors/error_handler/error_listener.dart';
 
 abstract class RemoteErrorListener extends ErrorListener {
   void onNoInterNetConnectionError(BuildContext context, String message);

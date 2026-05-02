@@ -1,12 +1,12 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
+import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/utils/input/input.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
-import 'package:snip_fair/core/utils/input/input.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 
 part 'customer_billing_info_state.dart';
 
@@ -80,7 +80,7 @@ class CustomerBillingInfoCubit extends BaseCubit<CustomerBillingInfoState> {
           emit(state.copyWith(updateBillingInfoState: ProcessState.error(p0))),
       doOnSuccess: (p0) => emit(
         state.copyWith(
-            updateBillingInfoState: const ProcessState.success(true)),
+            updateBillingInfoState: const ProcessState.success(true),),
       ),
     );
   }

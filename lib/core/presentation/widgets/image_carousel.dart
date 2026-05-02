@@ -1,20 +1,19 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_seller_details_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/features/stylists/stylist_profile/views/stylist_seller_details_screen.dart';
 
 class ImageCarousel extends StatefulWidget {
   const ImageCarousel({
-    Key? key,
+    super.key,
     required this.imagePaths,
     this.height = 200,
     this.autoPlay = false,
     this.autoPlayInterval = const Duration(seconds: 3),
     this.viewportFraction = 1.0,
-  }) : super(key: key);
+  });
 
   final List<String> imagePaths;
   final double height;
@@ -139,8 +138,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     hasError = true;
                     return ColoredBox(
                       color: Colors.grey.shade200,
-                      child:
-                          Center(child: SvgPicture.asset(Assets.images.logo)),
+                      child: Center(child: SvgPicture.asset(Assets.images.logo)),
                     );
                   },
                 ),

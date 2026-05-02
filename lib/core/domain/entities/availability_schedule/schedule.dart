@@ -5,16 +5,6 @@ part 'schedule.g.dart';
 
 @JsonSerializable()
 class Schedule {
-  int? id;
-  @JsonKey(name: 'user_id')
-  dynamic userId;
-  String? day;
-  bool? available;
-  @JsonKey(name: 'created_at')
-  DateTime? createdAt;
-  @JsonKey(name: 'updated_at')
-  DateTime? updatedAt;
-  List<TimeSlot>? slots;
 
   Schedule({
     this.id,
@@ -29,6 +19,16 @@ class Schedule {
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return _$ScheduleFromJson(json);
   }
+  int? id;
+  @JsonKey(name: 'user_id')
+  dynamic userId;
+  String? day;
+  bool? available;
+  @JsonKey(name: 'created_at')
+  DateTime? createdAt;
+  @JsonKey(name: 'updated_at')
+  DateTime? updatedAt;
+  List<TimeSlot>? slots;
 
   Map<String, dynamic> toJson() => _$ScheduleToJson(this);
 }

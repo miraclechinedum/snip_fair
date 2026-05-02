@@ -1,11 +1,10 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class OnSuccessDialogContent extends StatelessWidget {
   const OnSuccessDialogContent({
@@ -42,11 +41,12 @@ class OnSuccessDialogContent extends StatelessWidget {
 
                 // image
                 Expanded(
-                    child: Icon(
-                  Iconsax.tick_square,
-                  size: 100.sp,
-                  color: const Color(0xff008000),
-                )),
+                  child: Icon(
+                    Iconsax.tick_square,
+                    size: 100.sp,
+                    color: const Color(0xff008000),
+                  ),
+                ),
 
                 10.verticalSpace,
 
@@ -66,7 +66,6 @@ class OnSuccessDialogContent extends StatelessWidget {
                   color: AppColors.grey3,
                   fontWeight: FontWeight.w600,
                   textAlign: TextAlign.center,
-                  fontSize: 14,
                 ),
 
                 15.verticalSpace,
@@ -91,10 +90,10 @@ class OnSuccessDialogContent extends StatelessWidget {
 
 class OnFailDialogContent extends StatelessWidget {
   const OnFailDialogContent({
-    super.key,
     required this.subtext,
-    this.buttonText,
     required this.onDoneCallback,
+    super.key,
+    this.buttonText,
   });
 
   final String subtext;
@@ -145,7 +144,6 @@ class OnFailDialogContent extends StatelessWidget {
                         color: AppColors.contentColorRed,
                         fontWeight: FontWeight.w600,
                         textAlign: TextAlign.center,
-                        fontSize: 14,
                       ),
                     ],
                   ),
@@ -197,7 +195,7 @@ class BiometricModal extends StatelessWidget {
           const AppText(
             text: 'Cancel',
             color: AppColors.primaryColor,
-          )
+          ),
         ],
       ),
     );
@@ -206,7 +204,7 @@ class BiometricModal extends StatelessWidget {
 
 class OnConfirmDialog extends StatelessWidget {
   const OnConfirmDialog({
-    Key? key,
+    super.key,
     this.title,
     required this.content,
     this.confirmText = 'Confirm',
@@ -216,7 +214,7 @@ class OnConfirmDialog extends StatelessWidget {
     this.confirmIsDestructive = false,
     this.showCancel = true,
     this.icon,
-  }) : super(key: key);
+  });
 
   final String? title;
   final String content;
@@ -255,7 +253,6 @@ class OnConfirmDialog extends StatelessWidget {
               text: content,
               color: AppColors.grey3,
               textAlign: TextAlign.center,
-              fontSize: 14,
             ),
             16.verticalSpace,
             // buttons

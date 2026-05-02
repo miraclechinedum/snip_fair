@@ -1,28 +1,28 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
-import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/main_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
-import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
-import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
+import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_management/views/seller_profile_management_screen.dart';
 
 @RoutePage()
 class AccountMainScreen extends StatelessWidget {
@@ -30,14 +30,10 @@ class AccountMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isStylist =
-        context.select<AppCubit, bool>((cubit) => cubit.state.isStylist);
-    final customerProfilestate =
-        context.watch<CustomerProfileMgtCubit>().state.profileDetails;
-    final stylistProfilestate =
-        context.watch<CustomerProfileMgtCubit>().state.profileDetails;
-    final isAuthenticated =
-        context.read<AppCubit>().state.status == AuthStatus.authenticated;
+    final isStylist = context.select<AppCubit, bool>((cubit) => cubit.state.isStylist);
+    final customerProfilestate = context.watch<CustomerProfileMgtCubit>().state.profileDetails;
+    final stylistProfilestate = context.watch<CustomerProfileMgtCubit>().state.profileDetails;
+    final isAuthenticated = context.read<AppCubit>().state.status == AuthStatus.authenticated;
     if (!isAuthenticated) {
       return const Scaffold(
         body: Center(child: AuthenticationRequiredBottomSheet()),
@@ -293,10 +289,7 @@ class AccountMainScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   final token = getIt<LocalKeyStorage>().accessToken;
-                  final supportUrl = Environment()
-                      .config
-                      .apiHost
-                      .replaceAll('api', 'disputes');
+                  final supportUrl = Environment().config.apiHost.replaceAll('api', 'disputes');
                   context.router.pushWidget(
                     SupportWebViewWidget(
                       authToken: token!,
@@ -315,8 +308,7 @@ class AccountMainScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   final token = getIt<LocalKeyStorage>().accessToken;
-                  final supportUrl =
-                      Environment().config.apiHost.replaceAll('api', 'support');
+                  final supportUrl = Environment().config.apiHost.replaceAll('api', 'support');
                   context.router.pushWidget(
                     SupportWebViewWidget(
                       authToken: token!,
@@ -426,8 +418,7 @@ class AccountMainScreen extends StatelessWidget {
               children: [
                 BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                   builder: (context, state) {
-                    final profileCompleteness =
-                        state.profileDetails.data?.profileCompleteness;
+                    final profileCompleteness = state.profileDetails.data?.profileCompleteness;
 
                     if (profileCompleteness == null) return const SizedBox();
 
@@ -453,14 +444,12 @@ class AccountMainScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
-                            text:
-                                state.profileDetails.data?.user?.name ?? 'N/A',
+                            text: state.profileDetails.data?.user?.name ?? 'N/A',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                           AppText(
-                            text: state.profileDetails.data?.user
-                                    ?.stylistProfile?.businessName ??
+                            text: state.profileDetails.data?.user?.stylistProfile?.businessName ??
                                 'N/A',
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -474,8 +463,7 @@ class AccountMainScreen extends StatelessWidget {
                               ),
                               5.horizontalSpace,
                               AppText(
-                                text: state.profileDetails.data?.statistics
-                                        ?.averageRating
+                                text: state.profileDetails.data?.statistics?.averageRating
                                         ?.toString() ??
                                     '0',
                                 fontSize: 12,
@@ -504,8 +492,7 @@ class AccountMainScreen extends StatelessWidget {
                 16.verticalSpace,
                 BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                   builder: (context, state) {
-                    final profileCompleteness =
-                        state.profileDetails.data?.profileCompleteness;
+                    final profileCompleteness = state.profileDetails.data?.profileCompleteness;
 
                     if (profileCompleteness == null) return const SizedBox();
 
@@ -513,8 +500,7 @@ class AccountMainScreen extends StatelessWidget {
                         AppHelper.isStylistProfileComplete(profileCompleteness);
                     return GestureDetector(
                       onTap: () {
-                        context
-                            .pushRoute(const SellerProfileVerificationRoute());
+                        context.pushRoute(const SellerProfileVerificationRoute());
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -565,8 +551,7 @@ class AccountMainScreen extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 child: AppText(
-                                  text: state.profileDetails.data?.user
-                                          ?.stylistProfile?.status
+                                  text: state.profileDetails.data?.user?.stylistProfile?.status
                                           .capitalizeFirstLetter() ??
                                       '',
                                   color: Colors.white,
@@ -604,26 +589,22 @@ class AccountMainScreen extends StatelessWidget {
                         )
                       else
                         AppText(
-                          text: state.profileDetails.data?.user?.stylistProfile
-                                      ?.isAvailable ??
-                                  false
-                              ? 'ON'
-                              : 'OFF',
+                          text:
+                              state.profileDetails.data?.user?.stylistProfile?.isAvailable ?? false
+                                  ? 'ON'
+                                  : 'OFF',
                         ),
                       SizedBox(
                         height: 35,
-                        child: BlocListener<SellerProfileMgtCubit,
-                            SellerProfileMgtState>(
+                        child: BlocListener<SellerProfileMgtCubit, SellerProfileMgtState>(
                           listenWhen: (previous, current) =>
-                              previous.updateAvailabilityState !=
-                              current.updateAvailabilityState,
+                              previous.updateAvailabilityState != current.updateAvailabilityState,
                           listener: (context, state) {
                             if (state.updateAvailabilityState.hasError) {
                               AppHelper.showAppDialog(
                                 context,
                                 OnFailDialogContent(
-                                  subtext: (state.updateAvailabilityState.error!
-                                              as RemoteException)
+                                  subtext: (state.updateAvailabilityState.error! as RemoteException)
                                           .errorResponse
                                           ?.message ??
                                       '',
@@ -640,10 +621,9 @@ class AccountMainScreen extends StatelessWidget {
                             }
                           },
                           child: Switch(
-                            value: state.profileDetails.data?.user
-                                    ?.stylistProfile?.isAvailable ??
+                            value: state.profileDetails.data?.user?.stylistProfile?.isAvailable ??
                                 false,
-                            activeColor: Colors.green,
+                            activeThumbColor: Colors.green,
                             onChanged: (value) {
                               // if (state.profileDetails.data?.profileCompleteness
                               //         ?.statusApproved ??
@@ -695,27 +675,24 @@ class AccountMainScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage:
-                          state.profileDetails.data?.user?.avatar != null
-                              ? CachedNetworkImageProvider(
-                                  state.profileDetails.data!.user!.avatar
-                                      .completeImagePath(),
-                                )
-                              : null,
+                      backgroundImage: state.profileDetails.data?.user?.avatar != null
+                          ? CachedNetworkImageProvider(
+                              state.profileDetails.data!.user!.avatar.completeImagePath(),
+                            )
+                          : null,
                       child: state.profileDetails.data?.user?.avatar != null
                           ? null
                           : AppText(
-                              text:
-                                  state.profileDetails.data?.user?.name != null
-                                      ? state.profileDetails.data!.user!.name!
-                                              .split(' ')
-                                              .first[0]
-                                              .toUpperCase() +
-                                          state.profileDetails.data!.user!.name!
-                                              .split(' ')
-                                              .last[0]
-                                              .toUpperCase()
-                                      : '',
+                              text: state.profileDetails.data?.user?.name != null
+                                  ? state.profileDetails.data!.user!.name!
+                                          .split(' ')
+                                          .first[0]
+                                          .toUpperCase() +
+                                      state.profileDetails.data!.user!.name!
+                                          .split(' ')
+                                          .last[0]
+                                          .toUpperCase()
+                                  : '',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),

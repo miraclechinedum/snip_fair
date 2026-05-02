@@ -7,7 +7,7 @@ List<String> scheduleDays = [
   'wednesday',
   'thursday',
   'friday',
-  'saturday'
+  'saturday',
 ];
 
 class SellerAvailabilityScheduleState extends Equatable {

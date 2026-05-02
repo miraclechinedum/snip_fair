@@ -1,7 +1,6 @@
-// ignore_for_file: sort_constructors_first
-
-import 'package:snip_fair/core/utils/input/password_input.dart';
 import 'package:formz/formz.dart';
+import 'package:snip_fair/core/utils/input/password_input.dart';
+// ignore_for_file: sort_constructors_first
 
 enum ConfirmPasswordInputValidationError {
   empty('This field cannot be empty'),
@@ -12,14 +11,12 @@ enum ConfirmPasswordInputValidationError {
   const ConfirmPasswordInputValidationError(this.message);
 }
 
-class ConfirmPasswordInput
-    extends FormzInput<String, ConfirmPasswordInputValidationError> {
+class ConfirmPasswordInput extends FormzInput<String, ConfirmPasswordInputValidationError> {
   // Call super.pure to represent an unmodified form input.
   const ConfirmPasswordInput.pure(this.password) : super.pure('');
 
   // Call super.dirty to represent a modified form input.
-  const ConfirmPasswordInput.dirty(this.password, [super.value = ''])
-      : super.dirty();
+  const ConfirmPasswordInput.dirty(this.password, [super.value = '']) : super.dirty();
 
   final PasswordInput password;
 
