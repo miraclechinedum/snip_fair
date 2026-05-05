@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
-import '../../../core/presentation/widgets/payment_webview_widget.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
+import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
 
 /// Example of how to use the PaymentWebViewWidget
 class PaymentExampleUsage extends StatelessWidget {
@@ -35,12 +34,11 @@ class PaymentExampleUsage extends StatelessWidget {
       context: context,
       paymentData: paymentData,
       title: 'Complete Payment',
-      isDismissible: false,
     );
 
     if (context.mounted) {
       // Handle the payment result
-      if (result == true) {
+      if (result ?? false) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Payment successful!'),
@@ -73,7 +71,6 @@ class PaymentExampleUsage extends StatelessWidget {
       MaterialPageRoute<bool>(
         builder: (context) => PaymentWebViewWidget(
           paymentData: paymentData,
-          title: 'Payment',
           onResult: (success) {
             Navigator.of(context).pop(success);
           },

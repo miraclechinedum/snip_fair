@@ -1,11 +1,27 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'location_service.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/location_service.dart';
 
 part 'profile_completeness.g.dart';
 
 @JsonSerializable()
 class ProfileCompleteness {
+  ProfileCompleteness({
+    this.portfolio,
+    this.paymentMethod,
+    this.statusApproved,
+    this.locationService,
+    this.address,
+    this.subscriptionStatus,
+    this.socialLinks,
+    this.works,
+    this.userAvatar,
+    this.userBio,
+    this.userBanner,
+  });
+
+  factory ProfileCompleteness.fromJson(Map<String, dynamic> json) {
+    return _$ProfileCompletenessFromJson(json);
+  }
   bool? portfolio;
   @JsonKey(name: 'payment_method')
   bool? paymentMethod;
@@ -25,24 +41,6 @@ class ProfileCompleteness {
   bool? userBio;
   @JsonKey(name: 'user_banner')
   bool? userBanner;
-
-  ProfileCompleteness({
-    this.portfolio,
-    this.paymentMethod,
-    this.statusApproved,
-    this.locationService,
-    this.address,
-    this.subscriptionStatus,
-    this.socialLinks,
-    this.works,
-    this.userAvatar,
-    this.userBio,
-    this.userBanner,
-  });
-
-  factory ProfileCompleteness.fromJson(Map<String, dynamic> json) {
-    return _$ProfileCompletenessFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$ProfileCompletenessToJson(this);
 }

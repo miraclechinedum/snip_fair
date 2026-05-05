@@ -4,6 +4,19 @@ part 'statistics.g.dart';
 
 @JsonSerializable()
 class Statistics {
+  Statistics({
+    this.totalWorks,
+    this.totalLikes,
+    this.totalReviews,
+    this.averageRating,
+    this.totalAppointments,
+    this.totalEarnings,
+    this.scheduleSummary,
+  });
+
+  factory Statistics.fromJson(Map<String, dynamic> json) {
+    return _$StatisticsFromJson(json);
+  }
   @JsonKey(name: 'total_works')
   dynamic totalWorks;
   @JsonKey(name: 'total_likes')
@@ -18,20 +31,6 @@ class Statistics {
   dynamic totalEarnings;
   @JsonKey(name: 'schedule_summary')
   dynamic scheduleSummary;
-
-  Statistics({
-    this.totalWorks,
-    this.totalLikes,
-    this.totalReviews,
-    this.averageRating,
-    this.totalAppointments,
-    this.totalEarnings,
-    this.scheduleSummary,
-  });
-
-  factory Statistics.fromJson(Map<String, dynamic> json) {
-    return _$StatisticsFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$StatisticsToJson(this);
 }

@@ -8,8 +8,7 @@ class AppExpiryOverlay extends StatelessWidget {
     required this.child,
     required this.expiryDate,
     this.title = 'Demo Usage Expired',
-    this.message =
-        'This version of the demo has expired. Please contact app Developer.',
+    this.message = 'This version of the demo has expired. Please contact app Developer.',
     this.actionButtonText,
     this.onActionPressed,
     super.key,
@@ -48,7 +47,7 @@ class AppExpiryOverlay extends StatelessWidget {
           child: child,
         ),
         // Black overlay with message
-        Container(
+        ColoredBox(
           color: Colors.black,
           child: Center(
             child: Padding(
@@ -133,8 +132,7 @@ class AppExpiryOverlayWithDaysCount extends StatefulWidget {
     required this.child,
     required this.maxDaysAllowed,
     this.title = 'Trial Period Ended',
-    this.message =
-        'Your trial period has ended. Please upgrade to continue using the app.',
+    this.message = 'Your trial period has ended. Please upgrade to continue using the app.',
     this.actionButtonText,
     this.onActionPressed,
     super.key,
@@ -159,12 +157,10 @@ class AppExpiryOverlayWithDaysCount extends StatefulWidget {
   final VoidCallback? onActionPressed;
 
   @override
-  State<AppExpiryOverlayWithDaysCount> createState() =>
-      _AppExpiryOverlayWithDaysCountState();
+  State<AppExpiryOverlayWithDaysCount> createState() => _AppExpiryOverlayWithDaysCountState();
 }
 
-class _AppExpiryOverlayWithDaysCountState
-    extends State<AppExpiryOverlayWithDaysCount> {
+class _AppExpiryOverlayWithDaysCountState extends State<AppExpiryOverlayWithDaysCount> {
   DateTime? _firstInstallDate;
   bool _isExpired = false;
 
@@ -194,8 +190,7 @@ class _AppExpiryOverlayWithDaysCountState
     // Mock: assume app was installed 10 days ago
     _firstInstallDate = DateTime.now().subtract(const Duration(days: 10));
 
-    final daysSinceInstall =
-        DateTime.now().difference(_firstInstallDate!).inDays;
+    final daysSinceInstall = DateTime.now().difference(_firstInstallDate!).inDays;
     _isExpired = daysSinceInstall >= widget.maxDaysAllowed;
 
     if (mounted) {
@@ -221,7 +216,7 @@ class _AppExpiryOverlayWithDaysCountState
           child: widget.child,
         ),
         // Black overlay with message
-        Container(
+        ColoredBox(
           color: Colors.black,
           child: Center(
             child: Padding(
@@ -254,8 +249,7 @@ class _AppExpiryOverlayWithDaysCountState
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  if (widget.actionButtonText != null &&
-                      widget.onActionPressed != null) ...[
+                  if (widget.actionButtonText != null && widget.onActionPressed != null) ...[
                     SizedBox(height: 32.h),
                     ElevatedButton(
                       onPressed: widget.onActionPressed,

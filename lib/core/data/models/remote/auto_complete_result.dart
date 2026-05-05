@@ -1,7 +1,4 @@
 class AutoCompleteResult {
-  String? type;
-  List<Features>? features;
-  Query? query;
 
   AutoCompleteResult({this.type, this.features, this.query});
 
@@ -17,13 +14,12 @@ class AutoCompleteResult {
         ? Query.fromJson(json['query'] as Map<String, dynamic>)
         : null;
   }
+  String? type;
+  List<Features>? features;
+  Query? query;
 }
 
 class Features {
-  String? type;
-  Properties? properties;
-  Geometry? geometry;
-  List<double>? bbox;
 
   Features({this.type, this.properties, this.geometry, this.bbox});
 
@@ -38,31 +34,13 @@ class Features {
     bbox =
         json['bbox'] != null ? List.from(json['bbox'] as List<dynamic>) : null;
   }
+  String? type;
+  Properties? properties;
+  Geometry? geometry;
+  List<double>? bbox;
 }
 
 class Properties {
-  String? country;
-  String? countryCode;
-  String? state;
-  String? county;
-  String? city;
-  String? postcode;
-  String? suburb;
-  String? street;
-  String? iso31662;
-  Datasource? datasource;
-  String? stateCode;
-  double? lon;
-  double? lat;
-  String? resultType;
-  String? formatted;
-  String? addressLine1;
-  String? addressLine2;
-  Timezone? timezone;
-  String? plusCode;
-  String? plusCodeShort;
-  Rank? rank;
-  String? placeId;
 
   Properties(
       {this.country,
@@ -118,13 +96,31 @@ class Properties {
         : null;
     placeId = json['place_id'] as String?;
   }
+  String? country;
+  String? countryCode;
+  String? state;
+  String? county;
+  String? city;
+  String? postcode;
+  String? suburb;
+  String? street;
+  String? iso31662;
+  Datasource? datasource;
+  String? stateCode;
+  double? lon;
+  double? lat;
+  String? resultType;
+  String? formatted;
+  String? addressLine1;
+  String? addressLine2;
+  Timezone? timezone;
+  String? plusCode;
+  String? plusCodeShort;
+  Rank? rank;
+  String? placeId;
 }
 
 class Datasource {
-  String? sourcename;
-  String? attribution;
-  String? license;
-  String? url;
 
   Datasource({this.sourcename, this.attribution, this.license, this.url});
 
@@ -134,16 +130,13 @@ class Datasource {
     license = json['license'] as String?;
     url = json['url'] as String?;
   }
+  String? sourcename;
+  String? attribution;
+  String? license;
+  String? url;
 }
 
 class Timezone {
-  String? name;
-  String? offsetSTD;
-  int? offsetSTDSeconds;
-  String? offsetDST;
-  int? offsetDSTSeconds;
-  String? abbreviationSTD;
-  String? abbreviationDST;
 
   Timezone(
       {this.name,
@@ -163,12 +156,16 @@ class Timezone {
     abbreviationSTD = json['abbreviation_STD'] as String?;
     abbreviationDST = json['abbreviation_DST'] as String?;
   }
+  String? name;
+  String? offsetSTD;
+  int? offsetSTDSeconds;
+  String? offsetDST;
+  int? offsetDSTSeconds;
+  String? abbreviationSTD;
+  String? abbreviationDST;
 }
 
 class Rank {
-  int? confidence;
-  int? confidenceStreetLevel;
-  String? matchType;
 
   Rank({this.confidence, this.confidenceStreetLevel, this.matchType});
 
@@ -177,11 +174,12 @@ class Rank {
     confidenceStreetLevel = json['confidence_street_level'] as int?;
     matchType = json['match_type'] as String?;
   }
+  int? confidence;
+  int? confidenceStreetLevel;
+  String? matchType;
 }
 
 class Geometry {
-  String? type;
-  List<double>? coordinates;
 
   Geometry({this.type, this.coordinates});
 
@@ -191,12 +189,11 @@ class Geometry {
         ? List.from(json['coordinates'] as List<dynamic>)
         : null;
   }
+  String? type;
+  List<double>? coordinates;
 }
 
 class Query {
-  String? text;
-  Parsed? parsed;
-  List<String>? categories;
 
   Query({this.text, this.parsed, this.categories});
 
@@ -212,11 +209,12 @@ class Query {
       });
     }
   }
+  String? text;
+  Parsed? parsed;
+  List<String>? categories;
 }
 
 class Parsed {
-  String? street;
-  String? expectedType;
 
   Parsed({this.street, this.expectedType});
 
@@ -224,4 +222,6 @@ class Parsed {
     street = json['street'] as String?;
     expectedType = json['expected_type'] as String?;
   }
+  String? street;
+  String? expectedType;
 }

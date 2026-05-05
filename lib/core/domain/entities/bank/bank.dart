@@ -4,12 +4,12 @@ part 'bank.g.dart';
 
 @JsonSerializable()
 class Bank {
-  String? name;
-  String? branchCode;
 
   Bank({this.name, this.branchCode});
 
   factory Bank.fromJson(Map<String, dynamic> json) => _$BankFromJson(json);
+  String? name;
+  String? branchCode;
 
   Map<String, dynamic> toJson() => _$BankToJson(this);
 }

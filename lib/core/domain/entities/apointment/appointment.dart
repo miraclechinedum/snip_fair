@@ -1,14 +1,46 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/apointment/proof.dart';
+import 'package:snip_fair/core/domain/entities/apointment/stylist.dart';
+import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
+import 'package:snip_fair/core/domain/entities/apointment/portfolio.dart';
 
-import 'customer.dart';
-import 'portfolio.dart';
-import 'proof.dart';
-import 'stylist.dart';
 
 part 'appointment.g.dart';
 
 @JsonSerializable()
 class StylistAppointment {
+
+  StylistAppointment({
+    this.id,
+    this.stylistId,
+    this.customerId,
+    this.bookingId,
+    this.portfolioId,
+    this.amount,
+    this.duration,
+    this.extra,
+    this.appointmentCode,
+    this.completionCode,
+    this.status,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+    this.appointmentDate,
+    this.appointmentTime,
+    this.stylistNote,
+    this.serviceNotes,
+    this.completedAt,
+    this.appointmentDateTime,
+    this.customer,
+    this.stylist,
+    this.portfolio,
+    this.proof,
+    this.disputes,
+  });
+
+  factory StylistAppointment.fromJson(Map<String, dynamic> json) {
+    return _$StylistAppointmentFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'stylist_id')
   dynamic stylistId;
@@ -49,38 +81,6 @@ class StylistAppointment {
   Portfolio? portfolio;
   Proof? proof;
   List<dynamic>? disputes;
-
-  StylistAppointment({
-    this.id,
-    this.stylistId,
-    this.customerId,
-    this.bookingId,
-    this.portfolioId,
-    this.amount,
-    this.duration,
-    this.extra,
-    this.appointmentCode,
-    this.completionCode,
-    this.status,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-    this.appointmentDate,
-    this.appointmentTime,
-    this.stylistNote,
-    this.serviceNotes,
-    this.completedAt,
-    this.appointmentDateTime,
-    this.customer,
-    this.stylist,
-    this.portfolio,
-    this.proof,
-    this.disputes,
-  });
-
-  factory StylistAppointment.fromJson(Map<String, dynamic> json) {
-    return _$StylistAppointmentFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$StylistAppointmentToJson(this);
 }

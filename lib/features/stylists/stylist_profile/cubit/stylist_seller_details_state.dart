@@ -1,12 +1,14 @@
 part of 'stylist_seller_details_cubit.dart';
 
 class StylistSellerDetailsState extends Equatable {
-  StylistSellerDetailsState._(
-      {required this.sellerDetails, required this.sellePortfolio});
+  const StylistSellerDetailsState._({
+    required this.sellerDetails,
+    required this.sellePortfolio,
+  });
 
   StylistSellerDetailsState.initial()
-      : sellePortfolio = ProcessState.init(null),
-        sellerDetails = ProcessState.init(null);
+      : sellePortfolio = const ProcessState.init(null),
+        sellerDetails = const ProcessState.init(null);
 
   final ProcessState<SellerDetails> sellerDetails;
   final ProcessState<SellerPortfolioList> sellePortfolio;

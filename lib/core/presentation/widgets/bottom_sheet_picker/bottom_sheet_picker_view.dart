@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:snip_fair/core/utils/utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../../utils/utils.dart';
-import '../../theme/theme.dart';
-import '../app_bars/app_bars.dart';
-import '../buttons/buttons.dart';
-import '../custom_text_field.dart';
-import 'bottom_sheet_picker.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
+import 'package:snip_fair/core/presentation/widgets/app_bars/app_bars.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/bottom_sheet_picker/bottom_sheet_picker.dart';
 
 class BottomSheetPicker<T> extends StatefulWidget {
   const BottomSheetPicker({
@@ -59,10 +58,7 @@ class _BottomSheetPickerState<T> extends State<BottomSheetPicker<T>> {
 
   String? get selectedValueTitle => _items.isNotEmpty && _selectedValue != null
       ? _items.where((element) => element.value == _selectedValue).isNotEmpty
-          ? _items
-              .where((element) => element.value == _selectedValue)
-              .first
-              .title
+          ? _items.where((element) => element.value == _selectedValue).first.title
           : null
       : null;
 
@@ -84,8 +80,7 @@ class _BottomSheetPickerState<T> extends State<BottomSheetPicker<T>> {
           child: GestureDetector(
             onTap: _items.isNotEmpty
                 ? () {
-                    WidgetsBinding.instance.focusManager.primaryFocus
-                        ?.unfocus();
+                    WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
                     AppHelper.showCustomModalBottomSheet<T>(
                       context: context,
                       isDrag: !widget.showSearch,
@@ -132,7 +127,7 @@ class _BottomSheetPickerState<T> extends State<BottomSheetPicker<T>> {
                   const Icon(
                     Icons.keyboard_arrow_down,
                     color: AppColors.grey4,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -158,12 +153,10 @@ class BottomSheetListPickerView<T> extends StatefulWidget {
   final bool showSearch;
 
   @override
-  State<BottomSheetListPickerView<T>> createState() =>
-      _BottomSheetListPickerViewState<T>();
+  State<BottomSheetListPickerView<T>> createState() => _BottomSheetListPickerViewState<T>();
 }
 
-class _BottomSheetListPickerViewState<T>
-    extends State<BottomSheetListPickerView<T>> {
+class _BottomSheetListPickerViewState<T> extends State<BottomSheetListPickerView<T>> {
   late List<ModalListItem<T>> _items;
   late TextEditingController _editingController;
   String _query = '';
@@ -181,8 +174,9 @@ class _BottomSheetListPickerViewState<T>
   }
 
   List<ModalListItem<T>> get filteredItems => _items
-      .where((element) =>
-          element.title.toLowerCase().contains(_query.trim().toLowerCase()))
+      .where(
+        (element) => element.title.toLowerCase().contains(_query.trim().toLowerCase()),
+      )
       .toList();
 
   @override
@@ -223,10 +217,13 @@ class _BottomSheetListPickerViewState<T>
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                            color: AppColors.iconLemon.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12)),
+                          color: AppColors.iconLemon.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 16),
+                          vertical: 10,
+                          horizontal: 16,
+                        ),
                         child: Text(item.title),
                       ),
                     ),
@@ -252,10 +249,13 @@ class _BottomSheetListPickerViewState<T>
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                          color: AppColors.iconLemon.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12)),
+                        color: AppColors.iconLemon.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 16),
+                        vertical: 15,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
                           Expanded(child: Text(item.title)),

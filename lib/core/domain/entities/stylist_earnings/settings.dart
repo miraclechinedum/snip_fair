@@ -4,6 +4,22 @@ part 'settings.g.dart';
 
 @JsonSerializable()
 class Settings {
+  Settings({
+    this.id,
+    this.userId,
+    this.automaticPayout,
+    this.instantPayout,
+    this.payoutFrequency,
+    this.payoutDay,
+    this.enableMobileAppointments,
+    this.enableShopAppointments,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory Settings.fromJson(Map<String, dynamic> json) {
+    return _$SettingsFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   String? userId;
@@ -23,23 +39,6 @@ class Settings {
   DateTime? createdAt;
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
-
-  Settings({
-    this.id,
-    this.userId,
-    this.automaticPayout,
-    this.instantPayout,
-    this.payoutFrequency,
-    this.payoutDay,
-    this.enableMobileAppointments,
-    this.enableShopAppointments,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Settings.fromJson(Map<String, dynamic> json) {
-    return _$SettingsFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$SettingsToJson(this);
 
@@ -62,10 +61,8 @@ class Settings {
       instantPayout: instantPayout ?? this.instantPayout,
       payoutFrequency: payoutFrequency ?? this.payoutFrequency,
       payoutDay: payoutDay ?? this.payoutDay,
-      enableMobileAppointments:
-          enableMobileAppointments ?? this.enableMobileAppointments,
-      enableShopAppointments:
-          enableShopAppointments ?? this.enableShopAppointments,
+      enableMobileAppointments: enableMobileAppointments ?? this.enableMobileAppointments,
+      enableShopAppointments: enableShopAppointments ?? this.enableShopAppointments,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

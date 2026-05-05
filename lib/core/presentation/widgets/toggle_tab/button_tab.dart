@@ -20,20 +20,20 @@ class ButtonsTab extends StatelessWidget {
   /// [marginSelected] is a margin when the button is selected
   /// [isInnerShadowEnable] is optional to set the shadow of the selected tab.
   const ButtonsTab({
+    required this.width,
+    required this.selectedColors,
+    required this.unSelectedColors,
     super.key,
     this.title,
     this.onPressed,
     this.counterWidget,
-    required this.width,
     this.height,
     this.isSelected,
     this.radius,
     this.selectedTextStyle,
     this.unSelectedTextStyle,
-    required this.selectedColors,
     this.icons,
     this.iconSize,
-    required this.unSelectedColors,
     this.begin,
     this.end,
     this.marginSelected = EdgeInsets.zero,
@@ -69,12 +69,10 @@ class ButtonsTab extends StatelessWidget {
       height: height ?? 50,
       //wrap with container to fix margin issue
       child: Padding(
-        padding:
-            isSelected! ? (marginSelected ?? EdgeInsets.zero) : EdgeInsets.zero,
+        padding: isSelected! ? (marginSelected ?? EdgeInsets.zero) : EdgeInsets.zero,
         child: DecoratedBox(
           decoration: isSelected!
-              ? (isInnerShadowEnable ? bdHeader : const BoxDecoration())
-                  .copyWith(
+              ? (isInnerShadowEnable ? bdHeader : const BoxDecoration()).copyWith(
                   borderRadius: BorderRadius.circular(radius!),
                   border: Border.all(color: const Color(0xffA6A6A6)),
                   gradient: LinearGradient(
@@ -102,9 +100,7 @@ class ButtonsTab extends StatelessWidget {
                   Icon(
                     icons,
                     size: iconSize,
-                    color: isSelected!
-                        ? selectedTextStyle!.color
-                        : unSelectedTextStyle!.color,
+                    color: isSelected! ? selectedTextStyle!.color : unSelectedTextStyle!.color,
                   ),
                 Visibility(
                   visible: icons != null && title.toString().isNotEmpty,
@@ -113,14 +109,11 @@ class ButtonsTab extends StatelessWidget {
                 if (title != null)
                   Text(
                     title!,
-                    style:
-                        isSelected! ? selectedTextStyle : unSelectedTextStyle,
+                    style: isSelected! ? selectedTextStyle : unSelectedTextStyle,
                     textAlign: TextAlign.center,
                   ),
                 Visibility(
-                  visible: icons != null &&
-                      title.toString().isNotEmpty &&
-                      counterWidget != null,
+                  visible: icons != null && title.toString().isNotEmpty && counterWidget != null,
                   child: const SizedBox(width: 4),
                 ),
                 if (counterWidget != null) counterWidget!,

@@ -4,6 +4,22 @@ part 'stylist_settings.g.dart';
 
 @JsonSerializable()
 class StylistSettings {
+  StylistSettings({
+    this.id,
+    this.userId,
+    this.automaticPayout,
+    this.instantPayout,
+    this.payoutFrequency,
+    this.payoutDay,
+    this.enableMobileAppointments,
+    this.enableShopAppointments,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory StylistSettings.fromJson(Map<String, dynamic> json) {
+    return _$StylistSettingsFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   String? userId;
@@ -23,23 +39,6 @@ class StylistSettings {
   DateTime? createdAt;
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
-
-  StylistSettings({
-    this.id,
-    this.userId,
-    this.automaticPayout,
-    this.instantPayout,
-    this.payoutFrequency,
-    this.payoutDay,
-    this.enableMobileAppointments,
-    this.enableShopAppointments,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory StylistSettings.fromJson(Map<String, dynamic> json) {
-    return _$StylistSettingsFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$StylistSettingsToJson(this);
 }

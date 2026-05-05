@@ -1,11 +1,39 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'stylist_profile.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/stylist_profile.dart';
 
 part 'user.g.dart';
 
 @JsonSerializable()
 class User {
+  User({
+    this.id,
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.emailVerifiedAt,
+    this.phoneVerifiedAt,
+    this.phone,
+    this.country,
+    this.bio,
+    this.type,
+    this.role,
+    this.avatar,
+    this.lastLoginAt,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.balance,
+    this.isFeatured,
+    this.useLocation,
+    this.subscriptionStatus,
+    this.availability,
+    this.plan,
+    this.stylistProfile,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   int? id;
   String? name;
   @JsonKey(name: 'first_name')
@@ -43,36 +71,6 @@ class User {
   String? plan;
   @JsonKey(name: 'stylist_profile')
   StylistProfile? stylistProfile;
-
-  User({
-    this.id,
-    this.name,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.emailVerifiedAt,
-    this.phoneVerifiedAt,
-    this.phone,
-    this.country,
-    this.bio,
-    this.type,
-    this.role,
-    this.avatar,
-    this.lastLoginAt,
-    this.status,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.balance,
-    this.isFeatured,
-    this.useLocation,
-    this.subscriptionStatus,
-    this.availability,
-    this.plan,
-    this.stylistProfile,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 }

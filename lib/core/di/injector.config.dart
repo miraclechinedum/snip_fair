@@ -86,12 +86,12 @@ Future<_i174.GetIt> $initGetIt(
     environmentFilter,
   );
   final registerModule = _$RegisterModule();
+  gh.factory<_i1015.ErrorResponseMapper>(() => _i1015.ErrorResponseMapper());
   await gh.factoryAsync<_i460.SharedPreferences>(
     () => registerModule.prefs,
     preResolve: true,
   );
   gh.factory<_i944.HttpService>(() => _i944.HttpService());
-  gh.factory<_i1015.ErrorResponseMapper>(() => _i1015.ErrorResponseMapper());
   gh.lazySingleton<_i637.SnipFairBackendRemoteSource>(
       () => _i637.SnipFairBackendRemoteSource());
   gh.lazySingleton<_i669.LocationService>(() => _i669.LocationService());
@@ -101,22 +101,22 @@ Future<_i174.GetIt> $initGetIt(
       () => _i395.LocalKeyStorage(gh<_i460.SharedPreferences>()));
   gh.factory<_i939.AppointmentRepository>(
       () => _i939.AppointmentRepoImpl(gh<_i637.SnipFairBackendRemoteSource>()));
-  gh.factory<_i552.StylistSellerDetailsCubit>(
-      () => _i552.StylistSellerDetailsCubit(gh<_i939.AppointmentRepository>()));
-  gh.factory<_i187.SearchCubit>(
-      () => _i187.SearchCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i438.CustomerAppointmentsCubit>(
+      () => _i438.CustomerAppointmentsCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i329.SellerAppointMgtCubit>(
       () => _i329.SellerAppointMgtCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i368.SellerAppointmentDetailsCubit>(() =>
       _i368.SellerAppointmentDetailsCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i400.UpdateCreateAppointmentCubit>(() =>
       _i400.UpdateCreateAppointmentCubit(gh<_i939.AppointmentRepository>()));
-  gh.factory<_i438.CustomerAppointmentsCubit>(
-      () => _i438.CustomerAppointmentsCubit(gh<_i939.AppointmentRepository>()));
-  gh.factory<_i200.CustomerFavoritesCubit>(
-      () => _i200.CustomerFavoritesCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i561.ExploreCubit>(
       () => _i561.ExploreCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i200.CustomerFavoritesCubit>(
+      () => _i200.CustomerFavoritesCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i187.SearchCubit>(
+      () => _i187.SearchCubit(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i552.StylistSellerDetailsCubit>(
+      () => _i552.StylistSellerDetailsCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i345.AuthenticationRepository>(() => _i345.AuthenticationRepoImpl(
         gh<_i395.LocalKeyStorage>(),
         gh<_i637.SnipFairBackendRemoteSource>(),
@@ -127,44 +127,44 @@ Future<_i174.GetIt> $initGetIt(
       ));
   gh.factory<_i368.ForgotPasswordCubit>(
       () => _i368.ForgotPasswordCubit(gh<_i345.AuthenticationRepository>()));
+  gh.factory<_i553.LoginCubit>(
+      () => _i553.LoginCubit(gh<_i345.AuthenticationRepository>()));
   gh.factory<_i643.SignupCubit>(
       () => _i643.SignupCubit(gh<_i345.AuthenticationRepository>()));
   gh.factory<_i97.VerifyEmailCubit>(
       () => _i97.VerifyEmailCubit(gh<_i345.AuthenticationRepository>()));
-  gh.factory<_i553.LoginCubit>(
-      () => _i553.LoginCubit(gh<_i345.AuthenticationRepository>()));
-  gh.factory<_i570.StylistOnboardCubit>(
-      () => _i570.StylistOnboardCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i455.DisputesCubit>(
-      () => _i455.DisputesCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i42.ConversationsCubit>(
-      () => _i42.ConversationsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i570.SellerPersonalDetailsCubit>(
-      () => _i570.SellerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i759.EarningsCubit>(
-      () => _i759.EarningsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i159.SellerWorksCubit>(
-      () => _i159.SellerWorksCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i762.SellerProfileMgtCubit>(
-      () => _i762.SellerProfileMgtCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i735.SellerAvailabilityScheduleCubit>(() =>
-      _i735.SellerAvailabilityScheduleCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i485.SellerPaymentMethodsCubit>(
-      () => _i485.SellerPaymentMethodsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i902.ChangePasswordCubit>(
       () => _i902.ChangePasswordCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i475.CustomerPrefsSettingsCubit>(
-      () => _i475.CustomerPrefsSettingsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i34.CustomerPersonalDetailsCubit>(
-      () => _i34.CustomerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i818.CustomerNotifSettingsCubit>(
-      () => _i818.CustomerNotifSettingsCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i1025.CustomerProfileMgtCubit>(
-      () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i18.CustomerBillingInfoCubit>(
       () => _i18.CustomerBillingInfoCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i818.CustomerNotifSettingsCubit>(
+      () => _i818.CustomerNotifSettingsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i34.CustomerPersonalDetailsCubit>(
+      () => _i34.CustomerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i475.CustomerPrefsSettingsCubit>(
+      () => _i475.CustomerPrefsSettingsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i1025.CustomerProfileMgtCubit>(
+      () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i735.SellerAvailabilityScheduleCubit>(() =>
+      _i735.SellerAvailabilityScheduleCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i759.EarningsCubit>(
+      () => _i759.EarningsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i485.SellerPaymentMethodsCubit>(
+      () => _i485.SellerPaymentMethodsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i570.SellerPersonalDetailsCubit>(
+      () => _i570.SellerPersonalDetailsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i762.SellerProfileMgtCubit>(
+      () => _i762.SellerProfileMgtCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i159.SellerWorksCubit>(
+      () => _i159.SellerWorksCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i42.ConversationsCubit>(
+      () => _i42.ConversationsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i455.DisputesCubit>(
+      () => _i455.DisputesCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i840.NotificationsCubit>(
       () => _i840.NotificationsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i570.StylistOnboardCubit>(
+      () => _i570.StylistOnboardCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i782.AppCubit>(
       () => _i782.AppCubit(gh<_i990.ProfileRepository>()));
   return getIt;

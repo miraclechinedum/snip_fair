@@ -1,14 +1,16 @@
 import 'package:json_annotation/json_annotation.dart';
-
-import 'portfolio.dart';
-import 'profile_completeness.dart';
-import 'statistics.dart';
-import 'user.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/user.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/portfolio.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/statistics.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 
 part 'stylist_profile_details.g.dart';
 
 @JsonSerializable()
 class StylistProfileDetails {
+  factory StylistProfileDetails.fromJson(Map<String, dynamic> json) {
+    return _$StylistProfileDetailsFromJson(json);
+  }
   StylistProfileDetails({
     this.user,
     this.portfolios,
@@ -27,10 +29,6 @@ class StylistProfileDetails {
   ProfileCompleteness? profileCompleteness;
   @JsonKey(name: 'profile_link')
   String? profileLink;
-
-  factory StylistProfileDetails.fromJson(Map<String, dynamic> json) {
-    return _$StylistProfileDetailsFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$StylistProfileDetailsToJson(this);
 }

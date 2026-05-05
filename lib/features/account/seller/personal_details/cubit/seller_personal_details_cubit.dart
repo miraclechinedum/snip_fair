@@ -1,14 +1,12 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:bloc/bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/phone_input.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 
 part 'seller_personal_details_state.dart';
 

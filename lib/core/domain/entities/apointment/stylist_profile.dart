@@ -1,11 +1,33 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/apointment/social.dart';
 
-import 'social.dart';
 
 part 'stylist_profile.g.dart';
 
 @JsonSerializable()
 class StylistProfile {
+
+  StylistProfile({
+    this.id,
+    this.userId,
+    this.businessName,
+    this.yearsOfExperience,
+    this.identificationId,
+    this.identificationFile,
+    this.identificationProof,
+    this.visitsCount,
+    this.status,
+    this.isAvailable,
+    this.createdAt,
+    this.updatedAt,
+    this.banner,
+    this.socials,
+    this.works,
+  });
+
+  factory StylistProfile.fromJson(Map<String, dynamic> json) {
+    return _$StylistProfileFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   dynamic userId;
@@ -31,28 +53,6 @@ class StylistProfile {
   String? banner;
   List<Social>? socials;
   List<String>? works;
-
-  StylistProfile({
-    this.id,
-    this.userId,
-    this.businessName,
-    this.yearsOfExperience,
-    this.identificationId,
-    this.identificationFile,
-    this.identificationProof,
-    this.visitsCount,
-    this.status,
-    this.isAvailable,
-    this.createdAt,
-    this.updatedAt,
-    this.banner,
-    this.socials,
-    this.works,
-  });
-
-  factory StylistProfile.fromJson(Map<String, dynamic> json) {
-    return _$StylistProfileFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$StylistProfileToJson(this);
 }

@@ -4,6 +4,27 @@ part 'preferences.g.dart';
 
 @JsonSerializable()
 class Preferences {
+
+  Preferences({
+    this.id,
+    this.userId,
+    this.preferredTime,
+    this.preferredStylist,
+    this.autoRebooking,
+    this.enableMobileAppointment,
+    this.emailReminders,
+    this.smsReminders,
+    this.phoneReminders,
+    this.language,
+    this.currency,
+    this.createdAt,
+    this.updatedAt,
+    this.useLocation,
+  });
+
+  factory Preferences.fromJson(Map<String, dynamic> json) {
+    return _$PreferencesFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   dynamic userId;
@@ -30,32 +51,11 @@ class Preferences {
   @JsonKey(name: 'use_location')
   bool? useLocation;
 
-  Preferences({
-    this.id,
-    this.userId,
-    this.preferredTime,
-    this.preferredStylist,
-    this.autoRebooking,
-    this.enableMobileAppointment,
-    this.emailReminders,
-    this.smsReminders,
-    this.phoneReminders,
-    this.language,
-    this.currency,
-    this.createdAt,
-    this.updatedAt,
-    this.useLocation,
-  });
-
-  factory Preferences.fromJson(Map<String, dynamic> json) {
-    return _$PreferencesFromJson(json);
-  }
-
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);
 
   Preferences copyWith({
     int? id,
-    dynamic? userId,
+    dynamic userId,
     String? preferredTime,
     String? preferredStylist,
     bool? autoRebooking,

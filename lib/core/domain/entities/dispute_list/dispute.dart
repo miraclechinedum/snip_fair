@@ -1,13 +1,41 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/stylist.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/customer.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/appointment.dart';
 
-import 'appointment.dart';
-import 'customer.dart';
-import 'stylist.dart';
 
 part 'dispute.g.dart';
 
 @JsonSerializable()
 class Dispute {
+
+  Dispute({
+    this.id,
+    this.comment,
+    this.imageUrls,
+    this.status,
+    this.priority,
+    this.resolutionType,
+    this.resolutionAmount,
+    this.resolutionComment,
+    this.resolvedAt,
+    this.from,
+    this.appointmentId,
+    this.refId,
+    this.customerId,
+    this.stylistId,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.resolvedBy,
+    this.appointment,
+    this.customer,
+    this.stylist,
+    this.messages,
+  });
+
+  factory Dispute.fromJson(Map<String, dynamic> json) =>
+      _$DisputeFromJson(json);
   int? id;
   String? comment;
   @JsonKey(name: 'image_urls')
@@ -43,34 +71,6 @@ class Dispute {
   Customer? customer;
   Stylist? stylist;
   List<dynamic>? messages;
-
-  Dispute({
-    this.id,
-    this.comment,
-    this.imageUrls,
-    this.status,
-    this.priority,
-    this.resolutionType,
-    this.resolutionAmount,
-    this.resolutionComment,
-    this.resolvedAt,
-    this.from,
-    this.appointmentId,
-    this.refId,
-    this.customerId,
-    this.stylistId,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.resolvedBy,
-    this.appointment,
-    this.customer,
-    this.stylist,
-    this.messages,
-  });
-
-  factory Dispute.fromJson(Map<String, dynamic> json) =>
-      _$DisputeFromJson(json);
 
   Map<String, dynamic> toJson() => _$DisputeToJson(this);
 }

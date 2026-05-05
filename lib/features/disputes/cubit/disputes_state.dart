@@ -7,7 +7,7 @@ class DisputesState extends Equatable {
     this.errorMessage,
   });
 
-  DisputesState.initial() : this._();
+  const DisputesState.initial() : this._();
 
   final List<Dispute> disputes;
   final bool isLoading;

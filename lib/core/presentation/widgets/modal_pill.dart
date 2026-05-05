@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-
-import '../theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 class ModalPill extends StatelessWidget {
   const ModalPill({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

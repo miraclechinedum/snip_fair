@@ -1,19 +1,19 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 
 class DefaultStylistCard extends StatelessWidget {
   const DefaultStylistCard({
@@ -52,19 +52,17 @@ class DefaultStylistCard extends StatelessWidget {
                           top: Radius.circular(12),
                         ),
                         child: CachedNetworkImage(
-                          imageUrl: seller.stylistProfile?.banner
-                                  ?.completeImagePath() ??
-                              '',
+                          imageUrl: seller.stylistProfile?.banner?.completeImagePath() ?? '',
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Assets.images.loading.image(
+                          placeholder: (context, url) => Assets.images.loading.image(
                             fit: BoxFit.cover,
                           ),
                           errorWidget: (context, url, error) {
                             return ColoredBox(
                               color: Colors.grey.shade200,
                               child: Center(
-                                  child: SvgPicture.asset(Assets.images.logo)),
+                                child: SvgPicture.asset(Assets.images.logo),
+                              ),
                             );
                           },
                         ),
@@ -80,9 +78,7 @@ class DefaultStylistCard extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: seller.availability?.availability
-                                        ?.contains('Later') ??
-                                    false
+                            color: seller.availability?.availability?.contains('Later') ?? false
                                 ? Colors.red
                                 : Colors.amber.shade600,
                             borderRadius: BorderRadius.circular(24),
@@ -172,8 +168,7 @@ class DefaultStylistCard extends StatelessWidget {
               Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                      BorderRadius.vertical(bottom: Radius.circular(12)),
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
                 ),
                 padding: const EdgeInsets.all(8),
                 child: Row(
@@ -265,8 +260,7 @@ class _LikeItemWidgetState extends State<LikeItemWidget> {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () async {
-        final isAuthenticated =
-            context.read<AppCubit>().state.status == AuthStatus.authenticated;
+        final isAuthenticated = context.read<AppCubit>().state.status == AuthStatus.authenticated;
         if (!isAuthenticated) {
           await AppHelper.showAuthenticationRequired(context);
           return;

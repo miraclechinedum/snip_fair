@@ -1,11 +1,39 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/dispute_list/portfolio.dart';
 
-import 'portfolio.dart';
 
 part 'appointment.g.dart';
 
 @JsonSerializable()
 class Appointment {
+
+  Appointment({
+    this.id,
+    this.stylistId,
+    this.customerId,
+    this.bookingId,
+    this.portfolioId,
+    this.amount,
+    this.duration,
+    this.extra,
+    this.appointmentCode,
+    this.completionCode,
+    this.status,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+    this.appointmentDate,
+    this.appointmentTime,
+    this.stylistNote,
+    this.serviceNotes,
+    this.completedAt,
+    this.appointmentDateTime,
+    this.portfolio,
+  });
+
+  factory Appointment.fromJson(Map<String, dynamic> json) {
+    return _$AppointmentFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'stylist_id')
   String? stylistId;
@@ -42,34 +70,6 @@ class Appointment {
   @JsonKey(name: 'appointment_date_time')
   DateTime? appointmentDateTime;
   Portfolio? portfolio;
-
-  Appointment({
-    this.id,
-    this.stylistId,
-    this.customerId,
-    this.bookingId,
-    this.portfolioId,
-    this.amount,
-    this.duration,
-    this.extra,
-    this.appointmentCode,
-    this.completionCode,
-    this.status,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-    this.appointmentDate,
-    this.appointmentTime,
-    this.stylistNote,
-    this.serviceNotes,
-    this.completedAt,
-    this.appointmentDateTime,
-    this.portfolio,
-  });
-
-  factory Appointment.fromJson(Map<String, dynamic> json) {
-    return _$AppointmentFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$AppointmentToJson(this);
 }

@@ -1,24 +1,22 @@
-// ignore_for_file: unawaited_futures
-
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:snip_fair/gen/assets.gen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/features/explore/cubit/explore_cubit.dart';
+import 'package:snip_fair/features/explore/widgets/top_stylist_card.dart';
+import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
+import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/theme.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/features/explore/cubit/explore_cubit.dart';
-import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
-import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
-import 'package:snip_fair/features/explore/widgets/top_stylist_card.dart';
-import 'package:snip_fair/gen/assets.gen.dart';
+// ignore_for_file: unawaited_futures
 
 @RoutePage()
 class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
@@ -52,8 +50,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                     color: AppColors.grey1,
                   ),
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   child: Row(
                     children: [
                       const Icon(Iconsax.search_normal),
@@ -79,8 +76,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
               20.verticalSpace,
               //Top rated
               BlocBuilder<ExploreCubit, ExploreState>(
-                buildWhen: (previous, current) =>
-                    previous.topRated != current.topRated,
+                buildWhen: (previous, current) => previous.topRated != current.topRated,
                 builder: (context, state) {
                   return buildHorizontalStylists(
                     label: 'Top rated',
@@ -91,8 +87,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
               ),
               12.verticalSpace,
               BlocBuilder<ExploreCubit, ExploreState>(
-                buildWhen: (previous, current) =>
-                    previous.nearByStylists != current.nearByStylists,
+                buildWhen: (previous, current) => previous.nearByStylists != current.nearByStylists,
                 builder: (context, state) {
                   return buildVerticalStylists(
                     label: 'NearBy',
@@ -103,8 +98,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
               ),
               12.verticalSpace,
               BlocBuilder<ExploreCubit, ExploreState>(
-                buildWhen: (previous, current) =>
-                    previous.mostPopular != current.mostPopular,
+                buildWhen: (previous, current) => previous.mostPopular != current.mostPopular,
                 builder: (context, state) {
                   return buildHorizontalStylists(
                     label: 'Most popular',
@@ -216,8 +210,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                             Container(
                               width: double.infinity,
                               height: 150.h,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             Positioned(
                               right: 12,
@@ -234,8 +227,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                 child: Container(
                                   width: 150.w,
                                   height: 12.h,
-                                  color: Colors
-                                      .white, // This will be the "shimmered" area
+                                  color: Colors.white, // This will be the "shimmered" area
                                 ),
                               ),
                             ),
@@ -248,8 +240,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                             Container(
                               width: 50.w,
                               height: 15.h,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             const Spacer(),
                             Container(
@@ -392,8 +383,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                             Container(
                               width: double.infinity,
                               height: 150.h,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             Positioned(
                               right: 12,
@@ -410,8 +400,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                                 child: Container(
                                   width: 150.w,
                                   height: 12,
-                                  color: Colors
-                                      .white, // This will be the "shimmered" area
+                                  color: Colors.white, // This will be the "shimmered" area
                                 ),
                               ),
                             ),
@@ -424,8 +413,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
                             Container(
                               width: 50.w,
                               height: 15.h,
-                              color: Colors
-                                  .white, // This will be the "shimmered" area
+                              color: Colors.white, // This will be the "shimmered" area
                             ),
                             const Spacer(),
                             Container(
@@ -479,9 +467,7 @@ class ExploreMainScreen extends StatelessWidget implements AutoRouteWrapper {
               return PopularStyleCard(
                 portfolio: portfolio,
                 onLikePressed: () {
-                  return context
-                      .read<ExploreCubit>()
-                      .likePortfolio(portfolio.id!.toString());
+                  return context.read<ExploreCubit>().likePortfolio(portfolio.id!.toString());
                 },
               );
             },

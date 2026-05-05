@@ -4,18 +4,6 @@ part 'notification_datum.g.dart';
 
 @JsonSerializable()
 class NotificationDatum {
-  int? id;
-  String? type;
-  @JsonKey(name: 'type_identifier')
-  dynamic typeIdentifier;
-  String? title;
-  String? description;
-  @JsonKey(name: 'created_at')
-  DateTime? createdAt;
-  String? priority;
-  @JsonKey(name: 'is_read')
-  bool? isRead;
-
   NotificationDatum({
     this.id,
     this.type,
@@ -29,6 +17,17 @@ class NotificationDatum {
 
   factory NotificationDatum.fromJson(Map<String, dynamic> json) =>
       _$NotificationDatumFromJson(json);
+  int? id;
+  String? type;
+  @JsonKey(name: 'type_identifier')
+  dynamic typeIdentifier;
+  String? title;
+  String? description;
+  @JsonKey(name: 'created_at')
+  DateTime? createdAt;
+  String? priority;
+  @JsonKey(name: 'is_read')
+  bool? isRead;
 
   Map<String, dynamic> toJson() => _$NotificationDatumToJson(this);
 }

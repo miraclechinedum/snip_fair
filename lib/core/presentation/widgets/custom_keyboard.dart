@@ -1,10 +1,19 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../theme/theme.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 /// Custom keyboard
 class CustomKeyBoard extends StatefulWidget {
+  const CustomKeyBoard({
+    Key? key,
+    required this.maxLength,
+    this.specialKey,
+    this.onChanged,
+    this.specialKeyOnTap,
+    this.onCompleted,
+  })  : assert(maxLength > 0),
+        super(key: key);
+
   /// special key to be displayed on the widget. Default is '.'
   final Widget? specialKey;
 
@@ -19,29 +28,19 @@ class CustomKeyBoard extends StatefulWidget {
 
   /// maximum length of the amount.
   final int maxLength;
-
-  const CustomKeyBoard({
-    Key? key,
-    required this.maxLength,
-    this.specialKey,
-    this.onChanged,
-    this.specialKeyOnTap,
-    this.onCompleted,
-  })  : assert(maxLength > 0),
-        super(key: key);
   @override
   _CustomKeyBoardState createState() => _CustomKeyBoardState();
 }
 
 class _CustomKeyBoardState extends State<CustomKeyBoard> {
-  String value = "";
+  String value = '';
   Widget buildNumberButton({int? number, Widget? icon, Function()? onPressed}) {
     Widget getChild() {
       if (icon != null) {
         return icon;
       } else {
         return Text(
-          number?.toString() ?? "",
+          number?.toString() ?? '',
           style: AppTextStyle.headline4,
         );
       }
@@ -49,7 +48,7 @@ class _CustomKeyBoardState extends State<CustomKeyBoard> {
 
     return Expanded(
       child: CupertinoButton(
-        key: icon?.key ?? Key("btn$number"),
+        key: icon?.key ?? Key('btn$number'),
         onPressed: onPressed,
         child: getChild(),
       ),
@@ -68,8 +67,7 @@ class _CustomKeyBoardState extends State<CustomKeyBoard> {
                 });
               }
               widget.onChanged!(value);
-              if (value.length >= widget.maxLength &&
-                  widget.onCompleted != null) {
+              if (value.length >= widget.maxLength && widget.onCompleted != null) {
                 widget.onCompleted!(value);
               }
             },
@@ -96,15 +94,14 @@ class _CustomKeyBoardState extends State<CustomKeyBoard> {
             onPressed: widget.specialKeyOnTap ??
                 () {
                   if (value.length < widget.maxLength) {
-                    if (!value.contains(".")) {
+                    if (!value.contains('.')) {
                       setState(() {
-                        value = value + ".";
+                        value = "$value.";
                       });
                     }
                   }
                   widget.onChanged!(value);
-                  if (value.length >= widget.maxLength &&
-                      widget.onCompleted != null) {
+                  if (value.length >= widget.maxLength && widget.onCompleted != null) {
                     widget.onCompleted!(value);
                   }
                 },
@@ -118,8 +115,7 @@ class _CustomKeyBoardState extends State<CustomKeyBoard> {
                 });
               }
               widget.onChanged!(value);
-              if (value.length >= widget.maxLength &&
-                  widget.onCompleted != null) {
+              if (value.length >= widget.maxLength && widget.onCompleted != null) {
                 widget.onCompleted!(value);
               }
             },

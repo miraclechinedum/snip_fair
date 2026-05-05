@@ -4,6 +4,26 @@ part 'notifications.g.dart';
 
 @JsonSerializable()
 class Notifications {
+
+  Notifications({
+    this.id,
+    this.userId,
+    this.bookingConfirmation,
+    this.appointmentReminders,
+    this.favoriteStylistUpdate,
+    this.promotionsOffers,
+    this.reviewReminders,
+    this.paymentConfirmations,
+    this.emailNotifications,
+    this.pushNotifications,
+    this.smsNotifications,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory Notifications.fromJson(Map<String, dynamic> json) {
+    return _$NotificationsFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   dynamic userId;
@@ -30,31 +50,11 @@ class Notifications {
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
 
-  Notifications({
-    this.id,
-    this.userId,
-    this.bookingConfirmation,
-    this.appointmentReminders,
-    this.favoriteStylistUpdate,
-    this.promotionsOffers,
-    this.reviewReminders,
-    this.paymentConfirmations,
-    this.emailNotifications,
-    this.pushNotifications,
-    this.smsNotifications,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Notifications.fromJson(Map<String, dynamic> json) {
-    return _$NotificationsFromJson(json);
-  }
-
   Map<String, dynamic> toJson() => _$NotificationsToJson(this);
 
   Notifications copyWith({
     int? id,
-    dynamic? userId,
+    dynamic userId,
     bool? bookingConfirmation,
     bool? appointmentReminders,
     bool? favoriteStylistUpdate,

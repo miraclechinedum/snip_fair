@@ -1,15 +1,14 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:formz/formz.dart';
+import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/bank/bank.dart';
-import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
+import 'package:snip_fair/core/domain/entities/bank/bank.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 
 part 'seller_payment_methods_state.dart';
 

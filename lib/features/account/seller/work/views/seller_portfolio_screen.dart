@@ -1,23 +1,21 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
-import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/features/account/seller/work/cubit/seller_works_cubit.dart';
-
-import 'package:snip_fair/features/account/seller/work/views/seller_work_form_view.dart';
 import 'package:snip_fair/features/account/seller/work/views/seller_work_screen.dart';
+import 'package:snip_fair/features/account/seller/work/views/seller_work_form_view.dart';
 
 @RoutePage()
-class SellerPortfolioScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class SellerPortfolioScreen extends StatelessWidget implements AutoRouteWrapper {
   const SellerPortfolioScreen({super.key});
 
   @override
@@ -60,7 +58,7 @@ class SellerPortfolioScreen extends StatelessWidget
             ..getWorkList();
         },
         child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
@@ -87,9 +85,7 @@ class SellerPortfolioScreen extends StatelessWidget
                             text: 'Total Works',
                           ),
                           trailing: AppText(
-                            text: state.portfolioStats.data?.total?.works
-                                    ?.toString() ??
-                                '0',
+                            text: state.portfolioStats.data?.total?.works?.toString() ?? '0',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -107,9 +103,7 @@ class SellerPortfolioScreen extends StatelessWidget
                             text: 'Total Likes',
                           ),
                           trailing: AppText(
-                            text: state.portfolioStats.data?.total?.likes
-                                    ?.toString() ??
-                                '0',
+                            text: state.portfolioStats.data?.total?.likes?.toString() ?? '0',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -127,9 +121,7 @@ class SellerPortfolioScreen extends StatelessWidget
                             text: 'Average Rating',
                           ),
                           trailing: AppText(
-                            text: state.portfolioStats.data?.averageRating
-                                    ?.toString() ??
-                                '0',
+                            text: state.portfolioStats.data?.averageRating?.toString() ?? '0',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -163,12 +155,9 @@ class SellerPortfolioScreen extends StatelessWidget
                             context,
                             OnConfirmDialog(
                               title: 'Delete Work ',
-                              content:
-                                  'Are you sure you want to delete this work item?',
+                              content: 'Are you sure you want to delete this work item?',
                               onConfirmed: (_) {
-                                context
-                                    .read<SellerWorksCubit>()
-                                    .deleteWorkItem(work.id!);
+                                context.read<SellerWorksCubit>().deleteWorkItem(work.id!);
                               },
                             ),
                           );

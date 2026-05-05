@@ -1,12 +1,14 @@
-import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/initiator.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/recipient.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/features/conversations/conversation/widgets/chat_input_field.dart';
 import 'package:snip_fair/features/conversations/conversation/widgets/chat_message_bubble.dart';
-import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_form_bottom_sheet.dart';
 
 @RoutePage()
 class ConvesationChatScreen extends StatefulWidget {
@@ -63,8 +65,7 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
           text: text,
           conversationId: widget.conversationId,
           currentUserId: _currentUserId,
-          otherUserId:
-              'other_user_id', // TODO: Replace with actual other user ID
+          otherUserId: 'other_user_id', // TODO: Replace with actual other user ID
         );
 
     // Scroll to bottom after sending
@@ -83,6 +84,23 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
   Widget build(BuildContext context) {
     final isInitiator = _currentUserId == widget.initiator?.id.toString();
     final isRecipient = _currentUserId == widget.recipient?.id.toString();
+    final appState = context.read<AppCubit>().state;
+    final isStylist = appState.isStylist;
+
+    // Determine the other person's ID regardless of which params were passed.
+    // Pick whichever of recipient/initiator doesn't belong to the current user.
+    final otherUserId = () {
+      final recipientId = widget.recipient?.id;
+      final initiatorId = widget.initiator?.id;
+      if (recipientId != null && recipientId.toString() != _currentUserId) {
+        return recipientId;
+      }
+      if (initiatorId != null && initiatorId.toString() != _currentUserId) {
+        return initiatorId;
+      }
+      return null;
+    }();
+
     return WillPopScope(
       onWillPop: () async {
         context.read<ConversationsCubit>().stopPollingMessages();
@@ -95,6 +113,19 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
               : isRecipient
                   ? widget.initiator?.name ?? 'Chat'
                   : 'Chat',
+          actions: isStylist && otherUserId != null
+              ? [
+                  IconButton(
+                    tooltip: 'Request Payment',
+                    icon: const Icon(Icons.attach_money),
+                    onPressed: () => showPaymentRequestForm(
+                      context,
+                      recipientId: otherUserId,
+                      conversationId: widget.conversationId,
+                    ),
+                  ),
+                ]
+              : null,
         ),
         body: BlocBuilder<ConversationsCubit, ConversationsState>(
           builder: (context, state) {
@@ -118,13 +149,10 @@ class _ConvesationChatScreenState extends State<ConvesationChatScreen> {
                           itemCount: messages.length,
                           itemBuilder: (context, index) {
                             final message = messages[index];
-                            final isCurrentUser =
-                                message.senderId == _currentUserId;
+                            final isCurrentUser = message.senderId == _currentUserId;
 
                             if (!isCurrentUser && !(message.isRead ?? true)) {
-                              context
-                                  .read<ConversationsCubit>()
-                                  .markMessagesAsRead(
+                              context.read<ConversationsCubit>().markMessagesAsRead(
                                     widget.conversationId,
                                     message.id.toString(),
                                   );

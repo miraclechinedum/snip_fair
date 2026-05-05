@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-
-import '../../theme/theme.dart';
+import 'package:snip_fair/core/presentation/theme/theme.dart';
 
 class ResendButton extends StatelessWidget {
   const ResendButton({
-    super.key,
     required this.title,
+    required this.onPressed,
+    super.key,
     this.iconData = Icons.refresh,
     this.isTimeExpired = false,
     this.isResending = false,
-    required this.onPressed,
   });
   final String title;
   final IconData iconData;

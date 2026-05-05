@@ -1,18 +1,17 @@
-import 'dart:async';
 import 'dart:ui';
-
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
-import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
 import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
-import 'package:snip_fair/core/network/api_result.dart';
-import 'package:snip_fair/core/utils/base/process_state.dart';
-import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 
 part 'search_state.dart';
 
@@ -159,11 +158,10 @@ class SearchCubit extends Cubit<SearchState> {
   }
 
   Future<void> loadMoreStylists() async {
-    if (state.stylistPagination.isLoadingMore ||
-        state.stylistPagination.hasReachedMax) {
+    if (state.stylistPagination.isLoadingMore || state.stylistPagination.hasReachedMax) {
       return;
     }
-    await _getStylists(state.searchQuery, isInitial: false);
+    await _getStylists(state.searchQuery);
   }
 
   String? _mapSort(SortOption option) {
@@ -258,11 +256,10 @@ class SearchCubit extends Cubit<SearchState> {
   }
 
   Future<void> loadMoreServices() async {
-    if (state.servicePagination.isLoadingMore ||
-        state.servicePagination.hasReachedMax) {
+    if (state.servicePagination.isLoadingMore || state.servicePagination.hasReachedMax) {
       return;
     }
-    await _getServices(state.searchQuery, isInitial: false);
+    await _getServices(state.searchQuery);
   }
 
   Future<bool?> likePortfolio(String portfolioId) async {

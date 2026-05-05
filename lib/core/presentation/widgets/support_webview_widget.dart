@@ -1,15 +1,12 @@
-import 'dart:developer';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as image;
 import 'package:image_picker/image_picker.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:image/image.dart' as image;
 
 class SupportWebViewWidget extends StatefulWidget {
   const SupportWebViewWidget({

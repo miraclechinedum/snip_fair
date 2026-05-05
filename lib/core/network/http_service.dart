@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:injectable/injectable.dart' hide Environment;
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/network/error_interceptor.dart';
-import 'package:snip_fair/core/presentation/app_config/app_access_policy.dart';
 import 'package:snip_fair/core/routing/routes.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:snip_fair/core/presentation/app.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
-
+import 'package:injectable/injectable.dart' hide Environment;
+import 'package:snip_fair/core/network/error_interceptor.dart';
 import 'package:snip_fair/core/network/token_interceptor.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
@@ -18,8 +18,7 @@ class HttpService {
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           sendTimeout: const Duration(seconds: 60),
-          validateStatus: (status) =>
-              status != null && status >= 200 && status < 300,
+          validateStatus: (status) => status != null && status >= 200 && status < 300,
           headers: {
             'Accept':
                 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
@@ -77,7 +76,6 @@ class HttpService {
         )
         ..interceptors.add(
           LogInterceptor(
-            responseHeader: true,
             responseBody: true,
             requestBody: true,
           ),

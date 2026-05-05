@@ -4,6 +4,26 @@ part 'payment_method.g.dart';
 
 @JsonSerializable()
 class PaymentMethod {
+  PaymentMethod({
+    this.id,
+    this.userId,
+    this.accountNumber,
+    this.accountName,
+    this.bankName,
+    this.routingNumber,
+    this.isDefault,
+    this.isActive,
+    this.deletedAt,
+    this.createdAt,
+    this.updatedAt,
+    this.bank,
+    this.account,
+    this.routing,
+  });
+
+  factory PaymentMethod.fromJson(Map<String, dynamic> json) {
+    return _$PaymentMethodFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   String? userId;
@@ -28,27 +48,6 @@ class PaymentMethod {
   String? bank;
   String? account;
   String? routing;
-
-  PaymentMethod({
-    this.id,
-    this.userId,
-    this.accountNumber,
-    this.accountName,
-    this.bankName,
-    this.routingNumber,
-    this.isDefault,
-    this.isActive,
-    this.deletedAt,
-    this.createdAt,
-    this.updatedAt,
-    this.bank,
-    this.account,
-    this.routing,
-  });
-
-  factory PaymentMethod.fromJson(Map<String, dynamic> json) {
-    return _$PaymentMethodFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$PaymentMethodToJson(this);
 }

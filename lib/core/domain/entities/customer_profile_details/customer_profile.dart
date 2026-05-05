@@ -4,6 +4,22 @@ part 'customer_profile.g.dart';
 
 @JsonSerializable()
 class CustomerProfile {
+
+  CustomerProfile({
+    this.id,
+    this.userId,
+    this.billingName,
+    this.billingEmail,
+    this.billingCity,
+    this.billingZip,
+    this.billingLocation,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory CustomerProfile.fromJson(Map<String, dynamic> json) {
+    return _$CustomerProfileFromJson(json);
+  }
   int? id;
   @JsonKey(name: 'user_id')
   dynamic userId;
@@ -21,22 +37,6 @@ class CustomerProfile {
   DateTime? createdAt;
   @JsonKey(name: 'updated_at')
   DateTime? updatedAt;
-
-  CustomerProfile({
-    this.id,
-    this.userId,
-    this.billingName,
-    this.billingEmail,
-    this.billingCity,
-    this.billingZip,
-    this.billingLocation,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory CustomerProfile.fromJson(Map<String, dynamic> json) {
-    return _$CustomerProfileFromJson(json);
-  }
 
   Map<String, dynamic> toJson() => _$CustomerProfileToJson(this);
 }

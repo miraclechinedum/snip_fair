@@ -1,18 +1,17 @@
-import 'package:auto_route/annotations.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/routing/routes.gr.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/routing/routes.gr.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+import 'package:snip_fair/core/domain/entities/apointment/appointment.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 
 @RoutePage()
 class SellerAppointmentsMainScreen extends StatelessWidget {
@@ -31,8 +30,7 @@ class SellerAppointmentsMainScreen extends StatelessWidget {
       ),
       body: BlocBuilder<SellerAppointMgtCubit, SellerAppointMgtState>(
         builder: (context, state) {
-          final appointments =
-              state.appointments.data ?? <StylistAppointment>[];
+          final appointments = state.appointments.data ?? <StylistAppointment>[];
 
           return Column(
             children: [
@@ -57,12 +55,10 @@ class SellerAppointmentsMainScreen extends StatelessWidget {
                     shrinkWrap: true,
                     centerEmpty: true,
                     centerLoading: true,
-                    onFetchData: () => context
-                        .read<SellerAppointMgtCubit>()
-                        .getAppointments(loadMore: true),
+                    onFetchData: () =>
+                        context.read<SellerAppointMgtCubit>().getAppointments(loadMore: true),
                     hasReachedMax: state.paginationData.hasReachedMax,
-                    isLoading: state.appointments.isLoading ||
-                        state.paginationData.isLoadingMore,
+                    isLoading: state.appointments.isLoading || state.paginationData.isLoadingMore,
                     itemBuilder: (context, index) {
                       return AppointmentCard(
                         appointment: appointments[index],
@@ -108,9 +104,7 @@ class AppointmentCard extends StatelessWidget {
                   AppHelper.showImagePreview(
                     context,
                     imageUrl: appointment.customer?.avatar != null
-                        ? appointment.customer!.avatar!
-                            .toString()
-                            .completeImagePath()
+                        ? appointment.customer!.avatar!.toString().completeImagePath()
                         : null,
                   );
                 },
@@ -118,9 +112,7 @@ class AppointmentCard extends StatelessWidget {
                   radius: 20,
                   backgroundImage: appointment.customer?.avatar != null
                       ? CachedNetworkImageProvider(
-                          appointment.customer!.avatar!
-                              .toString()
-                              .completeImagePath(),
+                          appointment.customer!.avatar!.toString().completeImagePath(),
                         )
                       : null,
                   child: appointment.customer?.avatar != null
@@ -163,8 +155,7 @@ class AppointmentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(23),
                   color: appointment.status.toStatusColor().withOpacity(0.1),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: AppText(
                   text: appointment.status?.toStatusText() ?? '',
                   fontSize: 10,

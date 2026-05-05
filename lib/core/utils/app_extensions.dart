@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
@@ -101,9 +100,7 @@ extension MagicString on String? {
     }
 
     // On Unix (Linux, macOS) — starts with "/" or relative path (e.g., ./file or ../file)
-    return value.startsWith('/') ||
-        value.startsWith('./') ||
-        value.startsWith('../');
+    return value.startsWith('/') || value.startsWith('./') || value.startsWith('../');
   }
 
   String showLast4Digits() {

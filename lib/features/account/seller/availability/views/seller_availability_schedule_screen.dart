@@ -1,20 +1,20 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/availability_schedule/timeslot.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/utils/utils.dart';
-import 'package:snip_fair/features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart';
+import 'package:snip_fair/core/domain/entities/availability_schedule/timeslot.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/availability/cubit/seller_availability_schedule_cubit.dart';
+
 
 @RoutePage()
 class SellerAvailabilityScheduleScreen extends StatefulWidget
@@ -203,7 +203,7 @@ class _LocationSettingsState extends State<LocationSettings> {
                 ),
                 trailing: Switch(
                   value: _useLocation,
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                   onChanged: (value) {
                     setState(() {
                       _useLocation = value;
@@ -330,7 +330,7 @@ class DayAvailabilityWidget extends StatelessWidget {
                           .read<SellerAvailabilityScheduleCubit>()
                           .updateAvailabilitu(day: day, newValue: value);
                     },
-                    activeColor: Colors.green,
+                    activeThumbColor: Colors.green,
                   ),
                 ],
               ),

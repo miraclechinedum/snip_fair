@@ -1,5 +1,5 @@
-import 'package:snip_fair/core/utils/environment/base_config.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:snip_fair/core/utils/environment/base_config.dart';
 
 class DevConfig implements BaseConfig {
   @override

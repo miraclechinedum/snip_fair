@@ -1,24 +1,23 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:formz/formz.dart';
+import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
-import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
-import 'package:snip_fair/core/domain/entities/work_list/work_list.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/app_extensions.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
+import 'package:snip_fair/core/domain/entities/work_list/work_item.dart';
+import 'package:snip_fair/core/domain/entities/work_list/work_list.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
+import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 
 part 'seller_works_state.dart';
 
 @Injectable()
 class SellerWorksCubit extends Cubit<SellerWorksState> {
-  SellerWorksCubit(this._profileRepository)
-      : super(const SellerWorksState.initial());
+  SellerWorksCubit(this._profileRepository) : super(const SellerWorksState.initial());
 
   final ProfileRepository _profileRepository;
 
@@ -71,9 +70,8 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
         workDescription: StringInput.dirty(work.description ?? ''),
         durationInHours: work.duration.pickNumber(),
         workFilePaths: work.mediaUrls,
-        selectedWorkCategory: state.workCategories.data
-            ?.where((e) => e.id?.toString() == work.categoryId)
-            .first,
+        selectedWorkCategory:
+            state.workCategories.data?.where((e) => e.id?.toString() == work.categoryId).first,
         price: work.price?.toDouble(),
       ),
     );
@@ -106,7 +104,8 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
 
   void onRemoveImage(String image) {
     emit(
-        state.copyWith(workFilePaths: [...state.workFilePaths]..remove(image)));
+      state.copyWith(workFilePaths: [...state.workFilePaths]..remove(image)),
+    );
   }
 
   void resetForm() {
@@ -116,7 +115,6 @@ class SellerWorksCubit extends Cubit<SellerWorksState> {
         workDescription: const StringInput.pure(),
         durationInHours: 0,
         workFilePaths: [],
-        selectedWorkCategory: null,
         price: 0,
       ),
     );

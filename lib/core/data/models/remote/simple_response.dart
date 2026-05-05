@@ -1,5 +1,5 @@
-import 'package:snip_fair/core/data/models/remote/base_remote_data.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:snip_fair/core/data/models/remote/base_remote_data.dart';
 
 part 'simple_response.freezed.dart';
 part 'simple_response.g.dart';

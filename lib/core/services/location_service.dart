@@ -1,15 +1,14 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:logger/logger.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
-import 'package:logger/logger.dart';
-import 'package:snip_fair/core/data/models/remote/auto_complete_result.dart';
-import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/network/http_service.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
+import 'package:snip_fair/core/data/repositories/profile_repository.dart';
+import 'package:snip_fair/core/data/models/remote/auto_complete_result.dart';
 
 @LazySingleton()
 class LocationService {
@@ -31,8 +30,7 @@ class LocationService {
   ///Write function to check location permission and return true or false
   Future<bool> checkLocationPermission() async {
     final permission = await Geolocator.checkPermission();
-    if (permission != LocationPermission.always &&
-        permission != LocationPermission.whileInUse) {
+    if (permission != LocationPermission.always && permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;
@@ -41,8 +39,7 @@ class LocationService {
   //Write functions to request location permission
   Future<bool> requestLocationPermission() async {
     final permission = await Geolocator.requestPermission();
-    if (permission != LocationPermission.always &&
-        permission != LocationPermission.whileInUse) {
+    if (permission != LocationPermission.always && permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;
@@ -75,8 +72,9 @@ class LocationService {
     unawaited(_updateLocationConsentToServer(consentGiven: consentGiven));
   }
 
-  Future<void> _updateLocationConsentToServer(
-      {required bool consentGiven}) async {
+  Future<void> _updateLocationConsentToServer({
+    required bool consentGiven,
+  }) async {
     final repo = getIt<ProfileRepository>();
     try {
       await repo.updateLocationConsent(consentGiven);
@@ -135,13 +133,16 @@ class LocationService {
           baseUrl: 'https://api.geoapify.com',
           validateStatus: (status) => status == 200,
         ),
-      ).get<Map<String, dynamic>>('/v1/geocode/autocomplete', queryParameters: {
-        'text': query,
-        'apiKey': '444cf10f491e417d81d839ee58801389',
-        'limit': '5',
-        'lang': 'za',
-        'filter': 'countrycode:za',
-      });
+      ).get<Map<String, dynamic>>(
+        '/v1/geocode/autocomplete',
+        queryParameters: {
+          'text': query,
+          'apiKey': '444cf10f491e417d81d839ee58801389',
+          'limit': '5',
+          'lang': 'za',
+          'filter': 'countrycode:za',
+        },
+      );
 
       final autocomplete = AutoCompleteResult.fromJson(response.data!);
       return autocomplete.features!

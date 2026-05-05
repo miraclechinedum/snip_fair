@@ -1,46 +1,44 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:phone_form_field/phone_form_field.dart';
 import 'package:snip_fair/core/di/injector.dart';
-import 'package:snip_fair/core/domain/entities/geo_place.dart';
-import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
-import 'package:snip_fair/core/presentation/theme/app_colors.dart';
-import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
-import 'package:snip_fair/core/presentation/widgets/app_text.dart';
-import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
-import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
-import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/utils/utils.dart';
+import 'package:phone_form_field/phone_form_field.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
-import 'package:snip_fair/core/utils/utils.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
+import 'package:snip_fair/core/presentation/theme/app_colors.dart';
+import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart';
-import 'package:snip_fair/features/account/seller/personal_details/cubit/seller_personal_details_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/account/seller/personal_details/cubit/seller_personal_details_cubit.dart';
 
 @RoutePage()
-class SellerPersonalDetailsScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class SellerPersonalDetailsScreen extends StatelessWidget implements AutoRouteWrapper {
   const SellerPersonalDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SellerPersonalDetailsCubit>();
     final currentProfile =
-        context.read<SellerProfileMgtCubit>().state.profileDetails.data ??
-            StylistProfileDetails();
+        context.read<SellerProfileMgtCubit>().state.profileDetails.data ?? StylistProfileDetails();
     return BlocListener<SellerPersonalDetailsCubit, SellerPersonalDetailsState>(
-      listenWhen: (previous, current) =>
-          previous.updateProfile != current.updateProfile,
+      listenWhen: (previous, current) => previous.updateProfile != current.updateProfile,
       listener: (context, state) {
         if (state.updateProfile.hasSuccess) {
           context.read<SellerProfileMgtCubit>().getProfileDetails(true);
           AppHelper.showAppDialog(
             context,
             const OnSuccessDialogContent(
-                subtext: 'Profile Updated Successfully'),
+              subtext: 'Profile Updated Successfully',
+            ),
           );
         }
       },
@@ -65,8 +63,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     text: 'Update your personal details',
                   ),
                   20.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.firstName;
                     },
@@ -74,7 +71,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                       return CustomTextField(
                         label: 'First Name',
                         hint: 'Enter your first name',
-                        initialText: currentProfile.user!.firstName!,
+                        initialText: currentProfile.user!.firstName,
                         isRequired: true,
                         onChanged: cubit.onFirstNameChanged,
                         isError: firstName.isNotValid,
@@ -83,8 +80,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     },
                   ),
                   16.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.lastName;
                     },
@@ -92,7 +88,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                       return CustomTextField(
                         label: 'Last Name',
                         hint: 'Enter your last name',
-                        initialText: currentProfile.user!.lastName!,
+                        initialText: currentProfile.user!.lastName,
                         isRequired: true,
                         onChanged: cubit.onLastNameChanged,
                         isError: lastName.isNotValid,
@@ -106,19 +102,16 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     hint: 'example@gmail.com',
                     isRequired: true,
                     readOnly: true,
-                    initialText: currentProfile.user!.email!,
+                    initialText: currentProfile.user!.email,
                   ),
                   16.verticalSpace,
                   CustomPhoneTextField(
                     label: 'Phone',
                     isRequired: true,
                     dialCode: '+27',
-                    initialPhone:
-                        PhoneNumber.parse(currentProfile.user!.phone!),
-                    controller:
-                        TextEditingController(text: currentProfile.user!.phone),
-                    onInputChanged: (phone) =>
-                        cubit.onPhoneChanged(phone.international),
+                    initialPhone: PhoneNumber.parse(currentProfile.user!.phone!),
+                    controller: TextEditingController(text: currentProfile.user!.phone),
+                    onInputChanged: (phone) => cubit.onPhoneChanged(phone.international),
                   ),
                   12.verticalSpace,
                   const AppText(
@@ -151,8 +144,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     ),
                   ),
                   12.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.businessName;
                     },
@@ -161,8 +153,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                         label: 'Business/Salon name',
                         hint: 'Enter your business name',
                         isRequired: true,
-                        initialText:
-                            currentProfile.user!.stylistProfile!.businessName!,
+                        initialText: currentProfile.user!.stylistProfile!.businessName,
                         onChanged: cubit.onBusinessNameChanged,
                         isError: businessName.isNotValid,
                         descriptionText: businessName.displayError?.message,
@@ -170,8 +161,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     },
                   ),
                   16.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.address;
                     },
@@ -195,8 +185,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     },
                   ),
                   16.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.yearsOfExperience;
                     },
@@ -228,16 +217,15 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                           ),
                           5.verticalSpace,
                           DropdownButtonFormField<int>(
-                            value: int.tryParse(yearsOfExperience.value) ??
-                                currentProfile
-                                    .user?.stylistProfile?.yearsOfExperience,
+                            initialValue: int.tryParse(yearsOfExperience.value) ??
+                                currentProfile.user?.stylistProfile?.yearsOfExperience,
                             items: List.generate(20, (index) {
                               return DropdownMenuItem<int>(
+                                value: index + 1,
                                 child: AppText(
                                   text: '${index + 1}',
                                   fontSize: 16,
                                 ),
-                                value: index + 1,
                               );
                             }),
                             onChanged: (value) {
@@ -251,8 +239,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                               color: AppColors.grey900,
                               fontWeight: FontWeight.w400,
                             ),
-                            decoration: AppColors.inputDecoration
-                                .copyWith(hintText: 'Select'),
+                            decoration: AppColors.inputDecoration.copyWith(hintText: 'Select'),
                           ),
                           if (yearsOfExperience.displayError?.message != null)
                             Column(
@@ -265,9 +252,8 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                                   style: AppTextStyle.caption.copyWith(
                                     letterSpacing: -0.3,
                                     fontSize: 10.sp,
-                                    color: yearsOfExperience.isNotValid
-                                        ? Colors.red
-                                        : AppColors.black,
+                                    color:
+                                        yearsOfExperience.isNotValid ? Colors.red : AppColors.black,
                                   ),
                                 ),
                               ],
@@ -277,8 +263,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     },
                   ),
                   16.verticalSpace,
-                  BlocSelector<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState, StringInput>(
+                  BlocSelector<SellerPersonalDetailsCubit, SellerPersonalDetailsState, StringInput>(
                     selector: (state) {
                       return state.bio;
                     },
@@ -296,8 +281,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
                     },
                   ),
                   16.verticalSpace,
-                  BlocBuilder<SellerPersonalDetailsCubit,
-                      SellerPersonalDetailsState>(
+                  BlocBuilder<SellerPersonalDetailsCubit, SellerPersonalDetailsState>(
                     builder: (context, state) {
                       return CustomButton(
                         title: 'Update Profile',
@@ -322,8 +306,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget
   @override
   Widget wrappedRoute(BuildContext context) {
     final currentProfile =
-        context.read<SellerProfileMgtCubit>().state.profileDetails.data ??
-            StylistProfileDetails();
+        context.read<SellerProfileMgtCubit>().state.profileDetails.data ?? StylistProfileDetails();
     return BlocProvider(
       create: (context) => getIt<SellerPersonalDetailsCubit>()
         ..onFirstNameChanged(currentProfile.user!.firstName!)
