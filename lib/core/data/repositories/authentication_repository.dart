@@ -4,7 +4,10 @@ import 'package:snip_fair/core/data/models/remote/login_response.dart';
 import 'package:snip_fair/core/data/models/remote/simple_response.dart';
 import 'package:snip_fair/core/domain/params/login_params.dart';
 import 'package:snip_fair/core/domain/params/register_params.dart';
+import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/network/handlers.dart';
+import 'package:snip_fair/core/presentation/app_config/app_config_controller.dart';
 import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 
 abstract class AuthenticationRepository {
@@ -34,6 +37,9 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
 
   @override
   Future<ApiResult<LoginResponse>> login(LoginParams data) async {
+    final blocked = await _refreshAppConfigBeforeAuth();
+    if (blocked) return _blockedAuthResult();
+
     final result = await _remoteSource.login(data);
     return result.map(
       success: (data) {
@@ -94,6 +100,9 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
     required String role,
     required String device,
   }) async {
+    final blocked = await _refreshAppConfigBeforeAuth();
+    if (blocked) return _blockedAuthResult();
+
     final result = await _remoteSource.loginWithGoogle(
       accessToken: accessToken,
       role: role,
@@ -110,6 +119,22 @@ class AuthenticationRepoImpl implements AuthenticationRepository {
         return data;
       },
       failure: (f) => f,
+    );
+  }
+
+  Future<bool> _refreshAppConfigBeforeAuth() async {
+    if (!getIt.isRegistered<AppConfigController>()) return false;
+
+    final controller = getIt<AppConfigController>();
+    await controller.refresh();
+    return controller.isBlocked;
+  }
+
+  ApiResult<LoginResponse> _blockedAuthResult() {
+    return ApiResult.failure(
+      error: RemoteException.unexpectedError(
+        'App access is blocked by remote configuration.',
+      ),
     );
   }
 }

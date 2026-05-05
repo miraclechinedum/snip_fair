@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/presentation/app_config/app_config_controller.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/version_checker.dart';
 import 'package:snip_fair/features/onboarding/force_update_screen.dart';
@@ -16,13 +17,13 @@ class AppBlocObserver extends BlocObserver {
   const AppBlocObserver();
 
   @override
-  void onChange(BlocBase bloc, Change change) {
+  void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     log('onChange(${bloc.runtimeType}, $change)');
     super.onChange(bloc, change);
   }
 
   @override
-  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     log('onError(${bloc.runtimeType}, $error)');
     super.onError(bloc, error, stackTrace);
   }
@@ -75,6 +76,12 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     );
     return;
   }
+
+  // ---------------------------
+  // REMOTE APP CONFIG / KILL SWITCH
+  // ---------------------------
+  _bootstrapLog('Running App Config Check...');
+  await getIt<AppConfigController>().refresh();
 
   // ---------------------------
   // 🔔 NOTIFICATIONS

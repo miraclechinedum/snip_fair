@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/presentation/app_config/app_state_guard.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
-import 'package:snip_fair/core/presentation/widgets/app_expiry_overlay.dart';
 import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
@@ -172,98 +172,102 @@ class _AppState extends State<App> {
                               AppLocalizations.localizationsDelegates,
                           supportedLocales: AppLocalizations.supportedLocales,
                           builder: (context, child) {
-                            return BlocConsumer<AppCubit, AppState>(
-                              listenWhen: (previous, current) =>
-                                  previous.status != current.status,
-                              listener: (context, state) {
-                                switch (state.status) {
-                                  case AuthStatus.unknown:
-                                    break;
-                                  case AuthStatus.unAuthenticated:
-                                    _appRouter
-                                        .replaceAll([const LandingRoute()]);
-                                    context
-                                        .read<SellerProfileMgtCubit>()
-                                        .onLogout();
-                                    context
-                                        .read<CustomerProfileMgtCubit>()
-                                        .onLogout();
-                                    context
-                                        .read<ConversationsCubit>()
-                                        .onLogout();
-                                    context
-                                        .read<CustomerAppointmentsCubit>()
-                                        .onLogout();
-                                    context
-                                        .read<SellerAppointMgtCubit>()
-                                        .onLogout();
-                                    context
-                                        .read<NotificationsCubit>()
-                                        .onLogout();
+                            return AppStateGuard(
+                              child: BlocConsumer<AppCubit, AppState>(
+                                listenWhen: (previous, current) =>
+                                    previous.status != current.status,
+                                listener: (context, state) {
+                                  switch (state.status) {
+                                    case AuthStatus.unknown:
+                                      break;
+                                    case AuthStatus.unAuthenticated:
+                                      _appRouter
+                                          .replaceAll([const LandingRoute()]);
+                                      context
+                                          .read<SellerProfileMgtCubit>()
+                                          .onLogout();
+                                      context
+                                          .read<CustomerProfileMgtCubit>()
+                                          .onLogout();
+                                      context
+                                          .read<ConversationsCubit>()
+                                          .onLogout();
+                                      context
+                                          .read<CustomerAppointmentsCubit>()
+                                          .onLogout();
+                                      context
+                                          .read<SellerAppointMgtCubit>()
+                                          .onLogout();
+                                      context
+                                          .read<NotificationsCubit>()
+                                          .onLogout();
 
-                                  case AuthStatus.authenticated:
-                                    if (state.user.emailVerifiedAt == null) {
-                                      _appRouter.replaceAll([
-                                        const LandingRoute(),
-                                        VerifyEmailRoute(
-                                          email: state.user.email!,
-                                          asStylist: state.isStylist,
-                                        ),
-                                      ]);
-                                      return;
-                                    }
+                                    case AuthStatus.authenticated:
+                                      if (state.user.emailVerifiedAt == null) {
+                                        _appRouter.replaceAll([
+                                          const LandingRoute(),
+                                          VerifyEmailRoute(
+                                            email: state.user.email!,
+                                            asStylist: state.isStylist,
+                                          ),
+                                        ]);
+                                        return;
+                                      }
 
-                                    if (state.isStylist &&
-                                        state.user.stylistProfile
-                                                ?.businessName ==
-                                            null) {
-                                      _appRouter.replaceAll([
-                                        const LandingRoute(),
-                                        SellerBusinessCreateRoute(
-                                          fromSignUp: true,
-                                        ),
-                                      ]);
-                                      return;
-                                    }
+                                      if (state.isStylist &&
+                                          state.user.stylistProfile
+                                                  ?.businessName ==
+                                              null) {
+                                        _appRouter.replaceAll([
+                                          const LandingRoute(),
+                                          SellerBusinessCreateRoute(
+                                            fromSignUp: true,
+                                          ),
+                                        ]);
+                                        return;
+                                      }
 
-                                    if (state.isStylist &&
-                                        state.user.stylistProfile
-                                                ?.identificationId ==
-                                            null) {
-                                      _appRouter.replaceAll([
-                                        const LandingRoute(),
-                                        StylistBusinessIdVerifyRoute(
-                                          fromSignUp: true,
-                                        ),
-                                      ]);
-                                      return;
-                                    }
+                                      if (state.isStylist &&
+                                          state.user.stylistProfile
+                                                  ?.identificationId ==
+                                              null) {
+                                        _appRouter.replaceAll([
+                                          const LandingRoute(),
+                                          StylistBusinessIdVerifyRoute(
+                                            fromSignUp: true,
+                                          ),
+                                        ]);
+                                        return;
+                                      }
 
-                                    if (state.isStylist) {
-                                      context.read<SellerProfileMgtCubit>()
-                                        ..getProfileDetails()
-                                        ..getStats();
-                                    }
+                                      if (state.isStylist) {
+                                        context.read<SellerProfileMgtCubit>()
+                                          ..getProfileDetails()
+                                          ..getStats();
+                                      }
 
-                                    if (state.isCustomer) {
-                                      context.read<CustomerProfileMgtCubit>()
-                                        ..getProfileDetails()
-                                        ..getStats()
-                                        ..getWallet()
-                                        ..getWalletTransactions();
-                                    }
+                                      if (state.isCustomer) {
+                                        context.read<CustomerProfileMgtCubit>()
+                                          ..getProfileDetails()
+                                          ..getStats()
+                                          ..getWallet()
+                                          ..getWalletTransactions();
+                                      }
 
-                                    _appRouter.replaceAll([const MainRoute()]);
-                                  case AuthStatus.guest:
-                                    _appRouter.replaceAll([const MainRoute()]);
-                                }
-                              },
-                              builder: (context, state) {
-                                if (state.status == AuthStatus.unknown) {
-                                  return const SplashScreen();
-                                }
-                                return child!;
-                              },
+                                      _appRouter
+                                          .replaceAll([const MainRoute()]);
+                                    case AuthStatus.guest:
+                                      _appRouter
+                                          .replaceAll([const MainRoute()]);
+                                  }
+                                },
+                                builder: (context, state) {
+                                  if (state.status == AuthStatus.unknown) {
+                                    return const SplashScreen();
+                                  }
+                                  return child!;
+                                },
+                              ),
                             );
                           },
                         );

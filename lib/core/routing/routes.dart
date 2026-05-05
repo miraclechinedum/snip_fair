@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:snip_fair/core/routing/remote_kill_switch_route_guard.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
@@ -158,5 +159,5 @@ class AppRouter extends RootStackRouter {
       ];
 
   @override
-  List<AutoRouteGuard> get guards => [];
+  List<AutoRouteGuard> get guards => [RemoteKillSwitchRouteGuard()];
 }

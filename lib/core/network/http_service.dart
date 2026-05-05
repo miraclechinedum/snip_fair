@@ -1,15 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/network/error_interceptor.dart';
-import 'package:snip_fair/core/presentation/app.dart';
+import 'package:snip_fair/core/presentation/app_config/app_access_policy.dart';
 import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 
-import '../utils/environment/environment.dart';
-import 'token_interceptor.dart';
+import 'package:snip_fair/core/network/token_interceptor.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
 
 @Injectable()
 class HttpService {
@@ -31,6 +30,28 @@ class HttpService {
           },
         ),
       )
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              final isAppConfigRequest = options.path == '/app-config';
+              final accessIsBlocked = getIt.isRegistered<AppAccessPolicy>() &&
+                  getIt<AppAccessPolicy>().shouldBlockApiRequests;
+
+              if (!isAppConfigRequest && accessIsBlocked) {
+                handler.reject(
+                  DioException(
+                    requestOptions: options,
+                    type: DioExceptionType.cancel,
+                    error: 'App access is blocked by remote configuration.',
+                  ),
+                );
+                return;
+              }
+
+              handler.next(options);
+            },
+          ),
+        )
         // ..interceptors.add(CookieManager(getIt<CookieJar>()))
         ..interceptors.add(
           TokenInterceptor(
