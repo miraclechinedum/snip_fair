@@ -902,7 +902,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) {
     return run(() async {
-      final client = _clientWithRetry(requireAuth: false);
+      final client = _clientWithRetry();
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/$id',
       );

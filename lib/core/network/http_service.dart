@@ -4,6 +4,7 @@ import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/routing/routes.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:snip_fair/core/presentation/app.dart';
+import 'package:snip_fair/core/presentation/app_config/app_access_policy.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:snip_fair/core/network/error_interceptor.dart';
