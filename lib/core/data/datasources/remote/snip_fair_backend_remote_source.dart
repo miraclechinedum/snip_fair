@@ -120,8 +120,9 @@ class AuthPath {
 class SnipFairBackendRemoteSource extends BaseRemoteSource
     implements AuthenticationRepository, ProfileRepository, AppointmentRepository {
   /// Helper method to get a Dio client with retry interceptor for GET requests
-  Dio _clientWithRetry({bool requireAuth = true}) {
-    final client = getIt<HttpService>().client(requireAuth: requireAuth);
+  Dio _clientWithRetry({bool requireAuth = true, bool optionalAuth = false}) {
+    final client = getIt<HttpService>()
+        .client(requireAuth: requireAuth, optionalAuth: optionalAuth);
     client.interceptors.add(
       RetryInterceptor(
         dio: client,
@@ -902,7 +903,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerDetails>> customerFetchStylistById(String id) {
     return run(() async {
-      final client = _clientWithRetry();
+      final client = _clientWithRetry(optionalAuth: true);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/$id',
       );
@@ -928,7 +929,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? maxPrice,
   }) {
     return run(() async {
-      final client = _clientWithRetry(requireAuth: false);
+      final client = _clientWithRetry(optionalAuth: true);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.customerStylists}/list',
         queryParameters: {
@@ -969,7 +970,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? maxPrice,
   }) {
     return run(() async {
-      final client = _clientWithRetry(requireAuth: false);
+      final client = _clientWithRetry(optionalAuth: true);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/list',
         queryParameters: {
@@ -1076,7 +1077,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SellerPortfolio>> customerFetchPortfolioById({String? id}) {
     return run(() async {
-      final client = _clientWithRetry(requireAuth: false);
+      final client = _clientWithRetry(optionalAuth: true);
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.portfolio}/$id',
       );

@@ -13,7 +13,12 @@ import 'package:snip_fair/core/utils/environment/environment.dart';
 
 @Injectable()
 class HttpService {
-  Dio client({bool requireAuth = true, bool isFormDataRequest = false}) => Dio(
+  Dio client({
+    bool requireAuth = true,
+    bool optionalAuth = false,
+    bool isFormDataRequest = false,
+  }) =>
+      Dio(
         BaseOptions(
           baseUrl: Environment().config.apiHost,
           connectTimeout: const Duration(seconds: 60),
@@ -57,6 +62,7 @@ class HttpService {
         ..interceptors.add(
           TokenInterceptor(
             requireAuth: requireAuth,
+            optionalAuth: optionalAuth,
           ),
         )
         ..interceptors.add(
