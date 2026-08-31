@@ -4,18 +4,33 @@ import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 class ChatInputField extends StatefulWidget {
   const ChatInputField({
     required this.onSend,
+    this.onChanged,
+    this.initialText,
     super.key,
   });
 
   final void Function(String text) onSend;
+
+  /// Fires on every text change. Chat screen uses this to debounce a draft
+  /// save into `ChatDraftService`.
+  final ValueChanged<String>? onChanged;
+
+  /// Seed value applied to the controller on init (i.e. a restored draft).
+  final String? initialText;
 
   @override
   State<ChatInputField> createState() => _ChatInputFieldState();
 }
 
 class _ChatInputFieldState extends State<ChatInputField> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
   final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText ?? '');
+  }
 
   @override
   void dispose() {
@@ -70,6 +85,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                   ),
                 ),
                 onSubmitted: (_) => _handleSend(),
+                onChanged: widget.onChanged,
               ),
             ),
             const SizedBox(width: 8),

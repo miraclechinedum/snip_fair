@@ -8,8 +8,8 @@ part of 'customer_wallet.dart';
 
 CustomerWallet _$CustomerWalletFromJson(Map<String, dynamic> json) =>
     CustomerWallet(
-      balance: (json['balance'] as num?)?.toInt(),
-      escrowBalance: (json['escrow_balance'] as num?)?.toInt(),
+      balance: json['balance'] as num?,
+      escrowBalance: json['escrow_balance'] as num?,
       stats: json['stats'] == null
           ? null
           : Stats.fromJson(json['stats'] as Map<String, dynamic>),

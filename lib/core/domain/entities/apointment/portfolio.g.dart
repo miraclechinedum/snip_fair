@@ -15,9 +15,7 @@ Portfolio _$PortfolioFromJson(Map<String, dynamic> json) => Portfolio(
       duration: json['duration'] as String?,
       description: json['description'] as String?,
       tags: json['tags'] as String?,
-      mediaUrls: (json['media_urls'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      mediaUrls: nonNullStringList(json['media_urls']),
       visitsCount: json['visits_count'],
       status: json['status'] as bool?,
       isAvailable: json['is_available'] as bool?,

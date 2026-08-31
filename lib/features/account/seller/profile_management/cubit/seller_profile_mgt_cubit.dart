@@ -10,6 +10,7 @@ import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
 import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 
 part 'seller_profile_mgt_state.dart';
@@ -17,9 +18,28 @@ part 'seller_profile_mgt_state.dart';
 @Injectable()
 class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
   SellerProfileMgtCubit(this._profileRepository)
-      : super(const SellerProfileMgtState.initial());
+      : super(const SellerProfileMgtState.initial()) {
+    _notifSub = NotificationService.instance.updates.listen((data) {
+      final type = data['type'] as String?;
+      // Backend fires this when an admin approves the stylist. The approval
+      // handler already sets `status='approved'` and `is_available=true`
+      // server-side, so we just silently re-fetch the profile to pick up the
+      // new values — the availability toggle and status card update on their
+      // own without any UI action from the user.
+      if (type == 'stylist_approved') {
+        getProfileDetails(true);
+      }
+    });
+  }
 
   final ProfileRepository _profileRepository;
+  StreamSubscription<Map<String, dynamic>>? _notifSub;
+
+  @override
+  Future<void> close() {
+    _notifSub?.cancel();
+    return super.close();
+  }
 
   Future<void> getProfileDetails([bool silent = false]) async {
     if (!silent) {

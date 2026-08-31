@@ -12,6 +12,7 @@ import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/stylist_list/stylist_list.dart';
 import 'package:snip_fair/core/domain/entities/work_category/work_category.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
 
 part 'search_state.dart';
 
@@ -26,6 +27,7 @@ class SearchCubit extends Cubit<SearchState> {
   void search(String query) {
     _debounce.run(() {
       emit(state.copyWith(searchQuery: query));
+      unawaited(AnalyticsService.instance.logSearch(query: query));
       _getStylists(query, isInitial: true);
       _getServices(query, isInitial: true);
     });

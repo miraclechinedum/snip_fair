@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/appointment.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'review.g.dart';
 
@@ -21,11 +22,12 @@ class Review {
     return _$ReviewFromJson(json);
   }
   int? id;
+  @JsonKey(fromJson: toStringOrNull)
   String? rating;
   String? comment;
-  @JsonKey(name: 'appointment_id')
+  @JsonKey(name: 'appointment_id', fromJson: toStringOrNull)
   String? appointmentId;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: 'user_id', fromJson: toStringOrNull)
   String? userId;
   @JsonKey(name: 'deleted_at')
   dynamic deletedAt;

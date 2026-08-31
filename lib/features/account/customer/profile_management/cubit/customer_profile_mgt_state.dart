@@ -7,6 +7,7 @@ class CustomerProfileMgtState extends Equatable {
     required this.walletState,
     required this.transactionsState,
     required this.initializePaymentState,
+    required this.topUpVerificationState,
     required this.transactionsPaginationData,
     required this.updateAvatarState,
     required this.deleteAccountState,
@@ -20,13 +21,15 @@ class CustomerProfileMgtState extends Equatable {
         transactionsPaginationData = const PaginationData(),
         updateAvatarState = const ProcessState.init(null),
         deleteAccountState = const ProcessState.init(null),
+        topUpVerificationState = const ProcessState.init(null),
         initializePaymentState = const ProcessState.init(null);
 
   final ProcessState<CustomerProfileDetails> profileDetails;
   final ProcessState<CustomerStats> customerStats;
   final ProcessState<CustomerWallet> walletState;
   final ProcessState<List<UserTransaction>> transactionsState;
-  final ProcessState<PayfastPaymentData> initializePaymentState;
+  final ProcessState<CheckoutPaymentData> initializePaymentState;
+  final ProcessState<PaymentReconciliation> topUpVerificationState;
   final ProcessState<bool> updateAvatarState;
   final ProcessState<bool> deleteAccountState;
 
@@ -37,7 +40,8 @@ class CustomerProfileMgtState extends Equatable {
     ProcessState<CustomerStats>? customerStats,
     ProcessState<CustomerWallet>? walletState,
     ProcessState<List<UserTransaction>>? transactionsState,
-    ProcessState<PayfastPaymentData>? initializePaymentState,
+    ProcessState<CheckoutPaymentData>? initializePaymentState,
+    ProcessState<PaymentReconciliation>? topUpVerificationState,
     PaginationData? transactionsPaginationData,
     ProcessState<bool>? updateAvatarState,
     ProcessState<bool>? deleteAccountState,
@@ -49,6 +53,8 @@ class CustomerProfileMgtState extends Equatable {
       transactionsState: transactionsState ?? this.transactionsState,
       initializePaymentState:
           initializePaymentState ?? this.initializePaymentState,
+      topUpVerificationState:
+          topUpVerificationState ?? this.topUpVerificationState,
       transactionsPaginationData:
           transactionsPaginationData ?? this.transactionsPaginationData,
       updateAvatarState: updateAvatarState ?? this.updateAvatarState,
@@ -63,8 +69,11 @@ class CustomerProfileMgtState extends Equatable {
         walletState,
         transactionsState,
         initializePaymentState,
+        topUpVerificationState,
         transactionsPaginationData,
         updateAvatarState,
         deleteAccountState,
       ];
+
+  CheckoutPaymentData? get activeTopUp => initializePaymentState.data;
 }

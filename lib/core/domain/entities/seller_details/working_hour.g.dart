@@ -8,7 +8,7 @@ part of 'working_hour.dart';
 
 WorkingHour _$WorkingHourFromJson(Map<String, dynamic> json) => WorkingHour(
       id: (json['id'] as num?)?.toInt(),
-      userId: json['user_id'] as String?,
+      userId: toStringOrNull(json['user_id']),
       day: json['day'] as String?,
       available: json['available'] as bool?,
       createdAt: json['created_at'] == null

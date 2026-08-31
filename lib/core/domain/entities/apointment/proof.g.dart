@@ -8,9 +8,7 @@ part of 'proof.dart';
 
 Proof _$ProofFromJson(Map<String, dynamic> json) => Proof(
       id: (json['id'] as num?)?.toInt(),
-      mediaUrls: (json['media_urls'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      mediaUrls: nonNullStringList(json['media_urls']),
       comment: json['comment'] as String?,
       appointmentId: json['appointment_id'],
       userId: json['user_id'],

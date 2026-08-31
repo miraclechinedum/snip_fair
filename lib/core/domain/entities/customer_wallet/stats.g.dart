@@ -7,10 +7,11 @@ part of 'stats.dart';
 // **************************************************************************
 
 Stats _$StatsFromJson(Map<String, dynamic> json) => Stats(
-      currentBalance: (json['currentBalance'] as num?)?.toInt(),
-      totalTopups: (json['totalTopups'] as num?)?.toInt(),
-      totalRefunds: (json['totalRefunds'] as num?)?.toInt(),
-      pendingTransactions: (json['pendingTransactions'] as num?)?.toInt(),
+      currentBalance: _camelOrSnake(json, 'currentBalance') as num?,
+      totalTopups: _camelOrSnake(json, 'totalTopups') as num?,
+      totalRefunds: _camelOrSnake(json, 'totalRefunds') as num?,
+      pendingTransactions:
+          (_camelOrSnake(json, 'pendingTransactions') as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$StatsToJson(Stats instance) => <String, dynamic>{

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -92,7 +94,10 @@ class SignupCubit extends BaseCubit<SignupState> {
       ),
       doOnLoading: () => emit(state.copyWith(signUpResult: const ProcessState.loading())),
       doOnError: (p0) => emit(state.copyWith(signUpResult: ProcessState.error(p0))),
-      doOnSuccess: (p0) => emit(state.copyWith(signUpResult: ProcessState.success(p0))),
+      doOnSuccess: (p0) {
+        emit(state.copyWith(signUpResult: ProcessState.success(p0)));
+        unawaited(AnalyticsService.instance.logSignUp(method: 'email'));
+      },
     );
   }
 
@@ -115,7 +120,10 @@ class SignupCubit extends BaseCubit<SignupState> {
       ),
       doOnLoading: () => emit(state.copyWith(signUpResult: const ProcessState.loading())),
       doOnError: (p0) => emit(state.copyWith(signUpResult: ProcessState.error(p0))),
-      doOnSuccess: (p0) => emit(state.copyWith(signUpResult: ProcessState.success(p0))),
+      doOnSuccess: (p0) {
+        emit(state.copyWith(signUpResult: ProcessState.success(p0)));
+        unawaited(AnalyticsService.instance.logSignUp(method: 'email'));
+      },
     );
   }
 
@@ -182,7 +190,10 @@ class SignupCubit extends BaseCubit<SignupState> {
         ),
         doOnLoading: () => emit(state.copyWith(signUpResult: const ProcessState.loading())),
         doOnError: (p0) => emit(state.copyWith(signUpResult: ProcessState.error(p0))),
-        doOnSuccess: (p0) => emit(state.copyWith(signUpResult: ProcessState.success(p0))),
+        doOnSuccess: (p0) {
+          emit(state.copyWith(signUpResult: ProcessState.success(p0)));
+          unawaited(AnalyticsService.instance.logLogin(method: 'google'));
+        },
       );
     } catch (e) {
       emit(state.copyWith(signUpResult: ProcessState.error(e)));

@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/social.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'stylist_profile.g.dart';
 
@@ -27,7 +28,7 @@ class StylistProfile {
     return _$StylistProfileFromJson(json);
   }
   int? id;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: 'user_id', fromJson: toStringOrNull)
   String? userId;
   @JsonKey(name: 'business_name')
   String? businessName;
@@ -50,6 +51,7 @@ class StylistProfile {
   DateTime? updatedAt;
   String? banner;
   List<Social>? socials;
+  @JsonKey(fromJson: nonNullStringList)
   List<String>? works;
 
   Map<String, dynamic> toJson() => _$StylistProfileToJson(this);

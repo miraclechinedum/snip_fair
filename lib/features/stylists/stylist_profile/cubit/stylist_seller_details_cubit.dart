@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -6,6 +8,7 @@ import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 
 part 'stylist_seller_details_state.dart';
@@ -31,6 +34,13 @@ class StylistSellerDetailsCubit extends Cubit<StylistSellerDetailsState> {
     response.when(
       success: (data) {
         emit(state.copyWith(sellerDetails: ProcessState.success(data)));
+        unawaited(
+          AnalyticsService.instance.logViewStylist(
+            stylistId: data.id?.toString() ?? id,
+            stylistName: data.name,
+            price: data.maxPrice,
+          ),
+        );
         _getPortfolios();
       },
       failure: (error) {

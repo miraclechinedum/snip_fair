@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/apointment/social.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 
 part 'stylist_profile.g.dart';
@@ -52,6 +53,7 @@ class StylistProfile {
   DateTime? updatedAt;
   String? banner;
   List<Social>? socials;
+  @JsonKey(fromJson: nonNullStringList)
   List<String>? works;
 
   Map<String, dynamic> toJson() => _$StylistProfileToJson(this);

@@ -29,8 +29,40 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FacebookAppID</key>
+	<string>952807567645713</string>
+	<key>FacebookClientToken</key>
+	<string>5dcc00be53eb8250de7bf827a858b6d2</string>
+	<key>FacebookDisplayName</key>
+	<string>snipfair</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- DEV ONLY: allow cleartext HTTP to the local Laravel server (php artisan serve). -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>127.0.0.1</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Snipfair needs access to the camera to take photos.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -39,6 +71,8 @@
 	<string>Snipfair needs access to location when open, to show you stylists around your location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Snipfair needs access to the photo library to select photos.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Snipfair uses this to personalize your experience and measure the effectiveness of our ads.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

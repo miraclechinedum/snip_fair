@@ -10,6 +10,8 @@ import 'package:snip_fair/core/domain/entities/work_category/work_category.dart'
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
 import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment_list.dart';
@@ -85,6 +87,18 @@ abstract class AppointmentRepository {
     String? note,
     String? address,
   });
+
+  Future<ApiResult<CheckoutPaymentData>> createAppointmentWithCard({
+    required String portfolioId,
+    required String date,
+    required String time,
+    String? note,
+    String? address,
+  });
+
+  Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
+    String depositId,
+  );
 
   Future<ApiResult<SimpleResponse>> updateCustomerAppointment(
     String id, {
@@ -265,6 +279,28 @@ class AppointmentRepoImpl implements AppointmentRepository {
         note: note,
         address: address,
       );
+
+  @override
+  Future<ApiResult<CheckoutPaymentData>> createAppointmentWithCard({
+    required String portfolioId,
+    required String date,
+    required String time,
+    String? note,
+    String? address,
+  }) =>
+      _remoteSource.createAppointmentWithCard(
+        portfolioId: portfolioId,
+        date: date,
+        time: time,
+        note: note,
+        address: address,
+      );
+
+  @override
+  Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
+    String depositId,
+  ) =>
+      _remoteSource.reconcilePeachPayment(depositId);
 
   @override
   Future<ApiResult<CustomerAppointment>> getCustomerAppointmentById(

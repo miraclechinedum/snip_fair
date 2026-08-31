@@ -12,6 +12,7 @@ import 'package:snip_fair/core/routing/routes.dart';
 import 'package:snip_fair/core/utils/app_helper.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:snip_fair/core/services/location_service.dart';
 import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
@@ -33,19 +34,79 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final locationService = getIt<LocationService>();
   final notificationService = NotificationService.instance;
+  StreamSubscription<Map<String, dynamic>>? _chatNotifSub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkLocationPermission();
     _setupNotificationNavigation();
+    _setupInAppChatToast();
+    _maybeRequestTrackingConsentPostOnboarding();
+    // Start polling the conversations list so the unread badge on the message
+    // icon updates in real time without needing a push. Works on simulator.
+    // Pauses/resumes on lifecycle transitions in didChangeAppLifecycleState.
+    _startChatBadgePollingIfAuthed();
+  }
+
+  void _startChatBadgePollingIfAuthed() {
+    if (!mounted) return;
+    final authed =
+        context.read<AppCubit>().state.status == AuthStatus.authenticated;
+    if (!authed) return;
+    context.read<ConversationsCubit>().startPollingConversations();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    super.didChangeAppLifecycleState(lifecycleState);
+    if (!mounted) return;
+    final authed =
+        context.read<AppCubit>().state.status == AuthStatus.authenticated;
+    if (!authed) return;
+
+    if (lifecycleState == AppLifecycleState.resumed) {
+      // Bell badge: one-shot refetch on resume (unchanged).
+      context.read<NotificationsCubit>().fetchNotifications(isInitial: true);
+      // Chat badge: resume polling. startPollingConversations does an
+      // immediate silent fetch, so the badge refreshes right away and then
+      // continues ticking every 4s while foregrounded.
+      context.read<ConversationsCubit>().startPollingConversations();
+    } else {
+      // Any non-resumed state (paused / inactive / hidden / detached) —
+      // pause the polling loop to save battery / data. If a push arrives
+      // while backgrounded, the OS still wakes the app for its handler.
+      context.read<ConversationsCubit>().stopPollingConversations();
+    }
+  }
+
+  /// Fires the iOS ATT prompt only for users who have completed onboarding
+  /// (i.e. are authenticated), and only after a short delay so they see
+  /// actual app value (Explore content, stylist cards) before the system
+  /// prompt appears — this improves opt-in rate meaningfully.
+  ///
+  /// Guests are skipped. iOS handles idempotency: after the first answer,
+  /// subsequent calls become no-ops for the prompt itself, but the wrapper
+  /// still syncs the advertiser-id flag with the current authorization
+  /// status. Android is a no-op.
+  void _maybeRequestTrackingConsentPostOnboarding() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final appState = context.read<AppCubit>().state;
+      if (appState.status != AuthStatus.authenticated) return;
+      await Future<void>.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+      await AnalyticsService.instance.requestTrackingConsentIfNeeded();
+    });
   }
 
   void _setupNotificationNavigation() {
-    NotificationService.instance.onNotificationTap = (Map<String, dynamic> data) {
+    NotificationService.instance.onNotificationTap =
+        (Map<String, dynamic> data) {
       final appRouter = getIt<AppRouter>();
       log('Notification tapped with data: $data');
 
@@ -115,13 +176,40 @@ class _MainScreenState extends State<MainScreen> {
             // Navigate to disputes
             final token = getIt<LocalKeyStorage>().accessToken;
             if (token == null) return;
-            final supportUrl = Environment().config.apiHost.replaceAll('api', 'disputes');
+            final supportUrl =
+                Environment().config.apiHost.replaceAll('api', 'disputes');
             context.router.pushWidget(
               SupportWebViewWidget(
                 supportUrl: supportUrl,
                 authToken: token,
               ),
             );
+
+          case 'stylist_approved':
+            // Stylist approval push. The SellerProfileMgtCubit already
+            // refreshes the profile on its own listener when this arrives,
+            // so we only need to make sure the stylist lands on the main
+            // app; the availability toggle will already read ON.
+            if (state.isStylist) {
+              appRouter.replaceAll([const MainRoute()]);
+            }
+
+          case 'payment_request':
+            // Payment request push (typically pending → paid status change).
+            // Push payload should include conversation_id so we can open the
+            // exact thread. Fallback to the conversations list so the user
+            // can find it manually if the field is missing.
+            final conversationId = data['conversation_id']?.toString();
+            if (conversationId != null && conversationId.isNotEmpty) {
+              appRouter.push(
+                ConvesationChatRoute(
+                  conversationId: conversationId,
+                  currentUserId: state.user.id.toString(),
+                ),
+              );
+            } else {
+              appRouter.push(ConversationListRoute());
+            }
 
           case 'notification':
           case 'general':
@@ -152,7 +240,8 @@ class _MainScreenState extends State<MainScreen> {
       consentGiven ??= false;
       locationService.sendConsentToUseLocation(consentGiven);
       if (consentGiven) {
-        final permissionGranted = await locationService.requestLocationPermission();
+        final permissionGranted =
+            await locationService.requestLocationPermission();
 
         if (permissionGranted) {
           locationService.sendLocationUpdateRequest();
@@ -175,8 +264,135 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Shows an in-app SnackBar when a chat-related push arrives while the user
+  /// is on any screen other than the chat list / the chat itself (which
+  /// already display the new message inline). This is the in-app counterpart
+  /// to OS push notifications — needed because OS banners don't show when the
+  /// app is in the foreground.
+  void _setupInAppChatToast() {
+    _chatNotifSub = NotificationService.instance.updates.listen((data) {
+      final type = data['type'] as String?;
+      if (!mounted) return;
+
+      // Stylist approval — celebrate it in-app. The SellerProfileMgtCubit
+      // handles the state refresh independently via its own listener, so
+      // this is purely UX.
+      if (type == 'stylist_approved') {
+        if (context.read<AppCubit>().state.isStylist) {
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            const SnackBar(
+              content: Text(
+                "🎉 You're approved! Your profile is now live for clients.",
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: AppColors.primaryColor,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
+        return;
+      }
+
+      // New appointment push — show an in-app toast with a "View" action.
+      // Skip when the user is already on an appointment screen (they'll see
+      // it inline once the list refreshes).
+      if (type == 'appointment') {
+        final appRouterForAppt = getIt<AppRouter>();
+        final currentRouteName = appRouterForAppt.current.name;
+        if (currentRouteName == AppointementsMainRoute.name ||
+            currentRouteName == SellerAppointmentsMainRoute.name ||
+            currentRouteName == SellerAppointmentDetailsRoute.name ||
+            currentRouteName == UpdateCreateAppointmentRoute.name) {
+          return;
+        }
+        final title = (data['title'] as String?) ?? 'New appointment';
+        final body =
+            (data['body'] as String?) ?? (data['description'] as String?) ?? '';
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            content: Text(
+              body.isEmpty ? title : '$title: $body',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.primaryColor,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'View',
+              textColor: Colors.white,
+              onPressed: () {
+                appRouterForAppt.push(const NotificationsRoute());
+              },
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+
+      if (type != 'chat' && type != 'message' && type != 'conversation') {
+        return;
+      }
+
+      final appRouter = getIt<AppRouter>();
+      final currentRouteName = appRouter.current.name;
+      if (currentRouteName == ConvesationChatRoute.name ||
+          currentRouteName == ConversationListRoute.name) {
+        return;
+      }
+
+      final senderName = (data['title'] as String?) ??
+          (data['sender_name'] as String?) ??
+          'New message';
+      final body = (data['body'] as String?) ?? (data['text'] as String?) ?? '';
+
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            body.isEmpty ? senderName : '$senderName: $body',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.primaryColor,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Open',
+            textColor: Colors.white,
+            onPressed: () {
+              context.read<ConversationsCubit>().fetchConversations();
+              // Prefer routing directly into the specific conversation
+              // (type_identifier = conversation id per backend contract).
+              // Fall back to the list if the push payload omits it.
+              final conversationId = data['type_identifier']?.toString();
+              if (conversationId != null && conversationId.isNotEmpty) {
+                appRouter.push(
+                  ConvesationChatRoute(
+                    conversationId: conversationId,
+                    currentUserId:
+                        context.read<AppCubit>().state.user.id.toString(),
+                  ),
+                );
+              } else {
+                appRouter.push(ConversationListRoute());
+              }
+            },
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    });
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _chatNotifSub?.cancel();
+    // Defensive: cubit's onLogout also stops this, but if MainScreen ever
+    // unmounts for any other reason, don't leave a timer running.
+    getIt<ConversationsCubit>().stopPollingConversations();
     super.dispose();
   }
 
@@ -217,37 +433,162 @@ class _MainScreenState extends State<MainScreen> {
           ),
           centerTitle: false,
           actions: [
-            IconButton(
-              onPressed: () {
-                final isAuthenticated =
-                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
-                if (!isAuthenticated) {
-                  AppHelper.showAuthenticationRequired(context);
-                  return;
-                }
-                context.read<ConversationsCubit>().fetchConversations();
-                context.router.push(ConversationListRoute());
+            BlocBuilder<ConversationsCubit, ConversationsState>(
+              buildWhen: (prev, curr) =>
+                  prev.conversationsState != curr.conversationsState ||
+                  prev.unreadConversationsCount !=
+                      curr.unreadConversationsCount,
+              builder: (context, convState) {
+                final currentUserId =
+                    context.read<AppCubit>().state.user.id?.toString();
+                final convs = convState.conversationsState.data ?? const [];
+                // Prefer the polled scalar from /conversations/unread-count
+                // (updated every 4s while foregrounded). Fall back to
+                // deriving from the conversation list for the tiny window
+                // before the first poll response arrives.
+                final polledCount = convState.unreadConversationsCount;
+                final unreadCount = polledCount ??
+                    (convs.any((c) => c.unreadCount != null)
+                        ? convs.fold<int>(
+                            0, (sum, c) => sum + (c.unreadCount ?? 0))
+                        : convs.where((c) {
+                            final m = c.messages;
+                            if (m == null || m.isEmpty) return false;
+                            final last = m.first;
+                            return last.isRead == false &&
+                                last.senderId != currentUserId;
+                          }).length);
+                return Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        final isAuthenticated =
+                            context.read<AppCubit>().state.status ==
+                                AuthStatus.authenticated;
+                        if (!isAuthenticated) {
+                          AppHelper.showAuthenticationRequired(context);
+                          return;
+                        }
+                        context.read<ConversationsCubit>().fetchConversations();
+                        context.router.push(ConversationListRoute());
+                      },
+                      icon: const Icon(
+                        Iconsax.message,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: IgnorePointer(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                unreadCount > 99 ? '99+' : '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
               },
-              icon: const Icon(
-                Iconsax.message,
-                color: AppColors.primaryColor,
-              ),
             ),
-            IconButton(
-              onPressed: () {
-                final isAuthenticated =
-                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
-                if (!isAuthenticated) {
-                  AppHelper.showAuthenticationRequired(context);
-                  return;
-                }
-                context.read<NotificationsCubit>().fetchNotifications(isInitial: true);
-                context.router.push(const NotificationsRoute());
+            BlocBuilder<NotificationsCubit, NotificationsState>(
+              buildWhen: (prev, curr) =>
+                  prev.notificationsListState != curr.notificationsListState,
+              builder: (context, notifState) {
+                final items =
+                    notifState.notificationsListState.data ?? const [];
+                final unreadCount =
+                    items.where((n) => n.isRead == false).length;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        final isAuthenticated =
+                            context.read<AppCubit>().state.status ==
+                                AuthStatus.authenticated;
+                        if (!isAuthenticated) {
+                          AppHelper.showAuthenticationRequired(context);
+                          return;
+                        }
+                        context
+                            .read<NotificationsCubit>()
+                            .fetchNotifications(isInitial: true);
+                        context.router.push(const NotificationsRoute());
+                      },
+                      icon: const Icon(
+                        Iconsax.notification,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: IgnorePointer(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                unreadCount > 99 ? '99+' : '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
               },
-              icon: const Icon(
-                Iconsax.notification,
-                color: AppColors.primaryColor,
-              ),
             ),
             12.horizontalSpace,
           ],
@@ -314,8 +655,8 @@ class _MainScreenState extends State<MainScreen> {
           onTap: (index) {
             if (appState.isCustomer) {
               if (index == 2) {
-                final isAuthenticated =
-                    context.read<AppCubit>().state.status == AuthStatus.authenticated;
+                final isAuthenticated = context.read<AppCubit>().state.status ==
+                    AuthStatus.authenticated;
                 if (!isAuthenticated) {
                   AppHelper.showAuthenticationRequired(context);
                   return;
@@ -519,7 +860,8 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
     this.onLogin,
     this.onSignup,
     this.title = 'Sign in to continue',
-    this.subtitle = 'Create an account or log in to access this feature and get started.',
+    this.subtitle =
+        'Create an account or log in to access this feature and get started.',
     this.icon = Icons.lock_outline,
   });
 
@@ -547,7 +889,8 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
         onLogin: onLogin,
         onSignup: onSignup,
         title: title ?? 'Sign in to continue',
-        subtitle: subtitle ?? 'Create an account or log in to access this feature and get started.',
+        subtitle: subtitle ??
+            'Create an account or log in to access this feature and get started.',
         icon: icon ?? Icons.lock_outline,
       ),
     );
@@ -585,7 +928,8 @@ class AuthenticationRequiredBottomSheet extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+              style:
+                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
             ),
             8.verticalSpace,
             Text(
@@ -713,7 +1057,8 @@ class LocationPermissionBottomSheet extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
+              style:
+                  AppTextStyle.headline4.copyWith(fontWeight: FontWeight.w700),
             ),
             8.verticalSpace,
             Text(

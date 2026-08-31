@@ -10,10 +10,13 @@ import 'package:snip_fair/core/domain/entities/customer_profile_details/customer
 import 'package:snip_fair/core/domain/entities/customer_stats/customer_stats.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/datum.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/pagination_data.dart';
+import 'package:snip_fair/core/utils/peach_payment_log.dart';
 
 part 'customer_profile_mgt_state.dart';
 
@@ -140,26 +143,23 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
     );
   }
 
-  Future<void> initialisePayfastDeposit({
-    required String type,
-    required String amount,
-    String? email,
-    String? firstName,
-    String? lastName,
-    String? portfolioId,
-  }) async {
+  Future<void> initializeWalletTopUp({required num amount}) async {
+    if (state.initializePaymentState.isLoading || state.activeTopUp != null)
+      return;
+    peachLog('Wallet top-up initialization started');
     emit(state.copyWith(initializePaymentState: const ProcessState.loading()));
 
-    final result = await _profileRepository.initialisePayfastDeposit(
-      type: type,
-      amount: amount,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      portfolioId: portfolioId,
-    );
+    final result =
+        await _profileRepository.initializeWalletTopUp(amount: amount);
     await result.when(
       success: (paymentData) async {
+        peachLog(
+          'Top-up checkout created: deposit=${paymentData.depositId ?? 'none'} '
+          'checkout=${paymentData.checkoutId ?? 'none'}',
+        );
+        peachLog(
+          'Top-up redirect URL: ${redactedCheckoutUrl(paymentData.redirectUrl)}',
+        );
         emit(
           state.copyWith(
             initializePaymentState: ProcessState.success(paymentData),
@@ -167,6 +167,7 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
         );
       },
       failure: (error) {
+        peachLog('Wallet top-up initialization failed');
         emit(
           state.copyWith(
             initializePaymentState: ProcessState.error(error),
@@ -174,6 +175,73 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
         );
       },
     );
+  }
+
+  Future<void> reconcileWalletTopUp({bool automatic = true}) async {
+    final topUp = state.activeTopUp;
+    if (topUp?.depositId == null || state.topUpVerificationState.isLoading)
+      return;
+    emit(state.copyWith(topUpVerificationState: const ProcessState.loading()));
+    final attempts = automatic ? 3 : 1;
+    PaymentReconciliation? lastSeen;
+    peachLog(
+      'Reconciling top-up deposit=${topUp!.depositId} attempts=$attempts',
+    );
+    for (var index = 0; index < attempts; index++) {
+      if (index > 0) await Future<void>.delayed(const Duration(seconds: 2));
+      peachLog('Top-up reconcile request ${index + 1}/$attempts starting');
+      final result =
+          await _profileRepository.reconcilePeachPayment(topUp.depositId!);
+      var terminal = false;
+      var successful = false;
+      result.when(
+        success: (payment) {
+          lastSeen = payment;
+          successful = payment.isSuccessful;
+          terminal = payment.isFailed || payment.isCancelled;
+          peachLog(
+            'status=${payment.status ?? 'unknown'} '
+            'settled=${payment.settled ?? false} '
+            'purpose=${payment.purpose ?? 'unknown'}',
+          );
+        },
+        failure: (error) {
+          peachLog(
+            'Top-up reconcile request failed for deposit=${topUp.depositId}',
+          );
+          if (error is RemoteException && error.statusCode == 503) {
+            emit(state.copyWith(
+                topUpVerificationState: const ProcessState.error(
+              'We could not confirm your top-up yet. Please try again shortly.',
+            )));
+          }
+        },
+      );
+      if (successful || terminal) break;
+    }
+    if (lastSeen != null) {
+      peachLog(
+        lastSeen!.isSuccessful
+            ? 'Wallet top-up confirmed'
+            : 'Wallet top-up not settled: '
+                'result=${lastSeen!.status ?? 'unknown'}',
+      );
+      emit(state.copyWith(
+          topUpVerificationState: ProcessState.success(lastSeen!)));
+    } else if (!state.topUpVerificationState.hasError) {
+      peachLog('Wallet top-up unconfirmed: result=unknown');
+      emit(state.copyWith(
+          topUpVerificationState: const ProcessState.error(
+        'We could not confirm your top-up yet. Please try again shortly.',
+      )));
+    }
+  }
+
+  void clearTopUpAttempt() {
+    emit(state.copyWith(
+      initializePaymentState: const ProcessState.init(null),
+      topUpVerificationState: const ProcessState.init(null),
+    ));
   }
 
   Future<void> updateLocationConsent({required bool consentGiven}) async {
@@ -225,7 +293,7 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
     return result?.path;
   }
 
-   Future<void> deleteAccount() async {
+  Future<void> deleteAccount() async {
     emit(state.copyWith(deleteAccountState: const ProcessState.loading()));
 
     final result = await _profileRepository.deleteAccount();

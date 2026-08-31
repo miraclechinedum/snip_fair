@@ -11,6 +11,13 @@ import 'package:snip_fair/core/network/error_interceptor.dart';
 import 'package:snip_fair/core/network/token_interceptor.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
+/// Temporary switch for the verbose global Dio request/response logging.
+///
+/// Kept `false` while the Peach Payments flows are being tested so the console
+/// only carries the concise `[PEACH]` payment logs. Flip to `true` to restore
+/// the full HTTP dumps.
+const bool kEnableVerboseHttpLogging = false;
+
 @Injectable()
 class HttpService {
   Dio client({
@@ -82,10 +89,11 @@ class HttpService {
             },
           ),
         )
-        ..interceptors.add(
-          LogInterceptor(
-            responseBody: true,
-            requestBody: true,
-          ),
-        );
+        ..interceptors.addAll([
+          if (kEnableVerboseHttpLogging)
+            LogInterceptor(
+              responseBody: true,
+              requestBody: true,
+            ),
+        ]);
 }

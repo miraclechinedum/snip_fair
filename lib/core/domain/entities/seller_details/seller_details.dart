@@ -4,6 +4,7 @@ import 'package:snip_fair/core/domain/entities/seller_details/category.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/availability.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/working_hour.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/stylist_profile.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'seller_details.g.dart';
 
@@ -129,7 +130,7 @@ class SellerDetails {
   String? responseTime;
   @JsonKey(name: 'next_available')
   String? nextAvailable;
-  @JsonKey(name: 'media_urls')
+  @JsonKey(name: 'media_urls', fromJson: nonNullStringList)
   List<String>? mediaUrls;
   List<Review>? reviews;
   @JsonKey(name: 'working_hours')

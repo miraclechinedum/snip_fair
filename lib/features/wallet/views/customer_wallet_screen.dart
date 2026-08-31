@@ -10,8 +10,10 @@ import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
+import 'package:snip_fair/core/utils/peach_payment_log.dart';
 // ignore_for_file: unawaited_futures
 
 @RoutePage()
@@ -37,11 +39,13 @@ class CustomerWalletScreen extends StatelessWidget {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height -
                     AppBar().preferredSize.height -
-                    MediaQuery.of(context).padding.top, // Ensure content fills screen
+                    MediaQuery.of(context)
+                        .padding
+                        .top, // Ensure content fills screen
               ),
               child: Column(
                 children: [
-                  _buildWalletBalanceCard(cubit),
+                  _buildWalletBalanceCard(context, cubit),
                   12.verticalSpace,
                   TextButton(
                     onPressed: () {
@@ -94,16 +98,23 @@ class CustomerWalletScreen extends StatelessWidget {
                               onFetchData: () {
                                 cubit.getWalletTransactions(loadMore: true);
                               },
-                              hasReachedMax: cubit.state.transactionsPaginationData.hasReachedMax,
+                              hasReachedMax: cubit.state
+                                  .transactionsPaginationData.hasReachedMax,
                               loadingBuilder: (context) => const Center(
                                 child: CircularProgressIndicator(),
                               ),
-                              isLoading: cubit.state.transactionsState.isLoading ||
-                                  cubit.state.transactionsPaginationData.isLoadingMore,
-                              itemCount: cubit.state.transactionsState.data?.length ?? 0,
-                              separatorBuilder: (context, index) => 8.verticalSpace,
+                              isLoading:
+                                  cubit.state.transactionsState.isLoading ||
+                                      cubit.state.transactionsPaginationData
+                                          .isLoadingMore,
+                              itemCount:
+                                  cubit.state.transactionsState.data?.length ??
+                                      0,
+                              separatorBuilder: (context, index) =>
+                                  8.verticalSpace,
                               itemBuilder: (context, index) {
-                                final transaction = cubit.state.transactionsState.data![index];
+                                final transaction =
+                                    cubit.state.transactionsState.data![index];
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   leading: transaction.type == 'topup'
@@ -128,7 +139,9 @@ class CustomerWalletScreen extends StatelessWidget {
                                   ),
                                   subtitle: AppText(
                                     text: transaction.createdAt != null
-                                        ? transaction.createdAt!.toLocal().toLongDateString()
+                                        ? transaction.createdAt!
+                                            .toLocal()
+                                            .toLongDateString()
                                         : 'N/A',
                                     color: AppColors.grey3,
                                     fontSize: 12,
@@ -150,9 +163,12 @@ class CustomerWalletScreen extends StatelessWidget {
                                       ),
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: transaction.status == 'approved' ||
-                                                  transaction.status == 'completed'
-                                              ? Colors.green.withValues(alpha: 0.2)
+                                          color: transaction.status ==
+                                                      'approved' ||
+                                                  transaction.status ==
+                                                      'completed'
+                                              ? Colors.green
+                                                  .withValues(alpha: 0.2)
                                               : transaction.status == 'pending'
                                                   ? AppColors.contentColorYellow
                                                       .withValues(alpha: 0.2)
@@ -162,7 +178,8 @@ class CustomerWalletScreen extends StatelessWidget {
                                           // color: AppColors.grey2,
                                           // Adjust colors as needed
 
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8,
@@ -170,8 +187,10 @@ class CustomerWalletScreen extends StatelessWidget {
                                         ),
                                         child: AppText(
                                           text: transaction.status ?? 'N/A',
-                                          color: transaction.status == 'approved' ||
-                                                  transaction.status == 'completed'
+                                          color: transaction.status ==
+                                                      'approved' ||
+                                                  transaction.status ==
+                                                      'completed'
                                               ? Colors.green
                                               : transaction.status == 'pending'
                                                   ? AppColors.contentColorYellow
@@ -199,7 +218,10 @@ class CustomerWalletScreen extends StatelessWidget {
     );
   }
 
-  Container _buildWalletBalanceCard(CustomerProfileMgtCubit cubit) {
+  Container _buildWalletBalanceCard(
+    BuildContext context,
+    CustomerProfileMgtCubit cubit,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -220,7 +242,14 @@ class CustomerWalletScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            cubit.state.walletState.data?.stats?.currentBalance?.formatAmount() ?? 'R0.00',
+            // `stats.current_balance` is the headline figure; `balance` on the
+            // wallet root is the same number and is always present, so it
+            // backstops a missing/renamed stats block rather than showing a
+            // misleading R0.00.
+            (cubit.state.walletState.data?.stats?.currentBalance ??
+                        cubit.state.walletState.data?.balance)
+                    ?.formatAmount() ??
+                'R0.00',
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -242,8 +271,9 @@ class CustomerWalletScreen extends StatelessWidget {
               Column(
                 children: [
                   AppText(
-                    text:
-                        cubit.state.walletState.data?.stats?.totalTopups?.formatAmount() ?? 'R0.00',
+                    text: cubit.state.walletState.data?.stats?.totalTopups
+                            ?.formatAmount() ??
+                        'R0.00',
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -257,7 +287,8 @@ class CustomerWalletScreen extends StatelessWidget {
               Column(
                 children: [
                   AppText(
-                    text: cubit.state.walletState.data?.stats?.totalRefunds?.formatAmount() ??
+                    text: cubit.state.walletState.data?.stats?.totalRefunds
+                            ?.formatAmount() ??
                         'R0.00',
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -280,14 +311,34 @@ class CustomerWalletScreen extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  AppText(
-                    text:
-                        cubit.state.walletState.data?.stats?.pendingTransactions?.toString() ?? '0',
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AppText(
+                        text: cubit.state.walletState.data?.escrowBalance
+                                ?.formatAmount() ??
+                            'R0.00',
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      SizedBox(width: 4.w),
+                      InkWell(
+                        onTap: () => _showEscrowInfo(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(2),
+                          child: Icon(
+                            Icons.info_outline,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const AppText(
-                    text: 'Pending',
+                    text: 'In Escrow',
                     color: Colors.white,
                     fontSize: 12,
                   ),
@@ -296,7 +347,9 @@ class CustomerWalletScreen extends StatelessWidget {
               Column(
                 children: [
                   AppText(
-                    text: cubit.state.transactionsState.data?.length.toString() ?? '0',
+                    text:
+                        cubit.state.transactionsState.data?.length.toString() ??
+                            '0',
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -308,6 +361,29 @@ class CustomerWalletScreen extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEscrowInfo(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(
+          Icons.info_outline,
+          color: AppColors.primaryColor,
+        ),
+        title: const Text('In Escrow'),
+        content: const Text(
+          "Funds set aside for appointments you've paid for. "
+          'Released to the stylist when the service is completed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Got it'),
           ),
         ],
       ),
@@ -332,7 +408,7 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
     }
     context
         .read<CustomerProfileMgtCubit>()
-        .initialisePayfastDeposit(type: 'topup', amount: amount.toString());
+        .initializeWalletTopUp(amount: amount);
   }
 
   @override
@@ -342,17 +418,35 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
           previous.initializePaymentState != current.initializePaymentState,
       listener: (context, state) async {
         if (state.initializePaymentState.hasSuccess) {
-          final result = await AppHelper.showPaymentDialog(
+          peachLog(
+            'Opening top-up hosted checkout: '
+            'deposit=${state.initializePaymentState.data!.depositId ?? 'none'}',
+          );
+          await AppHelper.showPaymentDialog(
             context,
             state.initializePaymentState.data!,
           );
-
-          if (result) {
+          peachLog('Top-up hosted checkout returned');
+          if (!context.mounted) return;
+          await context.read<CustomerProfileMgtCubit>().reconcileWalletTopUp();
+          final verification = context
+              .read<CustomerProfileMgtCubit>()
+              .state
+              .topUpVerificationState;
+          if (verification.data?.isSuccessful ?? false) {
+            peachLog('Refreshing wallet after settled top-up');
             context.read<CustomerProfileMgtCubit>()
               ..getWallet(true)
               ..getWalletTransactions();
+          } else {
+            AppHelper.showSnackBar(
+              context,
+              message: verification.data?.isPending ?? false
+                  ? 'Your top-up is still being confirmed.'
+                  : 'We could not confirm your top-up yet. Please try again shortly.',
+            );
           }
-          if (context.mounted) {
+          if ((verification.data?.isSuccessful ?? false) && context.mounted) {
             context.router.pop();
           }
         }
@@ -363,6 +457,29 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 100),
               child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (state.activeTopUp != null &&
+              (state.topUpVerificationState.hasError ||
+                  state.topUpVerificationState.data?.isPending == true)) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppText(
+                    text: 'Your top-up is still being verified.',
+                    textAlign: TextAlign.center,
+                  ),
+                  16.verticalSpace,
+                  CustomButton(
+                    title: 'Check Payment Status',
+                    onPressed: () => context
+                        .read<CustomerProfileMgtCubit>()
+                        .reconcileWalletTopUp(automatic: false),
+                  ),
+                ],
+              ),
             );
           }
           return Column(

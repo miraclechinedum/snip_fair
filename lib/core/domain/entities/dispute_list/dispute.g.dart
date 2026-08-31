@@ -9,9 +9,7 @@ part of 'dispute.dart';
 Dispute _$DisputeFromJson(Map<String, dynamic> json) => Dispute(
       id: (json['id'] as num?)?.toInt(),
       comment: json['comment'] as String?,
-      imageUrls: (json['image_urls'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      imageUrls: nonNullStringList(json['image_urls']),
       status: json['status'] as String?,
       priority: json['priority'] as String?,
       resolutionType: json['resolution_type'],

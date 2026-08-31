@@ -16,9 +16,7 @@ SellerPortfolio _$SellerPortfolioFromJson(Map<String, dynamic> json) =>
       duration: json['duration'] as String?,
       description: json['description'] as String?,
       tags: json['tags'] as String?,
-      mediaUrls: (json['media_urls'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      mediaUrls: nonNullStringList(json['media_urls']),
       visitsCount: json['visits_count'],
       status: json['status'] as bool?,
       isAvailable: json['is_available'] as bool?,
@@ -42,9 +40,7 @@ SellerPortfolio _$SellerPortfolioFromJson(Map<String, dynamic> json) =>
           ? null
           : User.fromJson(json['user'] as Map<String, dynamic>),
       distance: json['distance'],
-      sampleImages: (json['sample_images'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      sampleImages: nonNullStringList(json['sample_images']),
     );
 
 Map<String, dynamic> _$SellerPortfolioToJson(SellerPortfolio instance) =>

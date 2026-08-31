@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/customer.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'appointment.g.dart';
 
@@ -33,13 +34,13 @@ class Appointment {
     return _$AppointmentFromJson(json);
   }
   int? id;
-  @JsonKey(name: 'stylist_id')
+  @JsonKey(name: 'stylist_id', fromJson: toStringOrNull)
   String? stylistId;
-  @JsonKey(name: 'customer_id')
+  @JsonKey(name: 'customer_id', fromJson: toStringOrNull)
   String? customerId;
-  @JsonKey(name: 'booking_id')
+  @JsonKey(name: 'booking_id', fromJson: toStringOrNull)
   String? bookingId;
-  @JsonKey(name: 'portfolio_id')
+  @JsonKey(name: 'portfolio_id', fromJson: toStringOrNull)
   String? portfolioId;
   int? amount;
   String? duration;

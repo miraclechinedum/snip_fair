@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:logger/logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/models/server_error.dart';
 import 'package:snip_fair/core/data/models/remote/error_response.dart';
@@ -16,7 +15,9 @@ class HttpRequestExceptionMapper extends ExceptionMapper<RemoteException> {
   @override
   RemoteException map(Object? exception) {
     if (exception is DioException) {
-      Logger().i(exception.response?.data);
+      // The raw response body is intentionally not logged here: callers already
+      // get a compact failure line from BaseRemoteSource, and dumping the body
+      // duplicated every error (and could echo sensitive payloads).
       if (exception.error is RemoteException && exception.error != null) {
         return exception.error! as RemoteException;
       }

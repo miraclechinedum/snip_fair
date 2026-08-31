@@ -23,6 +23,10 @@ Statistics _$StatisticsFromJson(Map<String, dynamic> json) => Statistics(
           ? null
           : TotalRequests.fromJson(
               json['total_requests'] as Map<String, dynamic>),
+      pendingRelease: json['pending_release'] == null
+          ? null
+          : PendingRelease.fromJson(
+              json['pending_release'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$StatisticsToJson(Statistics instance) =>
@@ -31,4 +35,5 @@ Map<String, dynamic> _$StatisticsToJson(Statistics instance) =>
       'total_balance': instance.totalBalance,
       'total_withdrawn': instance.totalWithdrawn,
       'total_requests': instance.totalRequests,
+      'pending_release': instance.pendingRelease,
     };

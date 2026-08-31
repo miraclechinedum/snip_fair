@@ -28,6 +28,16 @@ class EarningsCubit extends Cubit<EarningsState> {
           state.copyWith(
             earnings: ProcessState.success(data),
             settings: data.settings,
+            // `/stylist/earnings` carries the stylist's own ledger,
+            // including the holding-pouch rows that `/wallet/transactions`
+            // omits. Fold them in so the Transactions tab shows escrow
+            // entries the moment a booking is approved.
+            transactionsState: ProcessState.success(
+              _mergeTransactions(
+                state.transactionsState.data,
+                data.transactions,
+              ),
+            ),
           ),
         );
       },
@@ -35,6 +45,38 @@ class EarningsCubit extends Cubit<EarningsState> {
         emit(state.copyWith(earnings: ProcessState.error(error)));
       },
     );
+  }
+
+  /// Unions two transaction collections, de-duplicating on `id` and keeping
+  /// the newest row for any repeated id. Sorted newest-first.
+  ///
+  /// Pure display-layer plumbing — no amounts are computed or synthesised;
+  /// every row is exactly what the server sent.
+  static List<UserTransaction> _mergeTransactions(
+    List<UserTransaction>? existing,
+    List<UserTransaction>? incoming,
+  ) {
+    final byId = <int, UserTransaction>{};
+    final unidentified = <UserTransaction>[];
+
+    for (final t in [...?existing, ...?incoming]) {
+      final id = t.id;
+      if (id == null) {
+        unidentified.add(t);
+      } else {
+        byId[id] = t;
+      }
+    }
+
+    final merged = [...byId.values, ...unidentified]..sort((a, b) {
+        final left = a.createdAt;
+        final right = b.createdAt;
+        if (left == null && right == null) return 0;
+        if (left == null) return 1;
+        if (right == null) return -1;
+        return right.compareTo(left);
+      });
+    return merged;
   }
 
   void onAutomaticPayoutChanged(bool value) {
@@ -158,13 +200,15 @@ class EarningsCubit extends Cubit<EarningsState> {
         ),
       );
     } else {
-      emit(state.copyWith(
-        transactionsPaginationData: PaginationData(
-          isLoadingMore: true,
-          nextPageCursor: state.transactionsPaginationData.nextPageCursor,
-          prevPageCursor: state.transactionsPaginationData.prevPageCursor,
+      emit(
+        state.copyWith(
+          transactionsPaginationData: PaginationData(
+            isLoadingMore: true,
+            nextPageCursor: state.transactionsPaginationData.nextPageCursor,
+            prevPageCursor: state.transactionsPaginationData.prevPageCursor,
+          ),
         ),
-      ),);
+      );
     }
 
     final result = await _profileRepository.getWalletTransactions(
@@ -175,12 +219,18 @@ class EarningsCubit extends Cubit<EarningsState> {
     result.when(
       success: (data) {
         final transactions = data.data ?? [];
+        // On a full refresh, re-seed from the earnings ledger so the
+        // holding-pouch rows survive a pull-to-refresh; on load-more, just
+        // append the next wallet page.
         final updatedList = isInitial
-            ? transactions
-            : [
-                ...?state.transactionsState.data,
-                ...transactions,
-              ];
+            ? _mergeTransactions(
+                state.earnings.data?.transactions,
+                transactions,
+              )
+            : _mergeTransactions(
+                state.transactionsState.data,
+                transactions,
+              );
 
         final updatedPaginationData = PaginationData(
           nextPageCursor: data.nextCursor,

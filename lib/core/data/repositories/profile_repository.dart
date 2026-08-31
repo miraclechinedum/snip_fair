@@ -17,6 +17,7 @@ import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.da
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
+import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
@@ -24,7 +25,8 @@ import 'package:snip_fair/core/domain/entities/notifications_list/notifications_
 import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
 import 'package:snip_fair/core/data/datasources/remote/snip_fair_backend_remote_source.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/customer_profile_details.dart';
@@ -178,6 +180,8 @@ abstract class ProfileRepository {
 
   Future<ApiResult<StylistEarnings>> getEarnings();
 
+  Future<ApiResult<EscrowBreakdown>> getStylistEscrowBreakdown();
+
   Future<ApiResult<SimpleResponse>> updateUser({
     bool? useLocation,
     String? address,
@@ -191,16 +195,17 @@ abstract class ProfileRepository {
     int? perPage,
   });
 
-  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
-    required String type,
-    required String amount,
-    String? email,
-    String? firstName,
-    String? lastName,
-    String? portfolioId,
+  Future<ApiResult<CheckoutPaymentData>> initializeWalletTopUp({
+    required num amount,
   });
 
+  Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
+    String depositId,
+  );
+
   Future<ApiResult<List<ChatConversation>>> getChatConversations();
+
+  Future<ApiResult<int>> getConversationsUnreadCount();
 
   Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId);
 
@@ -322,7 +327,8 @@ class ProfileRepoImpl implements ProfileRepository {
       );
 
   @override
-  Future<ApiResult<PlatformSettings>> getPlatformSettings() => _remoteSource.getPlatformSettings();
+  Future<ApiResult<PlatformSettings>> getPlatformSettings() =>
+      _remoteSource.getPlatformSettings();
 
   @override
   Future<ApiResult<SimpleResponse>> updateBusinessInfo({
@@ -371,13 +377,16 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.deletePaymentMethod(paymentMethodId);
 
   @override
-  Future<ApiResult<List<PaymentMethod>>> getPaymentMethods() => _remoteSource.getPaymentMethods();
+  Future<ApiResult<List<PaymentMethod>>> getPaymentMethods() =>
+      _remoteSource.getPaymentMethods();
 
   @override
-  Future<ApiResult<StylistProfileDetails>> getStylistProfile() => _remoteSource.getStylistProfile();
+  Future<ApiResult<StylistProfileDetails>> getStylistProfile() =>
+      _remoteSource.getStylistProfile();
 
   @override
-  Future<ApiResult<StylistSettings>> getStylistSettings() => _remoteSource.getStylistSettings();
+  Future<ApiResult<StylistSettings>> getStylistSettings() =>
+      _remoteSource.getStylistSettings();
 
   @override
   Future<ApiResult<SimpleResponse>> makePaymentMethodDefault(
@@ -466,10 +475,12 @@ class ProfileRepoImpl implements ProfileRepository {
       );
 
   @override
-  Future<ApiResult<SimpleResponse>> deleteWork(String workId) => _remoteSource.deleteWork(workId);
+  Future<ApiResult<SimpleResponse>> deleteWork(String workId) =>
+      _remoteSource.deleteWork(workId);
 
   @override
-  Future<ApiResult<WorkItem>> fetchWorkById(String workId) => _remoteSource.fetchWorkById(workId);
+  Future<ApiResult<WorkItem>> fetchWorkById(String workId) =>
+      _remoteSource.fetchWorkById(workId);
 
   @override
   Future<ApiResult<List<WorkCategory>>> fetchWorkCategories() =>
@@ -520,10 +531,12 @@ class ProfileRepoImpl implements ProfileRepository {
   Future<ApiResult<List<Bank>>> getBanks() => _remoteSource.getBanks();
 
   @override
-  Future<ApiResult<StylistStats>> getStylistStats() => _remoteSource.getStylistStats();
+  Future<ApiResult<StylistStats>> getStylistStats() =>
+      _remoteSource.getStylistStats();
 
   @override
-  Future<ApiResult<AvailabilitySchedule>> getAvailability() => _remoteSource.getAvailability();
+  Future<ApiResult<AvailabilitySchedule>> getAvailability() =>
+      _remoteSource.getAvailability();
 
   @override
   Future<ApiResult<SimpleResponse>> updateAvailability({
@@ -536,7 +549,12 @@ class ProfileRepoImpl implements ProfileRepository {
       );
 
   @override
-  Future<ApiResult<StylistEarnings>> getEarnings() => _remoteSource.getEarnings();
+  Future<ApiResult<StylistEarnings>> getEarnings() =>
+      _remoteSource.getEarnings();
+
+  @override
+  Future<ApiResult<EscrowBreakdown>> getStylistEscrowBreakdown() =>
+      _remoteSource.getStylistEscrowBreakdown();
 
   @override
   Future<ApiResult<SimpleResponse>> updateUser({
@@ -555,7 +573,8 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.getCustomerProfile();
 
   @override
-  Future<ApiResult<CustomerStats>> getCustomerStats() => _remoteSource.getCustomerStats();
+  Future<ApiResult<CustomerStats>> getCustomerStats() =>
+      _remoteSource.getCustomerStats();
 
   @override
   Future<ApiResult<CustomerWallet>> getWallet() => _remoteSource.getWallet();
@@ -571,27 +590,24 @@ class ProfileRepoImpl implements ProfileRepository {
       );
 
   @override
-  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
-    required String type,
-    required String amount,
-    String? email,
-    String? firstName,
-    String? lastName,
-    String? portfolioId,
-  }) {
-    return _remoteSource.initialisePayfastDeposit(
-      type: type,
-      amount: amount,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      portfolioId: portfolioId,
-    );
-  }
+  Future<ApiResult<CheckoutPaymentData>> initializeWalletTopUp({
+    required num amount,
+  }) =>
+      _remoteSource.initializeWalletTopUp(amount: amount);
+
+  @override
+  Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
+    String depositId,
+  ) =>
+      _remoteSource.reconcilePeachPayment(depositId);
 
   @override
   Future<ApiResult<List<ChatConversation>>> getChatConversations() =>
       _remoteSource.getChatConversations();
+
+  @override
+  Future<ApiResult<int>> getConversationsUnreadCount() =>
+      _remoteSource.getConversationsUnreadCount();
 
   @override
   Future<ApiResult<ChatMessageList>> getChatMessages(String conversationId) =>
@@ -654,7 +670,8 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.requestPayout(paymentMethodId, amount);
 
   @override
-  Future<ApiResult<SimpleResponse>> deleteAccount() => _remoteSource.deleteAccount();
+  Future<ApiResult<SimpleResponse>> deleteAccount() =>
+      _remoteSource.deleteAccount();
 
   @override
   Future<ApiResult<NotificationsList>> getNotifications({

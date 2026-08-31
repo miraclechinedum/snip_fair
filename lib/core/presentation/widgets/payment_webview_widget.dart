@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/core/utils/peach_payment_log.dart';
 
-/// A widget that displays a WebView for PayFast payment processing.
+/// Laravel's shopper-result endpoint. Peach redirects the browser here after
+/// the shopper finishes (or abandons) checkout. Reaching it means "checkout is
+/// over", NOT "payment succeeded" — callers must still reconcile with Laravel.
+const _shopperResultPath = '/payment/return/peach';
+
+/// A provider-neutral hosted-checkout WebView.
 ///
-/// This widget loads the payment URL in a WebView and listens for redirections
-/// to determine payment success or cancellation.
-///
-/// Returns `true` if payment is successful (redirects to successUrl)
-/// Returns `false` if payment is cancelled (redirects to cancelUrl)
+/// Closing or navigating away from checkout is never payment confirmation.
+/// Callers must reconcile the attempt with Laravel after this widget returns.
 class PaymentWebViewWidget extends StatefulWidget {
   const PaymentWebViewWidget({
     required this.paymentData,
@@ -18,8 +21,8 @@ class PaymentWebViewWidget extends StatefulWidget {
     this.showAppBar = true,
   });
 
-  /// The PayFast payment data containing URLs and payment information
-  final PayfastPaymentData paymentData;
+  /// Safe checkout session data returned by Laravel.
+  final CheckoutPaymentData paymentData;
 
   /// Callback function called when payment result is determined
   /// - `true` for successful payment
@@ -39,7 +42,21 @@ class PaymentWebViewWidget extends StatefulWidget {
 class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
   late final WebViewController _controller;
   bool _isLoading = true;
-  String _currentExitUrl = '';
+
+  /// Guards against reporting a result twice (e.g. the shopper-result page
+  /// finishing while the user also taps close).
+  bool _hasReported = false;
+
+  static bool _isShopperResult(String url) =>
+      Uri.tryParse(url)?.path.contains(_shopperResultPath) ?? false;
+
+  /// Single exit point. [success] is only ever `false` here: this widget never
+  /// claims a payment succeeded — the caller reconciles with Laravel.
+  void _report({required bool success}) {
+    if (_hasReported) return;
+    _hasReported = true;
+    widget.onResult(success);
+  }
 
   @override
   void initState() {
@@ -53,18 +70,29 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
+            if (!mounted) return;
             setState(() {
               _isLoading = true;
             });
-            _handleUrlChange(url);
           },
           onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+            // Close once Laravel's return page has actually loaded, so its
+            // handler has run. Closing is not payment proof — the caller
+            // reconciles the deposit right after this widget returns.
+            if (_isShopperResult(url)) {
+              peachLog('Shopper-result page loaded, closing checkout');
+              _report(success: false);
+            }
           },
           onNavigationRequest: (NavigationRequest request) {
-            _handleUrlChange(request.url);
+            if (_isShopperResult(request.url)) {
+              peachLog('Shopper-result redirect reached (not payment proof)');
+            }
             return NavigationDecision.navigate;
           },
           onWebResourceError: (WebResourceError error) {
@@ -73,35 +101,14 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
         ),
       );
 
-    // Load the payment URL
-    final paymentUrl = widget.paymentData.paymentUrl;
-    if (paymentUrl != null && paymentUrl.isNotEmpty) {
-      _controller.loadRequest(Uri.parse(paymentUrl));
+    final redirectUrl = widget.paymentData.redirectUrl;
+    if (redirectUrl != null && redirectUrl.isNotEmpty) {
+      _controller.loadRequest(Uri.parse(redirectUrl));
     } else {
       // Handle error - no payment URL provided
+      peachLog('Hosted checkout has no redirect URL, closing');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onResult(false);
-      });
-    }
-  }
-
-  void _handleUrlChange(String url) {
-    if (_currentExitUrl == url) {
-      return;
-    }
-    _currentExitUrl = url;
-    final successUrl = widget.paymentData.successUrl;
-    final cancelUrl = widget.paymentData.cancelUrl;
-
-    if (successUrl != null && url.contains(successUrl)) {
-      // Payment successful
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onResult(true);
-      });
-    } else if (cancelUrl != null && url.contains(cancelUrl)) {
-      // Payment cancelled
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onResult(false);
+        _report(success: false);
       });
     }
   }
@@ -114,7 +121,10 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
               title: Text(widget.title),
               leading: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => widget.onResult(false),
+                onPressed: () {
+                  peachLog('Hosted checkout closed by user');
+                  _report(success: false);
+                },
               ),
               actions: [
                 if (_isLoading)
@@ -135,7 +145,10 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
           : null,
       body: Column(
         children: [
-          if (_isLoading) const LinearProgressIndicator() else const SizedBox(height: 4),
+          if (_isLoading)
+            const LinearProgressIndicator()
+          else
+            const SizedBox(height: 4),
           Expanded(
             child: WebViewWidget(controller: _controller),
           ),
@@ -153,7 +166,7 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
 /// - `null` indicates the modal was dismissed without completion
 Future<bool?> showPaymentWebView({
   required BuildContext context,
-  required PayfastPaymentData paymentData,
+  required CheckoutPaymentData paymentData,
   String title = 'Payment',
   bool isDismissible = false,
 }) {

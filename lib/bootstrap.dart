@@ -3,11 +3,14 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/presentation/app_config/app_config_controller.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
+import 'package:snip_fair/core/services/chat_draft_service.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/core/version_checker.dart';
 import 'package:snip_fair/features/onboarding/force_update_screen.dart';
@@ -55,6 +58,21 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   _bootstrapLog('✅ Firebase Initialized');
+
+  // Register the top-level background-message handler so killed-state pushes
+  // (chat, appointments, etc.) actually wake the app and get delivered.
+  // Handler is defined in lib/core/services/notification_service.dart.
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // ---------------------------
+  // 📊 ANALYTICS (Firebase Analytics + Meta App Events)
+  // ---------------------------
+  await AnalyticsService.instance.init();
+
+  // ---------------------------
+  // 💬 CHAT DRAFTS (local-only, per-user)
+  // ---------------------------
+  await ChatDraftService.init();
 
   // ---------------------------
   // 🔍 REMOTE CONFIG / VERSION CHECK

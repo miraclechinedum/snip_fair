@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/domain/entities/stylist_earnings/pending_release.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/total_balance.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/total_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/total_requests.dart';
@@ -13,6 +14,7 @@ class Statistics {
     this.totalBalance,
     this.totalWithdrawn,
     this.totalRequests,
+    this.pendingRelease,
   });
 
   factory Statistics.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,8 @@ class Statistics {
   TotalWithdrawn? totalWithdrawn;
   @JsonKey(name: 'total_requests')
   TotalRequests? totalRequests;
+  @JsonKey(name: 'pending_release')
+  PendingRelease? pendingRelease;
 
   Map<String, dynamic> toJson() => _$StatisticsToJson(this);
 }

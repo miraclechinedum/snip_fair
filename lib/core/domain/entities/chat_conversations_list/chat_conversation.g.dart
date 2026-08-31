@@ -26,6 +26,7 @@ ChatConversation _$ChatConversationFromJson(Map<String, dynamic> json) =>
       recipient: json['recipient'] == null
           ? null
           : Recipient.fromJson(json['recipient'] as Map<String, dynamic>),
+      unreadCount: (json['unread_count'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ChatConversationToJson(ChatConversation instance) =>
@@ -38,4 +39,5 @@ Map<String, dynamic> _$ChatConversationToJson(ChatConversation instance) =>
       'messages': instance.messages,
       'initiator': instance.initiator,
       'recipient': instance.recipient,
+      'unread_count': instance.unreadCount,
     };

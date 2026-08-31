@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/stylist.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/customer.dart';
 import 'package:snip_fair/core/domain/entities/dispute_list/appointment.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 
 part 'dispute.g.dart';
@@ -38,7 +39,7 @@ class Dispute {
       _$DisputeFromJson(json);
   int? id;
   String? comment;
-  @JsonKey(name: 'image_urls')
+  @JsonKey(name: 'image_urls', fromJson: nonNullStringList)
   List<String>? imageUrls;
   String? status;
   String? priority;

@@ -8,10 +8,10 @@ part of 'appointment.dart';
 
 Appointment _$AppointmentFromJson(Map<String, dynamic> json) => Appointment(
       id: (json['id'] as num?)?.toInt(),
-      stylistId: json['stylist_id'] as String?,
-      customerId: json['customer_id'] as String?,
-      bookingId: json['booking_id'] as String?,
-      portfolioId: json['portfolio_id'] as String?,
+      stylistId: toStringOrNull(json['stylist_id']),
+      customerId: toStringOrNull(json['customer_id']),
+      bookingId: toStringOrNull(json['booking_id']),
+      portfolioId: toStringOrNull(json['portfolio_id']),
       amount: (json['amount'] as num?)?.toInt(),
       duration: json['duration'] as String?,
       extra: json['extra'] as String?,

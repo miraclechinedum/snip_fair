@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/utils/utils.dart';
@@ -35,6 +36,7 @@ import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.da
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
+import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
@@ -42,7 +44,8 @@ import 'package:snip_fair/core/domain/entities/notifications_list/notifications_
 import 'package:snip_fair/core/domain/entities/customer_profile_details/notifications.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
 import 'package:snip_fair/core/domain/entities/availability_schedule/availability_schedule.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
@@ -76,6 +79,7 @@ class AuthPath {
 
   // Chats
   static const conversations = '/conversations';
+  static const conversationsUnreadCount = '/conversations/unread-count';
   static const disputes = '/dispute/list';
 
   //Wallet
@@ -84,7 +88,8 @@ class AuthPath {
   static const withdrawFunds = '/wallet/withdraw';
 
   //Payment
-  static const initializePayfastDeposit = '/payment/initiate/payfast';
+  static const customerPaymentTopUp = '/customer/payment/topup';
+  static const peachPaymentStatus = '/customer/payment/peach';
 
   //Profile
   static const updatePassword = '/user/password'; //PATCH
@@ -107,6 +112,7 @@ class AuthPath {
   static const availability = '/stylist/appointment/availability';
   static const stylistAppointment = '/stylist/appointment';
   static const earnings = '/stylist/earnings';
+  static const stylistEscrow = '/stylist/earnings/escrow';
 
   //Location
   static const updateLocationConsent = '/user/location/consent';
@@ -118,7 +124,10 @@ class AuthPath {
 
 @LazySingleton()
 class SnipFairBackendRemoteSource extends BaseRemoteSource
-    implements AuthenticationRepository, ProfileRepository, AppointmentRepository {
+    implements
+        AuthenticationRepository,
+        ProfileRepository,
+        AppointmentRepository {
   /// Helper method to get a Dio client with retry interceptor for GET requests
   Dio _clientWithRetry({bool requireAuth = true, bool optionalAuth = false}) {
     final client = getIt<HttpService>()
@@ -386,7 +395,9 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         AuthPath.stylistPaymentMethods,
       );
       return ApiResult.success(
-        data: response.data!.map((e) => PaymentMethod.fromJson(e as Map<String, dynamic>)).toList(),
+        data: response.data!
+            .map((e) => PaymentMethod.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
     });
   }
@@ -832,7 +843,8 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         AuthPath.availability,
         data: {
           if (isAvailable != null) 'is_available': isAvailable,
-          if (schedules != null) 'schedules': schedules.map((e) => e.toJson()).toList(),
+          if (schedules != null)
+            'schedules': schedules.map((e) => e.toJson()).toList(),
         },
       );
       return ApiResult.success(
@@ -850,6 +862,19 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       );
       return ApiResult.success(
         data: StylistEarnings.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<EscrowBreakdown>> getStylistEscrowBreakdown() {
+    return run(() async {
+      final client = _clientWithRetry();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.stylistEscrow,
+      );
+      return ApiResult.success(
+        data: EscrowBreakdown.fromJson(response.data!),
       );
     });
   }
@@ -1029,29 +1054,35 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
-  Future<ApiResult<PayfastPaymentData>> initialisePayfastDeposit({
-    required String type,
-    required String amount,
-    String? email,
-    String? firstName,
-    String? lastName,
-    String? portfolioId,
+  Future<ApiResult<CheckoutPaymentData>> initializeWalletTopUp({
+    required num amount,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
       final response = await client.post<Map<String, dynamic>>(
-        AuthPath.initializePayfastDeposit,
+        AuthPath.customerPaymentTopUp,
         data: {
-          'type': type,
+          'type': 'topup',
           'amount': amount,
-          if (email != null) 'email': email,
-          if (firstName != null) 'first_name': firstName,
-          if (lastName != null) 'last_name': lastName,
-          if (portfolioId != null) 'portfolio_id': portfolioId,
         },
       );
       return ApiResult.success(
-        data: PayfastPaymentData.fromJson(response.data!),
+        data: CheckoutPaymentData.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
+    String depositId,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.get<Map<String, dynamic>>(
+        '${AuthPath.peachPaymentStatus}/$depositId/status',
+      );
+      return ApiResult.success(
+        data: PaymentReconciliation.fromJson(response.data!),
       );
     });
   }
@@ -1103,12 +1134,40 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           'portfolio_id': portfolioId,
           'selected_date': date,
           'selected_time': time,
+          'payment_method': 'wallet',
           if (address != null) 'address': address,
           if (note != null) 'extra': note,
         },
       );
       return ApiResult.success(
         data: CustomerAppointment.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
+  Future<ApiResult<CheckoutPaymentData>> createAppointmentWithCard({
+    required String portfolioId,
+    required String date,
+    required String time,
+    String? note,
+    String? address,
+  }) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/book',
+        data: {
+          'portfolio_id': portfolioId,
+          'selected_date': date,
+          'selected_time': time,
+          'payment_method': 'card',
+          if (address != null) 'address': address,
+          if (note != null) 'extra': note,
+        },
+      );
+      return ApiResult.success(
+        data: CheckoutPaymentData.fromJson(response.data!),
       );
     });
   }
@@ -1162,6 +1221,18 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
             )
             .toList(),
       );
+    });
+  }
+
+  @override
+  Future<ApiResult<int>> getConversationsUnreadCount() {
+    return run(() async {
+      final client = _clientWithRetry();
+      final response = await client.get<Map<String, dynamic>>(
+        AuthPath.conversationsUnreadCount,
+      );
+      final count = (response.data?['unread_count'] as num?)?.toInt() ?? 0;
+      return ApiResult.success(data: count);
     });
   }
 
@@ -1593,6 +1664,34 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   // Payment Request methods
   // ---------------------------------------------------------------------------
 
+  /// Builds the `POST /payment-requests` body.
+  ///
+  /// `appointment_id` is **optional** on the backend: a payment request for an
+  /// additional service that isn't tied to a booking is valid. Following this
+  /// file's existing convention for nullable fields (`description`,
+  /// `expires_in_hours`), the key is *omitted* rather than sent as an explicit
+  /// null when no appointment was chosen.
+  ///
+  /// Exposed for tests so the omit-vs-null contract is pinned without going
+  /// through Dio.
+  @visibleForTesting
+  static Map<String, dynamic> buildCreatePaymentRequestBody({
+    required int recipientId,
+    required String title,
+    required List<Map<String, dynamic>> items,
+    String? description,
+    int? appointmentId,
+    int? expiresInHours,
+  }) =>
+      {
+        'recipient_id': recipientId,
+        'title': title,
+        if (description != null) 'description': description,
+        'items': items,
+        if (appointmentId != null) 'appointment_id': appointmentId,
+        if (expiresInHours != null) 'expires_in_hours': expiresInHours,
+      };
+
   @override
   Future<ApiResult<PaymentRequest>> createPaymentRequest({
     required int recipientId,
@@ -1606,14 +1705,14 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       final client = getIt<HttpService>().client();
       final response = await client.post<Map<String, dynamic>>(
         AuthPath.paymentRequests,
-        data: {
-          'recipient_id': recipientId,
-          'title': title,
-          if (description != null) 'description': description,
-          'items': items,
-          if (appointmentId != null) 'appointment_id': appointmentId,
-          if (expiresInHours != null) 'expires_in_hours': expiresInHours,
-        },
+        data: buildCreatePaymentRequestBody(
+          recipientId: recipientId,
+          title: title,
+          items: items,
+          description: description,
+          appointmentId: appointmentId,
+          expiresInHours: expiresInHours,
+        ),
       );
       return ApiResult.success(
         data: PaymentRequest.fromJson(

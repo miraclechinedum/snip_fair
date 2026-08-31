@@ -27,6 +27,10 @@ class LocalKeyStorage {
     return _sharedPreferences.getString(SharedPrefKey.accessToken);
   }
 
+  Future<bool> deleteAccessToken() {
+    return _sharedPreferences.remove(SharedPrefKey.accessToken);
+  }
+
   Future<bool> saveCurrentUser(User user) {
     return _sharedPreferences
         .setString(SharedPrefKey.currentUser, jsonEncode(user.toJson()))

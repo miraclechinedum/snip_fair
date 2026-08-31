@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'portfolio.g.dart';
 
@@ -36,7 +37,7 @@ class Portfolio {
   String? duration;
   String? description;
   String? tags;
-  @JsonKey(name: 'media_urls')
+  @JsonKey(name: 'media_urls', fromJson: nonNullStringList)
   List<String>? mediaUrls;
   @JsonKey(name: 'visits_count')
   String? visitsCount;

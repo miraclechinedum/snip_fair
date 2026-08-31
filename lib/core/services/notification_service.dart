@@ -19,6 +19,12 @@ class NotificationService {
   final _updatesController = StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get updates => _updatesController.stream;
 
+  /// Emits a new FCM token each time Firebase rotates it. The AppCubit
+  /// subscribes and re-registers with the backend so long-lived sessions
+  /// keep their `firebase_device_token` up to date without a fresh login.
+  final _tokenRefreshController = StreamController<String>.broadcast();
+  Stream<String> get tokenRefreshes => _tokenRefreshController.stream;
+
   final _flnp = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
@@ -42,6 +48,12 @@ class NotificationService {
     await FirebaseMessaging.instance.requestPermission(
       badge: true,
     );
+
+    // Emit token rotations so listeners can re-register with the backend.
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      log('FCM token refreshed', name: 'NotificationService');
+      _tokenRefreshController.add(token);
+    });
 
     // Initialize local notifications
     const androidInit = AndroidInitializationSettings('ic_launcher');
@@ -196,13 +208,28 @@ class NotificationService {
   }
 }
 
-/// If you want to handle background messages (app terminated/background),
-/// define a top-level handler in your app entrypoint (main.dart):
+/// Top-level background handler invoked by FirebaseMessaging in a separate
+/// isolate when the app is in the background or killed/swiped.
 ///
-/// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-///   await Firebase.initializeApp();
-///   // You could schedule a local notification here if desired.
-/// }
+/// Must be a top-level (or static) function annotated with
+/// `@pragma('vm:entry-point')` so it survives tree-shaking in AOT release
+/// builds. Register once from bootstrap, after `Firebase.initializeApp()`
+/// and before `runApp()`:
 ///
-/// And register it very early in main():
-/// FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+///   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+///
+/// We don't try to render a custom UI here — when the push payload includes
+/// a `notification` block, the OS displays the banner itself. This handler
+/// exists so iOS/Android will actually wake the isolate and deliver the
+/// message in killed state; without it, kill-state pushes drop silently.
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Runs in a fresh isolate — Firebase must be initialized here too.
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
+  log(
+    'BG message: id=${message.messageId} data=${message.data}',
+    name: 'NotificationService',
+  );
+}

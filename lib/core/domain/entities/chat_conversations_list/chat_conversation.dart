@@ -19,6 +19,7 @@ class ChatConversation {
     this.messages,
     this.initiator,
     this.recipient,
+    this.unreadCount,
   });
 
   factory ChatConversation.fromJson(Map<String, dynamic> json) {
@@ -36,6 +37,8 @@ class ChatConversation {
   List<ChatMessage>? messages;
   Initiator? initiator;
   Recipient? recipient;
+  @JsonKey(name: 'unread_count')
+  int? unreadCount;
 
   Map<String, dynamic> toJson() => _$ChatConversationToJson(this);
 }

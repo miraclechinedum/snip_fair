@@ -28,8 +28,7 @@ StylistProfile _$StylistProfileFromJson(Map<String, dynamic> json) =>
       socials: (json['socials'] as List<dynamic>?)
           ?.map((e) => Social.fromJson(e as Map<String, dynamic>))
           .toList(),
-      works:
-          (json['works'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      works: nonNullStringList(json['works']),
     );
 
 Map<String, dynamic> _$StylistProfileToJson(StylistProfile instance) =>

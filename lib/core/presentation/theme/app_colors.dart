@@ -82,6 +82,16 @@ class AppColors {
 
   static const Color success = Color.fromARGB(255, 7, 172, 18);
 
+  // Payment-request card status palette. Also mirrored in _StatusChip so the
+  // chip and the card container speak the same colour language.
+  static const Color warning = Color(0xFFFF8F00); // pending accent bar
+  static const Color warningBg = Color(0xFFFFF3E0); // pending header bg
+  static const Color warningText = Color(0xFFE65100); // pending title / total
+  static const Color warningBorder = Color(0xFFFFB74D); // pending card border
+  static const Color successBg = Color(0xFFE8F5E9); // paid header bg
+  static const Color dangerBg = Color(0xFFFFEBEE); // declined/cancelled header
+  static const Color dangerText = Color(0xFFC62828); // declined/cancelled text
+
   static InputDecoration inputDecoration = InputDecoration(
     hintStyle: AppTextStyle.body1.copyWith(
       color: AppColors.grey2,

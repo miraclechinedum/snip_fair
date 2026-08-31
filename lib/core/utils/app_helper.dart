@@ -16,7 +16,7 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
 import 'package:snip_fair/core/data/models/remote/platform_settings.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_webview_widget.dart';
-import 'package:snip_fair/core/domain/entities/payfast_payment_data/payfast_payment_data.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 // ignore_for_file: only_throw_errors, join_return_with_assignment
 
@@ -80,7 +80,8 @@ class AppHelper {
       behavior: SnackBarBehavior.floating,
       content: Text(
         message,
-        style: AppTextStyle.body2.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
+        style: AppTextStyle.body2
+            .copyWith(color: Colors.white, fontWeight: FontWeight.w500),
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -304,19 +305,21 @@ class AppHelper {
   }
 
   static String initialsFromName(String firstName, String lastName) {
-    return (firstName.isNotEmpty ? firstName[0] : '') + (lastName.isNotEmpty ? lastName[0] : '');
+    return (firstName.isNotEmpty ? firstName[0] : '') +
+        (lastName.isNotEmpty ? lastName[0] : '');
   }
 
   static void unfocus(BuildContext context) =>
       WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
 
   static PlatformSettings appSettings(BuildContext context) {
-    return context.read<AppCubit>().state.platformSettings ?? PlatformSettings();
+    return context.read<AppCubit>().state.platformSettings ??
+        PlatformSettings();
   }
 
   static Future<bool> showPaymentDialog(
     BuildContext context,
-    PayfastPaymentData paymentData,
+    CheckoutPaymentData paymentData,
   ) async {
     // Show payment widget as a modal dialog
     final result = await showPaymentWebView(
@@ -325,24 +328,7 @@ class AppHelper {
       title: 'Complete Payment',
     );
 
-    if (context.mounted) {
-      // Handle the payment result
-      if (result ?? false) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (result == false) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment cancelled or failed!'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    // The checkout UI is not authoritative. Callers reconcile with Laravel.
     return result ?? false;
   }
 
@@ -350,7 +336,7 @@ class AppHelper {
   // ignore: unused_element
   static void navigateToPaymentScreen(
     BuildContext context,
-    PayfastPaymentData paymentData,
+    CheckoutPaymentData paymentData,
   ) {
     Navigator.of(context)
         .push(
@@ -375,7 +361,9 @@ class AppHelper {
   }
 
   static bool isSameDate(DateTime dateTime, DateTime date) {
-    return dateTime.year == date.year && dateTime.month == date.month && dateTime.day == date.day;
+    return dateTime.year == date.year &&
+        dateTime.month == date.month &&
+        dateTime.day == date.day;
   }
 
   static String monthName(int month) {
@@ -448,9 +436,11 @@ class AppHelper {
                 return Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.totalSize != null
-                        ? (loadingProgress.progress ?? 0) / loadingProgress.totalSize!
+                        ? (loadingProgress.progress ?? 0) /
+                            loadingProgress.totalSize!
                         : null,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 );
               },
@@ -493,7 +483,8 @@ class AppHelper {
       return false;
     }
     if (!(profileCompleteness.locationService ?? false)) {
-      context.router.push(SellerAvailabilityScheduleRoute(goToLocationSettings: true));
+      context.router
+          .push(SellerAvailabilityScheduleRoute(goToLocationSettings: true));
       return false;
     }
     if (!(profileCompleteness.userAvatar ?? false)) {
@@ -771,7 +762,8 @@ class AppHelper {
     List<Slot> slots,
   ) {
     if (slots.isEmpty) return '';
-    final startTimes = slots.map((slot) => slot.from).whereType<String>().toList();
+    final startTimes =
+        slots.map((slot) => slot.from).whereType<String>().toList();
     final endTimes = slots.map((slot) => slot.to).whereType<String>().toList();
 
     if (startTimes.isEmpty || endTimes.isEmpty) return '';
@@ -799,7 +791,8 @@ class AppHelper {
     var earliestStart = parsedStartTimes.first;
     for (final time in parsedStartTimes) {
       if (time.hour < earliestStart.hour ||
-          (time.hour == earliestStart.hour && time.minute < earliestStart.minute)) {
+          (time.hour == earliestStart.hour &&
+              time.minute < earliestStart.minute)) {
         earliestStart = time;
       }
     }

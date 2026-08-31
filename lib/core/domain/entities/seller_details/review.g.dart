@@ -8,10 +8,10 @@ part of 'review.dart';
 
 Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
       id: (json['id'] as num?)?.toInt(),
-      rating: json['rating'] as String?,
+      rating: toStringOrNull(json['rating']),
       comment: json['comment'] as String?,
-      appointmentId: json['appointment_id'] as String?,
-      userId: json['user_id'] as String?,
+      appointmentId: toStringOrNull(json['appointment_id']),
+      userId: toStringOrNull(json['user_id']),
       deletedAt: json['deleted_at'],
       createdAt: json['created_at'] == null
           ? null

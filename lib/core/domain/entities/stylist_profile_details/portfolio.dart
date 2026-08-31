@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'portfolio.g.dart';
 
@@ -26,18 +27,18 @@ class Portfolio {
     return _$PortfolioFromJson(json);
   }
   int? id;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: 'user_id', fromJson: toStringOrNull)
   String? userId;
   String? title;
-  @JsonKey(name: 'category_id')
+  @JsonKey(name: 'category_id', fromJson: toStringOrNull)
   String? categoryId;
   int? price;
   String? duration;
   String? description;
   String? tags;
-  @JsonKey(name: 'media_urls')
+  @JsonKey(name: 'media_urls', fromJson: nonNullStringList)
   List<String>? mediaUrls;
-  @JsonKey(name: 'visits_count')
+  @JsonKey(name: 'visits_count', fromJson: toStringOrNull)
   String? visitsCount;
   bool? status;
   @JsonKey(name: 'is_available')

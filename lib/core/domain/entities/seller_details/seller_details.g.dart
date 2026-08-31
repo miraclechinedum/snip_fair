@@ -65,9 +65,7 @@ SellerDetails _$SellerDetailsFromJson(Map<String, dynamic> json) =>
       stylistCertifications: json['stylist_certifications'] as List<dynamic>?,
       responseTime: json['response_time'] as String?,
       nextAvailable: json['next_available'] as String?,
-      mediaUrls: (json['media_urls'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      mediaUrls: nonNullStringList(json['media_urls']),
       reviews: (json['reviews'] as List<dynamic>?)
           ?.map((e) => Review.fromJson(e as Map<String, dynamic>))
           .toList(),

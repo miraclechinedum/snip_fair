@@ -9,7 +9,9 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
+import 'package:snip_fair/core/services/chat_draft_service.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/conversations/conversations_list/widgets/unread_count_badge.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
 
 @RoutePage()
@@ -24,10 +26,25 @@ class ConversationListScreen extends StatefulWidget {
 
 class _ConversationListScreenState extends State<ConversationListScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Always re-pull on open. The 4s badge poll only refreshes the scalar
+    // count, so without this the rows themselves (and their per-conversation
+    // unread counts) could be whatever was cached at last visit — the
+    // "have to restart the app to see new messages" symptom.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ConversationsCubit>().fetchConversations(true);
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     if (widget.chatConversation != null) {
       final currentUserId = context.read<AppCubit>().state.user.id!;
-      context.read<ConversationsCubit>().fetchChatMessages(widget.chatConversation!.id!.toString());
+      context
+          .read<ConversationsCubit>()
+          .fetchChatMessages(widget.chatConversation!.id!.toString());
       context.router.push(
         ConvesationChatRoute(
           recipient: widget.chatConversation!.recipient,
@@ -70,28 +87,38 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                       itemCount: conversations.length,
                       separatorBuilder: (context, index) => 5.verticalSpace,
                       itemBuilder: (context, index) {
-                        final conversation = state.conversationsState.data![index];
+                        final conversation =
+                            state.conversationsState.data![index];
 
-                        final isInitiator = context.read<AppCubit>().state.user.id.toString() ==
-                            conversation.initiatorId;
-                        final isRecipient = context.read<AppCubit>().state.user.id.toString() ==
-                            conversation.recipientId;
+                        final currentUserId =
+                            context.read<AppCubit>().state.user.id?.toString();
+                        final isInitiator =
+                            currentUserId == conversation.initiatorId;
+                        final isRecipient =
+                            currentUserId == conversation.recipientId;
+                        final unreadCount =
+                            unreadCountFor(conversation, currentUserId);
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: isInitiator && conversation.recipient?.avatar != null
+                            backgroundImage: isInitiator &&
+                                    conversation.recipient?.avatar != null
                                 ? CachedNetworkImageProvider(
-                                    conversation.recipient!.avatar!.completeImagePath(),
+                                    conversation.recipient!.avatar!
+                                        .completeImagePath(),
                                   )
-                                : isRecipient && conversation.initiator?.avatar != null
+                                : isRecipient &&
+                                        conversation.initiator?.avatar != null
                                     ? CachedNetworkImageProvider(
                                         conversation.initiator!.avatar!
                                             .toString()
                                             .completeImagePath(),
                                       )
                                     : null,
-                            child: isInitiator && conversation.recipient?.avatar == null
+                            child: isInitiator &&
+                                    conversation.recipient?.avatar == null
                                 ? const Icon(Icons.person)
-                                : isRecipient && conversation.initiator?.avatar == null
+                                : isRecipient &&
+                                        conversation.initiator?.avatar == null
                                     ? const Icon(Icons.person)
                                     : null,
                           ),
@@ -100,19 +127,11 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                             text: isInitiator
                                 ? conversation.recipient?.name ?? 'Unknown'
                                 : conversation.initiator?.name ?? 'Unknown',
+                            fontWeight: unreadCount > 0
+                                ? FontWeight.w700
+                                : FontWeight.w400,
                           ),
-                          subtitle: AppText(
-                            text: conversation.messages != null && conversation.messages!.isNotEmpty
-                                ? conversation.messages!.first.text ?? ''
-                                : 'No messages yet',
-                            color: conversation.messages != null &&
-                                    conversation.messages!.isNotEmpty &&
-                                    conversation.messages!.first.senderId !=
-                                        context.read<AppCubit>().state.user.id?.toString() &&
-                                    conversation.messages!.first.isRead == false
-                                ? AppColors.primaryColor
-                                : Colors.grey,
-                          ),
+                          subtitle: _buildSubtitle(context, conversation),
                           trailing: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -123,11 +142,19 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                     : '',
                                 fontSize: 10,
                               ),
-                              if (conversation.messages != null &&
+                              if (unreadCount > 0)
+                                UnreadCountBadge(
+                                  key: const Key(
+                                    'conversation_unread_badge',
+                                  ),
+                                  count: unreadCount,
+                                )
+                              else if (conversation.messages != null &&
                                   conversation.messages!.isNotEmpty &&
                                   conversation.messages!.first.senderId ==
-                                      context.read<AppCubit>().state.user.id?.toString() &&
-                                  (conversation.messages!.first.isRead ?? false)) ...[
+                                      currentUserId &&
+                                  (conversation.messages!.first.isRead ??
+                                      false)) ...[
                                 5.verticalSpace,
                                 const Icon(
                                   Icons.done_all,
@@ -138,17 +165,19 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                             ],
                           ),
                           onTap: () {
-                            final currentUserId = context.read<AppCubit>().state.user.id!;
+                            if (currentUserId == null) return;
 
                             context
                                 .read<ConversationsCubit>()
-                                .startPollingMessages(conversation.id!.toString());
+                                .startPollingMessages(
+                                  conversation.id!.toString(),
+                                );
                             context.router.push(
                               ConvesationChatRoute(
                                 recipient: conversation.recipient,
                                 initiator: conversation.initiator,
                                 conversationId: conversation.id!.toString(),
-                                currentUserId: currentUserId.toString(),
+                                currentUserId: currentUserId,
                               ),
                             );
                           },
@@ -162,6 +191,42 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
           );
         },
       ),
+    );
+  }
+
+  /// Row subtitle priority (matches WhatsApp / iMessage):
+  /// 1. Local draft (green) — this user was mid-composition
+  /// 2. Latest message (primary color if unread from other user, grey
+  ///    otherwise)
+  /// 3. Placeholder — no messages yet
+  Widget _buildSubtitle(BuildContext context, ChatConversation conversation) {
+    final currentUserId = context.read<AppCubit>().state.user.id?.toString();
+    final conversationId = conversation.id?.toString();
+
+    if (currentUserId != null && conversationId != null) {
+      final draft = ChatDraftService.instance.get(
+        userId: currentUserId,
+        conversationId: conversationId,
+      );
+      if (draft != null && draft.trim().isNotEmpty) {
+        return AppText(
+          text: 'Draft: $draft',
+          color: Colors.green,
+        );
+      }
+    }
+
+    final messages = conversation.messages;
+    if (messages == null || messages.isEmpty) {
+      return const AppText(text: 'No messages yet', color: Colors.grey);
+    }
+
+    final last = messages.first;
+    final unreadFromOther =
+        last.senderId != currentUserId && last.isRead == false;
+    return AppText(
+      text: last.text ?? '',
+      color: unreadFromOther ? AppColors.primaryColor : Colors.grey,
     );
   }
 }

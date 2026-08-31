@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/slot.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'working_hour.g.dart';
 
@@ -19,7 +20,7 @@ class WorkingHour {
     return _$WorkingHourFromJson(json);
   }
   int? id;
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: 'user_id', fromJson: toStringOrNull)
   String? userId;
   String? day;
   bool? available;

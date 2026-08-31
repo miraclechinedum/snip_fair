@@ -23,6 +23,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/features/account/seller/earnings/cubit/earnings_cubit.dart';
 import 'package:snip_fair/features/account/seller/earnings/views/seller_payout_settings_form_view.dart';
+import 'package:snip_fair/features/account/seller/earnings/views/seller_escrow_breakdown_screen.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 
 @RoutePage()
@@ -221,6 +222,10 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
   Widget build(BuildContext context) {
     final transactions = widget.cubit.state.transactionsState.data ?? [];
     final filteredTransactions = transactions.where((transaction) {
+      // Platform commission rows aren't the stylist's money and don't affect
+      // their balance — the backend's earningIndex endpoint already excludes
+      // them, so this list stays consistent by doing the same.
+      final matchesType = transaction.type != 'other';
       final matchesStatus = selectedStatus == 'all' ||
           (transaction.status != null &&
               transaction.status!.toLowerCase() == selectedStatus);
@@ -233,7 +238,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
               transaction.reference!
                   .toLowerCase()
                   .contains(searchQuery.toLowerCase()));
-      return matchesStatus && matchesSearch;
+      return matchesType && matchesStatus && matchesSearch;
     }).toList();
 
     return Column(
@@ -328,23 +333,24 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                 final transaction = filteredTransactions[index];
                 return ListTile(
                   // contentPadding: EdgeInsets.zero,
-                  leading: transaction.type == 'earning' ||
-                          transaction.type == 'other'
+                  // Stylist ledger:
+                  //   earning              → credit-in (green right-arrow)
+                  //   withdraw / refund    → debit-out (red left-arrow)
+                  //   refund is defensive only — backend never writes it
+                  //   against a stylist, but if one ever appeared it would
+                  //   still represent money leaving them.
+                  leading: transaction.type == 'earning'
                       ? const Icon(
                           Iconsax.arrow_right_1,
                           color: Colors.green,
                         )
-                      : transaction.type == 'refund'
+                      : transaction.type == 'withdraw' ||
+                              transaction.type == 'refund'
                           ? const Icon(
-                              Iconsax.refresh_circle,
-                              color: Colors.green,
+                              Iconsax.arrow_left,
+                              color: Colors.red,
                             )
-                          : transaction.type == 'withdraw'
-                              ? const Icon(
-                                  Iconsax.arrow_left,
-                                  color: Colors.red,
-                                )
-                              : const Icon(Iconsax.bank),
+                          : const Icon(Iconsax.bank),
                   title: AppText(
                     text: transaction.description ?? 'N/A',
                     fontWeight: FontWeight.w600,
@@ -378,15 +384,20 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      // Sign + colour must match the leading arrow direction
+                      // above. Rules for the stylist ledger:
+                      //   earning              → +, green (income)
+                      //   withdraw             → −, red   (payout leaving)
+                      //   refund               → −, red   (defensive — see note)
+                      //   anything else        → −, primaryColor (fallback)
                       AppText(
                         text:
-                            '${transaction.type == 'topup' || transaction.type == 'refund' || transaction.type == 'other' ? '+' : '-'}${transaction.amount?.formatAmount() ?? 'R0.00'}',
+                            '${transaction.type == 'earning' ? '+' : '-'}${transaction.amount?.formatAmount() ?? 'R0.00'}',
                         fontWeight: FontWeight.w600,
-                        color: transaction.type == 'topup' ||
-                                transaction.type == 'refund' ||
-                                transaction.type == 'other'
+                        color: transaction.type == 'earning'
                             ? Colors.green
-                            : transaction.type == 'payment'
+                            : transaction.type == 'withdraw' ||
+                                    transaction.type == 'refund'
                                 ? Colors.red
                                 : AppColors.primaryColor,
                       ),
@@ -510,6 +521,72 @@ class OverviewWidget extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ],
+              ),
+            ),
+            12.verticalSpace,
+            // Tappable → opens the escrow breakdown screen. Uses a plain
+            // MaterialPageRoute rather than the auto_route registry so we
+            // don't need to regenerate routes.gr.dart.
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SellerEscrowBreakdownScreen(),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.grey1),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AppText(
+                          text: 'In Escrow',
+                          color: Colors.grey.shade600,
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey.shade500,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                    8.verticalSpace,
+                    AppText(
+                      text: cubit.state.earnings.isLoading
+                          ? '********'
+                          : cubit.state.earnings.data?.statistics
+                                  ?.pendingRelease?.value
+                                  ?.formatAmount() ??
+                              '0',
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    if (!cubit.state.earnings.isLoading &&
+                        (cubit.state.earnings.data?.statistics?.pendingRelease
+                                    ?.changeText
+                                    ?.isNotEmpty ??
+                                false)) ...[
+                      4.verticalSpace,
+                      AppText(
+                        text: cubit.state.earnings.data!.statistics!
+                            .pendingRelease!.changeText!,
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
             12.verticalSpace,

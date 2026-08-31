@@ -14,8 +14,11 @@ import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
+import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/notifications/notification_destination.dart';
 import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 import 'package:snip_fair/core/domain/entities/notifications_list/notification_datum.dart';
+import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
 
 @RoutePage()
 class NotificationsScreen extends StatelessWidget {
@@ -30,7 +33,9 @@ class NotificationsScreen extends StatelessWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            context.read<NotificationsCubit>().fetchNotifications(isInitial: true);
+            context
+                .read<NotificationsCubit>()
+                .fetchNotifications(isInitial: true);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -63,7 +68,9 @@ class NotificationsScreen extends StatelessWidget {
                         bottom: 100,
                       ),
                       onFetchData: () async {
-                        await context.read<NotificationsCubit>().fetchNotifications();
+                        await context
+                            .read<NotificationsCubit>()
+                            .fetchNotifications();
                       },
                       isLoading: state.paginationData.isLoadingMore,
                       shrinkWrap: true,
@@ -114,7 +121,9 @@ class _NotificationTileState extends State<NotificationTile> {
       setState(() {
         _isRead = true;
       });
-      context.read<NotificationsCubit>().markNotificationAsRead(widget.notification.id!);
+      context
+          .read<NotificationsCubit>()
+          .markNotificationAsRead(widget.notification.id!);
     }
   }
 
@@ -155,51 +164,79 @@ class _NotificationTileState extends State<NotificationTile> {
     );
   }
 
+  /// Routes into a specific chat thread.
+  ///
+  /// Enriches the route with the conversation's `recipient` / `initiator`
+  /// when the conversations cubit already has that row cached, so the chat
+  /// screen renders the other party's name (and, for a stylist, the Request
+  /// Payment action) instead of a bare "Chat" header.
+  void _openConversation(String conversationId) {
+    final currentUserId = context.read<AppCubit>().state.user.id?.toString();
+    if (currentUserId == null) {
+      context.router.push(ConversationListRoute());
+      return;
+    }
+
+    final conversationsCubit = context.read<ConversationsCubit>();
+    ChatConversation? match;
+    for (final c in conversationsCubit.state.conversationsState.data ??
+        const <ChatConversation>[]) {
+      if (c.id?.toString() == conversationId) {
+        match = c;
+        break;
+      }
+    }
+
+    conversationsCubit.startPollingMessages(conversationId);
+    context.router.push(
+      ConvesationChatRoute(
+        conversationId: conversationId,
+        currentUserId: currentUserId,
+        recipient: match?.recipient,
+        initiator: match?.initiator,
+      ),
+    );
+  }
+
   void _navigateToNotificationDestination() {
     final isStylist = context.read<AppCubit>().state.isStylist;
+    final destination = resolveNotificationDestination(
+      type: widget.notification.type,
+      typeIdentifier: widget.notification.typeIdentifier,
+    );
 
-    switch (widget.notification.type) {
-      case 'profile':
-        if (isStylist) {
-          context.router.push(const SellerProfileManagementRoute());
-        } else {
-          context.router.push(const CustomerProfileMgtRoute());
-        }
-      case 'appointment':
-        final appointmentId = widget.notification.typeIdentifier;
-        if (isStylist) {
-          if (appointmentId != null) {
-            context.router.push(
-              SellerAppointmentDetailsRoute(
-                appointmentId: appointmentId.toString(),
-              ),
-            );
-          } else {
-            context.pop();
-          }
-        } else {
-          if (appointmentId != null) {
-            context.router.push(
-              UpdateCreateAppointmentRoute(
-                appointmentId: appointmentId.toString(),
-              ),
-            );
-          } else {
-            context.pop();
-          }
-        }
-      case 'wallet':
+    switch (destination.kind) {
+      case NotificationDestinationKind.profile:
+        context.router.push(
+          isStylist
+              ? const SellerProfileManagementRoute()
+              : const CustomerProfileMgtRoute(),
+        );
+
+      case NotificationDestinationKind.appointment:
+        final appointmentId = destination.id!;
+        context.router.push(
+          isStylist
+              ? SellerAppointmentDetailsRoute(appointmentId: appointmentId)
+              : UpdateCreateAppointmentRoute(appointmentId: appointmentId),
+        );
+
+      case NotificationDestinationKind.wallet:
         context.router.push(
           isStylist ? const SellerEarningRoute() : const CustomerWalletRoute(),
         );
-      case 'conversation':
-        context.router.push(
-          ConversationListRoute(),
-        );
-      case 'dispute':
+
+      case NotificationDestinationKind.conversation:
+        _openConversation(destination.conversationId!);
+
+      case NotificationDestinationKind.conversationList:
+        context.router.push(ConversationListRoute());
+
+      case NotificationDestinationKind.dispute:
         final token = getIt<LocalKeyStorage>().accessToken;
         if (token == null) return;
-        final supportUrl = Environment().config.apiHost.replaceAll('api', 'disputes');
+        final supportUrl =
+            Environment().config.apiHost.replaceAll('api', 'disputes');
         context.router.pushWidget(
           SupportWebViewWidget(
             supportUrl: supportUrl,
@@ -207,15 +244,13 @@ class _NotificationTileState extends State<NotificationTile> {
           ),
         );
 
-      default:
+      case NotificationDestinationKind.none:
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isStylist = context.select<AppCubit, bool>((AppCubit bloc) => bloc.state.isStylist);
-
     return ListTile(
       tileColor: Colors.white,
       onTap: _showNotificationDialog,

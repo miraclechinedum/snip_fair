@@ -3,6 +3,7 @@ import 'package:snip_fair/core/domain/entities/stylist_profile_details/user.dart
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/portfolio.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/statistics.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'stylist_profile_details.g.dart';
 
@@ -22,6 +23,7 @@ class StylistProfileDetails {
   });
   User? user;
   List<Portfolio>? portfolios;
+  @JsonKey(fromJson: nonNullStringList)
   List<String>? services;
   Statistics? statistics;
   List<dynamic>? certifications;

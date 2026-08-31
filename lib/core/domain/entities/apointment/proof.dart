@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'proof.g.dart';
 
@@ -18,7 +19,7 @@ class Proof {
 
   factory Proof.fromJson(Map<String, dynamic> json) => _$ProofFromJson(json);
   int? id;
-  @JsonKey(name: 'media_urls')
+  @JsonKey(name: 'media_urls', fromJson: nonNullStringList)
   List<String>? mediaUrls;
   String? comment;
   @JsonKey(name: 'appointment_id')

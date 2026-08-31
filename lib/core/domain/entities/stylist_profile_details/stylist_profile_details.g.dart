@@ -15,9 +15,7 @@ StylistProfileDetails _$StylistProfileDetailsFromJson(
       portfolios: (json['portfolios'] as List<dynamic>?)
           ?.map((e) => Portfolio.fromJson(e as Map<String, dynamic>))
           .toList(),
-      services: (json['services'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      services: nonNullStringList(json['services']),
       statistics: json['statistics'] == null
           ? null
           : Statistics.fromJson(json['statistics'] as Map<String, dynamic>),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +8,7 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request_status.dart';
@@ -58,6 +61,13 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
   Future<void> _respond(String action) async {
     if (_actionInProgress != null) return;
     setState(() => _actionInProgress = action);
+    if (action == 'pay') {
+      unawaited(
+        AnalyticsService.instance.logInitiateCheckout(
+          amount: _paymentRequest?.totalAmount ?? 0,
+        ),
+      );
+    }
     final updated = await context
         .read<ConversationsCubit>()
         .respondToPaymentRequest(widget.paymentRequestId, action);
@@ -71,6 +81,25 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<ConversationsCubit, ConversationsState>(
+      listenWhen: (prev, curr) =>
+          curr.lastUpdatedPaymentRequestId == widget.paymentRequestId &&
+          prev.lastUpdatedPaymentRequestId != curr.lastUpdatedPaymentRequestId,
+      listener: (context, cState) {
+        // Payment request status was refreshed by a `payment_request` push
+        // (e.g. 'pending' → 'paid'). Pick up the fresh cached value.
+        final refreshed = context
+            .read<ConversationsCubit>()
+            .getCachedPaymentRequest(widget.paymentRequestId);
+        if (refreshed != null && mounted) {
+          setState(() => _paymentRequest = refreshed);
+        }
+      },
+      child: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     if (_isLoading) {
       return _skeleton();
     }
@@ -83,14 +112,15 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
   Widget _card(BuildContext context, PaymentRequest pr) {
     final isStylist = context.read<AppCubit>().state.isStylist;
     final currencyFormat = NumberFormat.currency(symbol: 'R ', decimalDigits: 2);
+    final style = _CardStyle.forStatus(pr.status);
 
-    return Container(
+    final card = Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: style.cardBackground,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: AppColors.defaultBoxShadow,
-        border: Border.all(color: AppColors.grey200),
+        border: Border.all(color: style.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,35 +129,54 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: AppColors.primaryColor.withValues(alpha: 0.06),
+              color: style.headerBackground,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16.r),
                 topRight: Radius.circular(16.r),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.request_quote_outlined,
-                      color: AppColors.primaryColor,
-                      size: 20.sp,
+                Icon(
+                  style.headerIcon,
+                  color: style.headerForeground,
+                  size: 20.sp,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    style.headerTitle,
+                    style: AppTextStyle.subTitle2.copyWith(
+                      color: style.headerForeground,
+                      fontWeight: FontWeight.w600,
                     ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        'Payment Request',
-                        style: AppTextStyle.subTitle2.copyWith(
-                          color: AppColors.primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  ),
+                ),
+                // "ACTION REQUIRED" caption only shown to the customer for
+                // pending / accepted — the party who actually has to act.
+                if (style.showActionRequired && !isStylist) ...[
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 6.w,
+                      vertical: 2.h,
+                    ),
+                    margin: EdgeInsets.only(right: 6.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    child: Text(
+                      'ACTION REQUIRED',
+                      style: AppTextStyle.caption.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 9.sp,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    _StatusChip(status: pr.status),
-                  ],
-                ),
+                  ),
+                ],
+                _StatusChip(status: pr.status),
               ],
             ),
           ),
@@ -142,7 +191,7 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                   pr.title ?? '',
                   style: AppTextStyle.subTitle1.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.blackShade1,
+                    color: style.bodyText,
                   ),
                 ),
                 if (pr.bookingId != null) ...[
@@ -150,7 +199,7 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                   Text(
                     'Booking ID: ${pr.bookingId}',
                     style: AppTextStyle.caption.copyWith(
-                      color: AppColors.primaryColor,
+                      color: style.mutedText,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -159,14 +208,22 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                   SizedBox(height: 4.h),
                   Text(
                     pr.description!,
-                    style: AppTextStyle.body2.copyWith(color: AppColors.grey3),
+                    style: AppTextStyle.body2.copyWith(color: style.mutedText),
                   ),
                 ],
                 SizedBox(height: 12.h),
 
                 // Items list
                 if (pr.items != null && pr.items!.isNotEmpty) ...[
-                  ...pr.items!.map((item) => _ItemRow(item: item, currencyFormat: currencyFormat)),
+                  ...pr.items!.map(
+                    (item) => _ItemRow(
+                      item: item,
+                      currencyFormat: currencyFormat,
+                      textColor: style.mutedText,
+                      amountColor: style.bodyText,
+                      strikeThrough: style.strikeThroughTotal,
+                    ),
+                  ),
                   Divider(color: AppColors.grey1, height: 20.h),
                 ],
 
@@ -178,28 +235,39 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                       'Total',
                       style: AppTextStyle.subTitle1.copyWith(
                         fontWeight: FontWeight.w700,
+                        color: style.bodyText,
                       ),
                     ),
                     Text(
                       currencyFormat.format(pr.totalAmount ?? 0),
                       style: AppTextStyle.subTitle1.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primaryColor,
+                        color: style.totalColor,
+                        decoration: style.strikeThroughTotal
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
                   ],
                 ),
 
-                // Expiry
-                if (pr.expiresAt != null && pr.isPending) ...[
+                // Expiry — only meaningful while pending / accepted
+                if (pr.expiresAt != null && (pr.isPending || pr.isAccepted)) ...[
                   SizedBox(height: 6.h),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 14.sp, color: AppColors.grey2),
+                      Icon(
+                        Icons.access_time,
+                        size: 14.sp,
+                        color: AppColors.warningText,
+                      ),
                       SizedBox(width: 4.w),
                       Text(
                         'Expires ${DateFormat('d MMM y, HH:mm').format(pr.expiresAt!.toLocal())}',
-                        style: AppTextStyle.caption.copyWith(color: AppColors.grey2),
+                        style: AppTextStyle.caption.copyWith(
+                          color: AppColors.warningText,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -220,6 +288,31 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
           ),
         ],
       ),
+    );
+
+    if (!style.showAccentBar) return card;
+
+    // Left-edge accent bar for "live/action-required" states — signals at a
+    // glance that this card is not just decoration.
+    return Stack(
+      children: [
+        card,
+        Positioned(
+          left: 16.w,
+          top: 6.h,
+          bottom: 6.h,
+          child: Container(
+            width: 4.w,
+            decoration: BoxDecoration(
+              color: style.accentBar,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                bottomLeft: Radius.circular(16.r),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -293,12 +386,23 @@ class _StatusChip extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _ItemRow extends StatelessWidget {
-  const _ItemRow({required this.item, required this.currencyFormat});
+  const _ItemRow({
+    required this.item,
+    required this.currencyFormat,
+    required this.textColor,
+    required this.amountColor,
+    required this.strikeThrough,
+  });
   final PaymentRequestItem item;
   final NumberFormat currencyFormat;
+  final Color textColor;
+  final Color amountColor;
+  final bool strikeThrough;
 
   @override
   Widget build(BuildContext context) {
+    final decoration =
+        strikeThrough ? TextDecoration.lineThrough : TextDecoration.none;
     return Padding(
       padding: EdgeInsets.only(bottom: 6.h),
       child: Row(
@@ -306,14 +410,18 @@ class _ItemRow extends StatelessWidget {
           Expanded(
             child: Text(
               '${item.quantity ?? 1}× ${item.name ?? ''}',
-              style: AppTextStyle.body2.copyWith(color: AppColors.grey3),
+              style: AppTextStyle.body2.copyWith(
+                color: textColor,
+                decoration: decoration,
+              ),
             ),
           ),
           Text(
             currencyFormat.format(item.amount ?? 0),
             style: AppTextStyle.body2.copyWith(
-              color: AppColors.blackShade1,
+              color: amountColor,
               fontWeight: FontWeight.w500,
+              decoration: decoration,
             ),
           ),
         ],
@@ -406,4 +514,121 @@ class _ActionButtons extends StatelessWidget {
 
     return const SizedBox.shrink();
   }
+}
+
+// ---------------------------------------------------------------------------
+// Status-driven card styling
+// ---------------------------------------------------------------------------
+
+/// Bundle of visual tokens the card resolves from status once, so the build
+/// method stays declarative and the palette doesn't leak through the widget
+/// tree as inline hex.
+class _CardStyle {
+  const _CardStyle({
+    required this.cardBackground,
+    required this.cardBorder,
+    required this.headerBackground,
+    required this.headerForeground,
+    required this.headerIcon,
+    required this.headerTitle,
+    required this.bodyText,
+    required this.mutedText,
+    required this.totalColor,
+    required this.accentBar,
+    required this.showAccentBar,
+    required this.showActionRequired,
+    required this.strikeThroughTotal,
+  });
+
+  factory _CardStyle.forStatus(PaymentRequestStatus status) {
+    switch (status) {
+      case PaymentRequestStatus.pending:
+      case PaymentRequestStatus.accepted:
+        // Live / action-required: warm amber treatment on white so the card
+        // reads as "you have something to do here."
+        return const _CardStyle(
+          cardBackground: Colors.white,
+          cardBorder: AppColors.warningBorder,
+          headerBackground: AppColors.warningBg,
+          headerForeground: AppColors.warningText,
+          headerIcon: Icons.request_quote_outlined,
+          headerTitle: 'Payment Request',
+          bodyText: AppColors.blackShade1,
+          mutedText: AppColors.grey3,
+          totalColor: AppColors.warningText,
+          accentBar: AppColors.warning,
+          showAccentBar: true,
+          showActionRequired: true,
+          strikeThroughTotal: false,
+        );
+      case PaymentRequestStatus.paid:
+        // Complete / historical: muted background, green header + check icon.
+        return const _CardStyle(
+          cardBackground: AppColors.grey5,
+          cardBorder: AppColors.grey200,
+          headerBackground: AppColors.successBg,
+          headerForeground: AppColors.success,
+          headerIcon: Icons.check_circle_outline,
+          headerTitle: 'Paid',
+          bodyText: AppColors.grey3,
+          mutedText: AppColors.grey3,
+          totalColor: AppColors.grey3,
+          accentBar: AppColors.transparent,
+          showAccentBar: false,
+          showActionRequired: false,
+          strikeThroughTotal: false,
+        );
+      case PaymentRequestStatus.declined:
+      case PaymentRequestStatus.cancelled:
+        // Dead by user action: muted, red-tinted header, struck total.
+        return _CardStyle(
+          cardBackground: AppColors.grey5,
+          cardBorder: AppColors.grey200,
+          headerBackground: AppColors.dangerBg,
+          headerForeground: AppColors.dangerText,
+          headerIcon: Icons.cancel_outlined,
+          headerTitle: status == PaymentRequestStatus.declined
+              ? 'Declined'
+              : 'Cancelled',
+          bodyText: AppColors.grey3,
+          mutedText: AppColors.grey3,
+          totalColor: AppColors.grey3,
+          accentBar: AppColors.transparent,
+          showAccentBar: false,
+          showActionRequired: false,
+          strikeThroughTotal: true,
+        );
+      case PaymentRequestStatus.expired:
+        // Dead by timeout: fully greyed, timer icon.
+        return const _CardStyle(
+          cardBackground: AppColors.grey5,
+          cardBorder: AppColors.grey200,
+          headerBackground: AppColors.grey1,
+          headerForeground: AppColors.grey3,
+          headerIcon: Icons.timer_off_outlined,
+          headerTitle: 'Expired',
+          bodyText: AppColors.grey3,
+          mutedText: AppColors.grey3,
+          totalColor: AppColors.grey3,
+          accentBar: AppColors.transparent,
+          showAccentBar: false,
+          showActionRequired: false,
+          strikeThroughTotal: true,
+        );
+    }
+  }
+
+  final Color cardBackground;
+  final Color cardBorder;
+  final Color headerBackground;
+  final Color headerForeground;
+  final IconData headerIcon;
+  final String headerTitle;
+  final Color bodyText;
+  final Color mutedText;
+  final Color totalColor;
+  final Color accentBar;
+  final bool showAccentBar;
+  final bool showActionRequired;
+  final bool strikeThroughTotal;
 }

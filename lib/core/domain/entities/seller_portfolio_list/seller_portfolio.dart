@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/user.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/category.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'seller_portfolio.g.dart';
 
@@ -45,7 +46,7 @@ class SellerPortfolio {
   String? duration;
   String? description;
   String? tags;
-  @JsonKey(name: 'media_urls')
+  @JsonKey(name: 'media_urls', fromJson: nonNullStringList)
   List<String>? mediaUrls;
   @JsonKey(name: 'visits_count')
   dynamic visitsCount;
@@ -71,7 +72,7 @@ class SellerPortfolio {
   Category? category;
   User? user;
   dynamic distance;
-  @JsonKey(name: 'sample_images')
+  @JsonKey(name: 'sample_images', fromJson: nonNullStringList)
   List<String>? sampleImages;
 
   Map<String, dynamic> toJson() => _$SellerPortfolioToJson(this);
