@@ -1,6 +1,6 @@
 name: snip_fair
 description: Snipfair App
-version: 1.0.27+27
+version: 1.0.29+29
 publish_to: none
 
 environment:
