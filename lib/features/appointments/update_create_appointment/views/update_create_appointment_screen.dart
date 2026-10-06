@@ -70,6 +70,10 @@ class UpdateCreateAppointmentScreen extends StatefulWidget
 
 class _UpdateCreateAppointmentScreenState
     extends State<UpdateCreateAppointmentScreen> with WidgetsBindingObserver {
+  /// Set once this screen has left for the Appointments tab, so repeated
+  /// reconciliation emissions or an app resume can never navigate twice.
+  bool _leftForAppointments = false;
+
   @override
   void initState() {
     super.initState();
@@ -118,6 +122,25 @@ class _UpdateCreateAppointmentScreenState
         await cubit.onCardCheckoutClosed();
       }
     }
+  }
+
+  /// Leaves the booking form once a card payment is verified or still being
+  /// confirmed, so an already-paid booking is never left on screen to be
+  /// submitted again. Pops back to [MainRoute] — removing this route from the
+  /// stack — and selects the customer Appointments tab.
+  void _leaveForAppointments() {
+    if (_leftForAppointments || !mounted) return;
+    final root = context.router.root;
+    if (!root.stackData.any((route) => route.name == MainRoute.name)) {
+      peachLog('Staying on booking screen: main route not in stack');
+      return;
+    }
+    _leftForAppointments = true;
+    peachLog('Leaving booking screen for Appointments tab');
+    root.popUntilRouteWithName(MainRoute.name);
+    root
+        .innerRouterOf<TabsRouter>(MainRoute.name)
+        ?.navigate(const AppointementsMainRoute());
   }
 
   @override
@@ -199,12 +222,17 @@ class _UpdateCreateAppointmentScreenState
                             context.read<CustomerProfileMgtCubit>()
                               ..getWallet()
                               ..getWalletTransactions();
+                            _leaveForAppointments();
                             break;
                           case CardPaymentPhase.pending:
                             AppHelper.showSnackBar(
                               context,
                               message: 'Your payment is still being confirmed.',
                             );
+                            context
+                                .read<CustomerAppointmentsCubit>()
+                                .getAppointments();
+                            _leaveForAppointments();
                             break;
                           case CardPaymentPhase.cancelled:
                             AppHelper.showSnackBar(context,
@@ -218,7 +246,7 @@ class _UpdateCreateAppointmentScreenState
                             AppHelper.showSnackBar(
                               context,
                               message:
-                                  'We could not confirm your payment yet. Please try again shortly.',
+                                  'Your payment status is not available yet. Please check again shortly.',
                             );
                             break;
                           default:
@@ -971,8 +999,15 @@ class BookingSummary extends StatelessWidget {
                       isLoading:
                           state.updateOrCreateAppointmentState.isLoading ||
                               state.isCardPaymentBusy,
+                      // An unverified card attempt must be resolved through
+                      // "Check Payment Status", never by charging the card
+                      // again.
                       onPressed: state.canBookAppointment &&
-                              !state.isCardPaymentBusy
+                              !state.isCardPaymentBusy &&
+                              !(state.paymentMethod == 'card' &&
+                                  state.cardPaymentPhase ==
+                                      CardPaymentPhase.unknown &&
+                                  state.activeCardCheckout?.depositId != null)
                           ? () async {
                               final profileCubit =
                                   context.read<CustomerProfileMgtCubit>();

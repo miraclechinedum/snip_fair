@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 // ignore: unused_import
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
@@ -208,10 +209,12 @@ class AppointmentCard extends StatelessWidget {
                 color: AppColors.grey3,
               ),
               4.horizontalSpace,
-              AppText(
-                text: appointment.appointmentDate ?? '',
-                fontSize: 12,
-                color: AppColors.grey3,
+              Expanded(
+                child: AppText(
+                  text: _formatAppointmentDate(appointment.appointmentDate),
+                  fontSize: 12,
+                  color: AppColors.grey3,
+                ),
               ),
             ],
           ),
@@ -224,7 +227,7 @@ class AppointmentCard extends StatelessWidget {
               ),
               4.horizontalSpace,
               AppText(
-                text: appointment.appointmentTime ?? '',
+                text: _formatAppointmentTime(appointment.appointmentTime),
                 fontSize: 12,
                 color: AppColors.grey3,
               ),
@@ -273,4 +276,62 @@ class AppointmentCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Formats an appointment date such as `2026-10-13` as
+/// `13 Oct 2026 (in 8 days)`. The bracketed part describes the appointment's
+/// calendar date relative to today, not when it was booked. Falls back to the
+/// raw value when it cannot be parsed.
+String _formatAppointmentDate(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  final parsed = DateTime.tryParse(raw);
+  if (parsed == null) return raw;
+  final date = DateTime(parsed.year, parsed.month, parsed.day);
+  final formatted = DateFormat('d MMM yyyy').format(date);
+  return '$formatted (${_relativeAppointmentDay(date)})';
+}
+
+/// Calendar-day distance from today: Today / Tomorrow / Yesterday, then
+/// days, weeks, whole calendar months, and years.
+String _relativeAppointmentDay(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  // UTC dates so a daylight-saving shift can't skew the day count.
+  final days = DateTime.utc(date.year, date.month, date.day)
+      .difference(DateTime.utc(today.year, today.month, today.day))
+      .inDays;
+  if (days == 0) return 'Today';
+  if (days == 1) return 'Tomorrow';
+  if (days == -1) return 'Yesterday';
+
+  final isFuture = days > 0;
+  final earlier = isFuture ? today : date;
+  final later = isFuture ? date : today;
+  var months = (later.year - earlier.year) * 12 + (later.month - earlier.month);
+  if (later.day < earlier.day) months--;
+
+  final String span;
+  if (days.abs() < 14) {
+    span = _plural(days.abs(), 'day');
+  } else if (months < 1) {
+    span = _plural(days.abs() ~/ 7, 'week');
+  } else if (months < 12) {
+    span = _plural(months, 'month');
+  } else {
+    span = _plural(months ~/ 12, 'year');
+  }
+  return isFuture ? 'in $span' : '$span ago';
+}
+
+String _plural(int count, String unit) =>
+    '$count ${count == 1 ? unit : '${unit}s'}';
+
+/// Drops the seconds from a 24-hour time such as `14:51:00` -> `14:51`.
+/// Falls back to the raw value when it is not in that shape.
+String _formatAppointmentTime(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  final match =
+      RegExp(r'^(\d{1,2}):(\d{2})(:\d{2}(\.\d+)?)?$').firstMatch(raw.trim());
+  if (match == null) return raw;
+  return '${match.group(1)!.padLeft(2, '0')}:${match.group(2)}';
 }

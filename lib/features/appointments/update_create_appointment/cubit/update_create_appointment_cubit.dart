@@ -52,6 +52,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     final response = await _appointmentRepository.customerFetchPortfolioById(
       id: portfolioId,
     );
+    if (isClosed) return;
     response.when(
       success: (data) {
         emit(state.copyWith(fetchPortfolioState: ProcessState.success(data)));
@@ -78,6 +79,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     }
     final response =
         await _appointmentRepository.getCustomerAppointmentById(appointmentId);
+    if (isClosed) return;
     response.when(
       success: (data) {
         emit(
@@ -125,6 +127,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     }
     final response =
         await _appointmentRepository.customerFetchStylistById(stylistId);
+    if (isClosed) return;
     response.when(
       success: (data) {
         emit(
@@ -375,6 +378,10 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
       peachLog('Reconcile request ${i + 1}/$attempts starting');
       final result = await _appointmentRepository
           .reconcilePeachPayment(checkout.depositId!);
+      if (isClosed) {
+        peachLog('Reconciliation stopped: booking screen already disposed');
+        return;
+      }
       var isSuccessful = false;
       var terminal = false;
       result.when(
@@ -393,12 +400,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
             'Reconcile request failed for deposit=${checkout.depositId}',
           );
           if (error is RemoteException && error.statusCode == 503) {
-            emit(state.copyWith(
-              cardPaymentPhase: CardPaymentPhase.unknown,
-              cardVerificationState: const ProcessState.error(
-                'We could not confirm your payment yet. Please try again shortly.',
-              ),
-            ));
+            peachLog('Payment verification temporarily unavailable');
           }
         },
       );
@@ -432,13 +434,14 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
           cardVerificationState: ProcessState.success(lastSeen!),
         ),
       );
-    } else if (state.cardPaymentPhase != CardPaymentPhase.unknown) {
-      peachLog('Appointment payment unconfirmed: result=unknown');
+    } else {
+      peachLog('Appointment payment status unavailable: result=unknown');
       emit(
         state.copyWith(
           cardPaymentPhase: CardPaymentPhase.unknown,
           cardVerificationState: const ProcessState.error(
-            'We could not confirm your payment yet. Please try again shortly.',
+            'Your payment status is not available yet. '
+            'Please check again shortly.',
           ),
         ),
       );
