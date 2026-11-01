@@ -149,7 +149,9 @@ class SellerWorkFormWidget extends StatelessWidget {
                                   (AppHelper.appSettings(context).minBookingAmount ?? 0) ||
                               cubit.state.price >
                                   (AppHelper.appSettings(context).maxBookingAmount ?? 0)
-                          ? 'Price must fall within ${AppHelper.appSettings(context).minBookingAmount} - ${AppHelper.appSettings(context).maxBookingAmount}'
+                          ? 'Price must fall within '
+                              '${(AppHelper.appSettings(context).minBookingAmount ?? 0).formatAmount()} - '
+                              '${(AppHelper.appSettings(context).maxBookingAmount ?? 0).formatAmount()}'
                           : null,
                     ),
                     12.verticalSpace,

@@ -15,6 +15,9 @@ import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/domain/params/register_params.dart';
 import 'package:snip_fair/core/data/models/remote/login_response.dart';
 import 'package:snip_fair/core/data/repositories/authentication_repository.dart';
+import 'package:snip_fair/core/data/models/server_error.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:flutter/foundation.dart';
 
 part 'signup_state.dart';
 
@@ -75,25 +78,39 @@ class SignupCubit extends BaseCubit<SignupState> {
     emit(state.copyWith(acceptTerms: value));
   }
 
+  /// The registration request (customer or stylist). The email is trimmed
+  /// and lowercased, matching the backend's normalisation; everything else
+  /// is sent as entered.
+  @visibleForTesting
+  static RegisterParams registerParams(
+    SignupState state, {
+    required String deviceName,
+  }) =>
+      RegisterParams(
+        phone: state.phone.value,
+        firstName: state.firstName.value,
+        lastName: state.lastName.value,
+        passwordConfirmation: state.password.value,
+        email: EmailInput.normalize(state.email.value),
+        password: state.password.value,
+        gender: state.gender.value,
+        deviceName: deviceName,
+      );
+
   Future<void> signUpAsCustomer() async {
     final deviceInfo = await AppHelper.getDeviceInfo();
     await launchApiCall(
       () => _repository.registerCustomer(
-        RegisterParams(
-          phone: state.phone.value,
-          firstName: state.firstName.value,
-          lastName: state.lastName.value,
-          passwordConfirmation: state.password.value,
-          email: state.email.value,
-          password: state.password.value,
-          gender: state.gender.value,
+        registerParams(
+          state,
           deviceName: Platform.isAndroid
               ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
               : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
         ),
       ),
       doOnLoading: () => emit(state.copyWith(signUpResult: const ProcessState.loading())),
-      doOnError: (p0) => emit(state.copyWith(signUpResult: ProcessState.error(p0))),
+      showError: false,
+      doOnError: _emitSignUpError,
       doOnSuccess: (p0) {
         emit(state.copyWith(signUpResult: ProcessState.success(p0)));
         unawaited(AnalyticsService.instance.logSignUp(method: 'email'));
@@ -105,25 +122,63 @@ class SignupCubit extends BaseCubit<SignupState> {
     final deviceInfo = await AppHelper.getDeviceInfo();
     await launchApiCall(
       () => _repository.registerStylist(
-        RegisterParams(
-          phone: state.phone.value,
-          firstName: state.firstName.value,
-          lastName: state.lastName.value,
-          passwordConfirmation: state.password.value,
-          email: state.email.value,
-          password: state.password.value,
-          gender: state.gender.value,
+        registerParams(
+          state,
           deviceName: Platform.isAndroid
               ? AndroidDeviceInfo.fromMap(deviceInfo.data).manufacturer
               : IosDeviceInfo.fromMap(deviceInfo.data).modelName,
         ),
       ),
       doOnLoading: () => emit(state.copyWith(signUpResult: const ProcessState.loading())),
-      doOnError: (p0) => emit(state.copyWith(signUpResult: ProcessState.error(p0))),
+      showError: false,
+      doOnError: _emitSignUpError,
       doOnSuccess: (p0) {
         emit(state.copyWith(signUpResult: ProcessState.success(p0)));
         unawaited(AnalyticsService.instance.logSignUp(method: 'email'));
       },
+    );
+  }
+
+  /// Shows the sign-up failure through the page's usual error dialog, with a
+  /// friendlier message when the email is already registered.
+  void _emitSignUpError(Object error) {
+    final shown = friendlySignUpError(error);
+    emit(
+      state.copyWith(
+        signUpResult: ProcessState.error(shown),
+        exception: shown is Exception ? shown : null,
+      ),
+    );
+  }
+
+  static const duplicateEmailMessage =
+      'An account with this email address already exists. '
+      'Log in instead, or sign up with a different email address.';
+
+  /// Laravel rejects an already-registered email (compared case-insensitively)
+  /// with HTTP 422 and `errors.email` "…has already been taken." That becomes
+  /// [duplicateEmailMessage]; any other error is returned unchanged.
+  @visibleForTesting
+  static Object friendlySignUpError(Object error) {
+    if (error is! RemoteException || error.statusCode != 422) return error;
+    final emailErrors = error.errorResponse?.errors['email'];
+    final messages = emailErrors is List
+        ? emailErrors.whereType<String>()
+        : emailErrors is String
+            ? [emailErrors]
+            : const <String>[];
+    final isDuplicate = messages.any(
+      (m) => m.toLowerCase().contains('already been taken'),
+    );
+    if (!isDuplicate) return error;
+    return RemoteException.serverError(
+      error.statusCode,
+      ServerError(
+        message: duplicateEmailMessage,
+        errors: error.errorResponse?.errors ?? const {},
+      ),
+      code: error.code,
+      responseBody: error.responseBody,
     );
   }
 

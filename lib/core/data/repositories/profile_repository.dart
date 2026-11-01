@@ -16,6 +16,7 @@ import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dar
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request_pay_result.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
@@ -68,8 +69,8 @@ abstract class ProfileRepository {
 
   Future<ApiResult<SimpleResponse>> updateStylistProfile({
     required String businessName,
-    required List<Social> socials,
-    required List<String> medias,
+    List<Social>? socials,
+    List<String>? medias,
     String? firstName,
     String? lastName,
     String? phone,
@@ -268,6 +269,8 @@ abstract class ProfileRepository {
 
   Future<ApiResult<PaymentRequest>> getPaymentRequest(int id);
 
+  Future<ApiResult<PaymentRequestPayResult>> payPaymentRequest(int id);
+
   Future<ApiResult<PaymentRequest>> respondToPaymentRequest(
     int id,
     String action,
@@ -419,8 +422,8 @@ class ProfileRepoImpl implements ProfileRepository {
   @override
   Future<ApiResult<SimpleResponse>> updateStylistProfile({
     required String businessName,
-    required List<Social> socials,
-    required List<String> medias,
+    List<Social>? socials,
+    List<String>? medias,
     String? firstName,
     String? lastName,
     String? phone,
@@ -738,6 +741,10 @@ class ProfileRepoImpl implements ProfileRepository {
   @override
   Future<ApiResult<PaymentRequest>> getPaymentRequest(int id) =>
       _remoteSource.getPaymentRequest(id);
+
+  @override
+  Future<ApiResult<PaymentRequestPayResult>> payPaymentRequest(int id) =>
+      _remoteSource.payPaymentRequest(id);
 
   @override
   Future<ApiResult<PaymentRequest>> respondToPaymentRequest(

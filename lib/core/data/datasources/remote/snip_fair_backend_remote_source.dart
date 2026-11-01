@@ -35,6 +35,8 @@ import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dar
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request_pay_result.dart';
+import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
@@ -88,7 +90,7 @@ class AuthPath {
   static const withdrawFunds = '/wallet/withdraw';
 
   //Payment
-  static const customerPaymentTopUp = '/customer/payment/topup';
+  static const customerPaymentTopUp = '/payment/topup';
   static const peachPaymentStatus = '/customer/payment/peach';
 
   //Profile
@@ -478,8 +480,8 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   @override
   Future<ApiResult<SimpleResponse>> updateStylistProfile({
     required String businessName,
-    required List<Social> socials,
-    required List<String> medias,
+    List<Social>? socials,
+    List<String>? medias,
     String? firstName,
     String? lastName,
     String? phone,
@@ -499,14 +501,19 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (yearsOfExperience != null) 'years_of_experience': yearsOfExperience,
         if (bio != null) 'bio': bio,
         if (gender != null) 'gender': gender,
-        'socials': jsonEncode(socials.map((e) => e.toJson()).toList()),
-        for (int i = 0; i < medias.length; i++)
-          'media[$i]': medias[i].isLocalFilePath
-              ? await MultipartFile.fromFile(
-                  medias[i],
-                  filename: medias[i].split('/').last,
-                )
-              : medias[i].completeImagePath(),
+        // Laravel: an omitted `socials` keeps the stylist's links and an
+        // empty list removes them all; an omitted `media` keeps the existing
+        // work images. Null therefore means "leave unchanged".
+        if (socials != null)
+          'socials': jsonEncode(socials.map((e) => e.toJson()).toList()),
+        if (medias != null && medias.isNotEmpty)
+          for (int i = 0; i < medias.length; i++)
+            'media[$i]': medias[i].isLocalFilePath
+                ? await MultipartFile.fromFile(
+                    medias[i],
+                    filename: medias[i].split('/').last,
+                  )
+                : medias[i].completeImagePath(),
       });
       await client.post<Map<String, dynamic>>(
         AuthPath.stylistProfile,
@@ -1059,6 +1066,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
+      peachLog('POST ${AuthPath.customerPaymentTopUp} amount=$amount');
       final response = await client.post<Map<String, dynamic>>(
         AuthPath.customerPaymentTopUp,
         data: {
@@ -1066,9 +1074,15 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
           'amount': amount,
         },
       );
-      return ApiResult.success(
-        data: CheckoutPaymentData.fromJson(response.data!),
+      final checkout = CheckoutPaymentData.fromJson(response.data!);
+      // Shape only: never the redirect URL or checkout id.
+      peachLog(
+        'POST ${AuthPath.customerPaymentTopUp} -> HTTP ${response.statusCode} '
+        'deposit=${checkout.depositId ?? 'none'} '
+        'initialized=${checkout.isInitialized} '
+        'hasRedirect=${checkout.redirectUrl?.isNotEmpty ?? false}',
       );
+      return ApiResult.success(data: checkout);
     });
   }
 
@@ -1078,12 +1092,18 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   ) {
     return run(() async {
       final client = getIt<HttpService>().client();
+      peachLog('GET ${AuthPath.peachPaymentStatus}/$depositId/status');
       final response = await client.get<Map<String, dynamic>>(
         '${AuthPath.peachPaymentStatus}/$depositId/status',
       );
-      return ApiResult.success(
-        data: PaymentReconciliation.fromJson(response.data!),
+      final payment = PaymentReconciliation.fromJson(response.data!);
+      peachLog(
+        'GET ${AuthPath.peachPaymentStatus}/$depositId/status -> '
+        'HTTP ${response.statusCode} status=${payment.status ?? 'none'} '
+        'settled=${payment.settled} purpose=${payment.purpose ?? 'none'} '
+        'message="${payment.message ?? ''}"',
       );
+      return ApiResult.success(data: payment);
     });
   }
 
@@ -1735,6 +1755,22 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         data: PaymentRequest.fromJson(
           response.data!['data'] as Map<String, dynamic>,
         ),
+      );
+    });
+  }
+
+  /// `POST /payment-requests/{id}/pay` with no body — the backend's wallet
+  /// payment. Card payments top up the wallet first; this endpoint is never
+  /// called with `payment_method: card`.
+  @override
+  Future<ApiResult<PaymentRequestPayResult>> payPaymentRequest(int id) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.paymentRequests}/$id/pay',
+      );
+      return ApiResult.success(
+        data: PaymentRequestPayResult.fromJson(response.data!),
       );
     });
   }

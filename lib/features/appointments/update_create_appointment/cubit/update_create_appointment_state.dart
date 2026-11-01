@@ -70,6 +70,14 @@ class UpdateCreateAppointmentState extends Equatable {
   final ProcessState<PaymentReconciliation> cardVerificationState;
 
   CheckoutPaymentData? get activeCardCheckout => cardCheckoutState.data;
+  /// A card checkout whose outcome is not known yet. A new card checkout
+  /// must not start until it is checked, or the customer could be charged
+  /// twice.
+  bool get hasUnresolvedCardPayment =>
+      activeCardCheckout?.depositId != null &&
+      (cardPaymentPhase == CardPaymentPhase.pending ||
+          cardPaymentPhase == CardPaymentPhase.unknown);
+
   bool get isCardPaymentBusy =>
       cardPaymentPhase == CardPaymentPhase.initializing ||
       cardPaymentPhase == CardPaymentPhase.checkoutOpen ||

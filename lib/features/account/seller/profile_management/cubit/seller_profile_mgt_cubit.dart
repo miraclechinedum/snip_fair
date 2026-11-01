@@ -8,6 +8,7 @@ import 'package:injectable/injectable.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
+import 'package:snip_fair/core/domain/entities/stylist_account/stylist_account_status.dart';
 import 'package:snip_fair/core/domain/entities/stylist_stats/stylist_stats.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
@@ -42,6 +43,7 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
   }
 
   Future<void> getProfileDetails([bool silent = false]) async {
+    final previous = state.profileDetails;
     if (!silent) {
       emit(state.copyWith(profileDetails: const ProcessState.loading()));
     }
@@ -49,15 +51,70 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
     await result.when(
       success: (profile) async {
         emit(
-          state.copyWith(profileDetails: ProcessState.success(profile)),
+          state.copyWith(
+            profileDetails: ProcessState.success(profile),
+            // Keep the last known verdict if this response lacks one.
+            stylistAccount: profile.stylistAccount,
+          ),
         );
       },
       failure: (error) {
+        if (error.code == 'VERIFY_EMAIL') {
+          // An unverified-email stylist cannot read this endpoint yet. That
+          // is an expected step, not an error: keep whatever was loaded and
+          // the account status received when signing in.
+          emit(state.copyWith(profileDetails: previous));
+          return;
+        }
         if (!silent) {
           emit(state.copyWith(profileDetails: ProcessState.error(error)));
         }
       },
     );
+  }
+
+  /// Submits a complete profile for admin approval.
+  ///
+  /// Laravel has no separate submit endpoint: every profile-changing call
+  /// re-checks the requirements and, when all are complete and the status is
+  /// `unverified` or `rejected`, sets it to `pending` and notifies the
+  /// admins. This sends that call with nothing changed — the stored business
+  /// name, no socials, no media — then re-reads the backend's verdict.
+  Future<void> submitForApproval() async {
+    if (state.submitForApprovalState.isLoading) return;
+    emit(
+      state.copyWith(submitForApprovalState: const ProcessState.loading()),
+    );
+    final businessName =
+        state.profileDetails.data?.user?.stylistProfile?.businessName ?? '';
+    final result = await _profileRepository.updateStylistProfile(
+      // Empty is ignored by the backend (`?: existing`), never cleared.
+      businessName: businessName,
+    );
+    await result.when(
+      success: (_) async {
+        await getProfileDetails(true);
+        final pending =
+            state.stylistAccount?.state == StylistAccountState.pendingApproval;
+        emit(
+          state.copyWith(
+            submitForApprovalState: ProcessState.success(pending),
+          ),
+        );
+      },
+      failure: (error) async {
+        emit(
+          state.copyWith(submitForApprovalState: ProcessState.error(error)),
+        );
+      },
+    );
+  }
+
+  /// Seeds the activation status from a login/registration response, before
+  /// `GET /stylist/profile` is reachable (e.g. the email is unverified).
+  void seedStylistAccount(StylistAccountStatus? account) {
+    if (account == null) return;
+    emit(state.copyWith(stylistAccount: account));
   }
 
   Future<void> getStats() async {

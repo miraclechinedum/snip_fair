@@ -16,6 +16,7 @@ import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/domain/entities/stylist_stats/last12_month.dart';
 import 'package:snip_fair/features/account/seller/shared/profile_completeness_compact_view.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
+import 'package:snip_fair/features/dashboard/widgets/stylist_account_status_banner.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
 // ignore_for_file: unawaited_futures
 
@@ -38,6 +39,9 @@ class SellerDashboardMainScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                // Backend activation status (stylist_account) — shown until
+                // the backend reports the account active.
+                const StylistAccountStatusBanner(),
                 BlocBuilder<SellerProfileMgtCubit, SellerProfileMgtState>(
                   builder: (context, state) {
                     final profileCompleteness = state.profileDetails.data?.profileCompleteness;

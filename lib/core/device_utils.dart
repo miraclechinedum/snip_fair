@@ -12,7 +12,11 @@ class DeviceUtils {
     final deviceInfo = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       final androidInfo = await deviceInfo.androidInfo;
-      return androidInfo.id ?? androidInfo.androidId ?? 'unknown';
+      // `androidId` was dropped from device_info_plus (always null since
+      // 4.0.0, removed later), so this has always resolved to `id`
+      // (android.os.Build.ID). A per-device Android ID would need the
+      // separate `android_id` package.
+      return androidInfo.id;
     } else if (Platform.isIOS) {
       final iosInfo = await deviceInfo.iosInfo;
       return iosInfo.identifierForVendor ?? 'unknown';

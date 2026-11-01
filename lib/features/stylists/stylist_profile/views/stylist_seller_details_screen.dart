@@ -10,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snip_fair/core/presentation/theme/theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
+import 'package:snip_fair/core/presentation/widgets/social_links_view.dart';
+import 'package:snip_fair/core/utils/social_links.dart';
 import 'package:snip_fair/features/explore/widgets/popular_styles_card.dart';
 import 'package:snip_fair/features/explore/widgets/default_stylist_card.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
@@ -465,6 +467,27 @@ class AboutView extends StatelessWidget {
                         text: state.sellerDetails.data?.bio ?? 'No about available',
                         fontSize: 14,
                         color: AppColors.blackShade1,
+                      ),
+                      // Social profiles from `user.stylist_profile.socials`;
+                      // nothing is shown when there are no valid links.
+                      Builder(
+                        builder: (context) {
+                          final links = SocialLinks.displayable(
+                            (state.sellerDetails.data?.stylistProfile?.socials ??
+                                    const [])
+                                .map(
+                              (s) => (platform: s.socialApp, url: s.url),
+                            ),
+                          );
+                          if (links.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: SocialLinksView(
+                              title: 'Social media',
+                              links: links,
+                            ),
+                          );
+                        },
                       ),
                       12.verticalSpace,
                       const AppText(

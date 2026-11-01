@@ -16,7 +16,7 @@ class CheckoutPaymentData {
     return CheckoutPaymentData(
       appointmentId: _asString(json['appointment_id']),
       bookingStatus: _asString(json['status']),
-      isInitialized: payment['status'] as bool?,
+      isInitialized: _asBool(payment['status']),
       processor: _asString(payment['processor']),
       depositId: _asString(payment['deposit_id']),
       checkoutId: _asString(payment['checkoutId']),
@@ -40,3 +40,11 @@ class CheckoutPaymentData {
 }
 
 String? _asString(Object? value) => value?.toString();
+
+/// `status` is a bool on success but the string `"false"` on some failures.
+bool? _asBool(Object? value) {
+  if (value is bool) return value;
+  if (value == 'true' || value == 1 || value == '1') return true;
+  if (value == 'false' || value == 0 || value == '0') return false;
+  return null;
+}

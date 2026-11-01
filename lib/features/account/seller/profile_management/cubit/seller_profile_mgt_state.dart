@@ -11,6 +11,8 @@ class SellerProfileMgtState extends Equatable {
     required this.updateLocationSettingsState,
     required this.updateAvailabilityState,
     required this.deleteAccountState,
+    this.stylistAccount,
+    this.submitForApprovalState = const ProcessState.init(null),
   });
 
   const SellerProfileMgtState.initial()
@@ -22,7 +24,9 @@ class SellerProfileMgtState extends Equatable {
         updateLocationSettingsState = const ProcessState.init(null),
         updateAvailabilityState = const ProcessState.init(null),
         deleteAccountState = const ProcessState.init(null),
-        stylistEarnings = const ProcessState.init(null);
+        stylistEarnings = const ProcessState.init(null),
+        stylistAccount = null,
+        submitForApprovalState = const ProcessState.init(null);
 
   final ProcessState<StylistProfileDetails> profileDetails;
   final ProcessState<bool> updateProfileState;
@@ -34,6 +38,15 @@ class SellerProfileMgtState extends Equatable {
   final ProcessState<bool> updateAvailabilityState;
   final ProcessState<bool> deleteAccountState;
 
+  /// The backend's activation verdict: from login/registration first, then
+  /// from every successful `GET /stylist/profile`. A failed refresh never
+  /// replaces it, so a network error cannot flip a stylist active/inactive.
+  final StylistAccountStatus? stylistAccount;
+
+  /// Outcome of "Submit for approval": success data is whether the backend
+  /// now reports the account as pending approval.
+  final ProcessState<bool> submitForApprovalState;
+
   SellerProfileMgtState copyWith({
     ProcessState<StylistProfileDetails>? profileDetails,
     ProcessState<bool>? updateProfileState,
@@ -44,6 +57,8 @@ class SellerProfileMgtState extends Equatable {
     ProcessState<bool>? updateLocationSettingsState,
     ProcessState<bool>? updateAvailabilityState,
     ProcessState<bool>? deleteAccountState,
+    StylistAccountStatus? stylistAccount,
+    ProcessState<bool>? submitForApprovalState,
   }) {
     return SellerProfileMgtState._(
       profileDetails: profileDetails ?? this.profileDetails,
@@ -57,11 +72,14 @@ class SellerProfileMgtState extends Equatable {
       updateAvailabilityState:
           updateAvailabilityState ?? this.updateAvailabilityState,
       deleteAccountState: deleteAccountState ?? this.deleteAccountState,
+      stylistAccount: stylistAccount ?? this.stylistAccount,
+      submitForApprovalState:
+          submitForApprovalState ?? this.submitForApprovalState,
     );
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         profileDetails,
         updateProfileState,
         stylistEarnings,
@@ -71,5 +89,7 @@ class SellerProfileMgtState extends Equatable {
         updateLocationSettingsState,
         updateAvailabilityState,
         deleteAccountState,
+        stylistAccount,
+        submitForApprovalState,
       ];
 }

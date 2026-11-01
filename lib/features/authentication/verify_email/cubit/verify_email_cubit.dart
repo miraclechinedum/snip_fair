@@ -39,7 +39,9 @@ class VerifyEmailCubit extends BaseCubit<VerifyEmailState> {
       msg: 'Resending verification email...',
     );
 
-    final response = await _repository.resendVerificationEmail(email);
+    final response = await _repository.resendVerificationEmail(
+      EmailInput.normalize(email),
+    );
     response.when(
       success: (data) {
         Fluttertoast.showToast(

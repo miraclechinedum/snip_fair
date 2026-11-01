@@ -15,6 +15,7 @@ import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
 import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/account/seller/payment_methods/cubit/seller_payment_methods_cubit.dart';
+import 'package:snip_fair/features/account/seller/payment_methods/views/bank_picker_sheet.dart';
 // ignore_for_file: use_build_context_synchronously
 
 
@@ -29,11 +30,16 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
       context: context,
       modal: BlocProvider.value(
         value: context.read<SellerPaymentMethodsCubit>()..edit(paymentMethod),
-        child: SellerPaymentMethodFormWidget(
-          paymentMethod: paymentMethod,
+        child: BankDetailsExitGuard(
+          child: SellerPaymentMethodFormWidget(
+            paymentMethod: paymentMethod,
+          ),
         ),
       ),
       isDarkMode: false,
+      // Drag-to-dismiss bypasses the unsaved-changes guard, so leaving is
+      // done with the back arrow, a tap outside or device back (all guarded).
+      isDrag: false,
     )..whenComplete(() {
         context.read<SellerPaymentMethodsCubit>().resetForm();
       });
@@ -55,12 +61,32 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      text: paymentMethod != null
-                          ? 'Update Payment Method'
-                          : 'Add Payment Method',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        // Leaves the form like device back: the exit guard
+                        // asks before discarding typed details.
+                        IconButton(
+                          key: const Key('bank_details_back'),
+                          tooltip: 'Back',
+                          padding: EdgeInsets.zero,
+                          alignment: Alignment.centerLeft,
+                          constraints: const BoxConstraints(
+                            minWidth: 48,
+                            minHeight: 48,
+                          ),
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => Navigator.of(context).maybePop(),
+                        ),
+                        Expanded(
+                          child: AppText(
+                            text: paymentMethod != null
+                                ? 'Update Payment Method'
+                                : 'Add Payment Method',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                     const AppText(
                       text: 'Work details',
@@ -107,29 +133,34 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
                         final editBank = banks
                             .where((e) => e.name == paymentMethod?.bankName)
                             .firstOrNull;
-                        return DropdownButtonFormField<Bank>(
-                          initialValue: state.selectedBank ?? editBank,
-                          isExpanded: true,
-                          items: List.generate(banks.length, (index) {
-                            return DropdownMenuItem<Bank>(
-                              value: banks[index],
-                              child: AppText(
-                                text: banks[index].name ?? '',
-                                fontSize: 16,
-                              ),
+                        final current = state.selectedBank ?? editBank;
+                        // Opens the searchable picker; dismissing it keeps
+                        // the current bank.
+                        return InkWell(
+                          key: const Key('bank_name_field'),
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () async {
+                            final picked = await BankPickerSheet.show(
+                              context,
+                              banks: banks,
+                              selected: current,
                             );
-                          }),
-                          onChanged: (value) {
-                            if (value != null) {
-                              cubit.onSelectBank(value);
-                            }
+                            if (picked != null) cubit.onSelectBank(picked);
                           },
-                          style: AppTextStyle.body1.copyWith(
-                            color: AppColors.grey900,
-                            fontWeight: FontWeight.w400,
+                          child: InputDecorator(
+                            isEmpty: current == null,
+                            decoration: AppColors.inputDecoration.copyWith(
+                              hintText: 'Select option',
+                              suffixIcon:
+                                  const Icon(Icons.keyboard_arrow_down),
+                            ),
+                            child: current == null
+                                ? null
+                                : AppText(
+                                    text: current.name ?? '',
+                                    fontSize: 16,
+                                  ),
                           ),
-                          decoration: AppColors.inputDecoration
-                              .copyWith(hintText: 'Select option'),
                         );
                       },
                     ),
@@ -246,6 +277,73 @@ class SellerPaymentMethodFormWidget extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Lets the stylist leave the bank details form with the back arrow, a tap
+/// outside or device back — asking first when typed details would be lost.
+/// Leaving never submits anything; a successful save closes the form
+/// directly and is not affected.
+class BankDetailsExitGuard extends StatefulWidget {
+  const BankDetailsExitGuard({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  State<BankDetailsExitGuard> createState() => _BankDetailsExitGuardState();
+}
+
+class _BankDetailsExitGuardState extends State<BankDetailsExitGuard> {
+  /// The form as it was when opened (new, or the method being edited).
+  late final ({String accountName, String accountNumber, Bank? bank}) _initial;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = context.read<SellerPaymentMethodsCubit>().state;
+    _initial = (
+      accountName: state.accountName.value,
+      accountNumber: state.accountNumber.value,
+      bank: state.selectedBank,
+    );
+  }
+
+  bool _hasUnsavedChanges(SellerPaymentMethodsState state) =>
+      state.accountName.value.trim() != _initial.accountName.trim() ||
+      state.accountNumber.value.trim() != _initial.accountNumber.trim() ||
+      state.selectedBank != _initial.bank;
+
+  Future<void> _confirmDiscard(BuildContext context) async {
+    final discard = await AppHelper.showAppDialog<bool>(
+      context,
+      const OnConfirmDialog(
+        key: Key('bank_details_discard_dialog'),
+        title: 'Discard bank details?',
+        content: 'The details you entered have not been saved. '
+            'If you leave now, they will be discarded.',
+        confirmText: 'Discard',
+        cancelText: 'Keep editing',
+      ),
+    );
+    if (discard == true && context.mounted) {
+      // Explicit pop: the guard already asked.
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dirty = context.select(
+      (SellerPaymentMethodsCubit cubit) => _hasUnsavedChanges(cubit.state),
+    );
+    return PopScope(
+      canPop: !dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _confirmDiscard(context);
+      },
+      child: widget.child,
     );
   }
 }

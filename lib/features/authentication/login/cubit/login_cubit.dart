@@ -7,6 +7,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
 import 'package:snip_fair/core/utils/input/email_input.dart';
+import 'package:flutter/foundation.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/input/string_input.dart';
 import 'package:snip_fair/core/domain/params/login_params.dart';
@@ -35,13 +36,27 @@ class LoginCubit extends BaseCubit<LoginState> {
     emit(state.copyWith(showPassword: !state.showPassword));
   }
 
+  /// The login request: the email is trimmed and lowercased (the backend
+  /// matches emails case-insensitively); the password is sent as typed.
+  @visibleForTesting
+  static LoginParams loginParams({
+    required String email,
+    required String password,
+    required String deviceName,
+  }) =>
+      LoginParams(
+        email: EmailInput.normalize(email),
+        password: password,
+        deviceName: deviceName,
+      );
+
   Future<void> login() async {
     try {
       final deviceInfo = await AppHelper.getDeviceInfo();
 
       await launchApiCall(
         () => _repository.login(
-          LoginParams(
+          loginParams(
             email: state.email.value,
             password: state.password.value,
             deviceName: Platform.isAndroid

@@ -433,7 +433,7 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
               .read<CustomerProfileMgtCubit>()
               .state
               .topUpVerificationState;
-          if (verification.data?.isSuccessful ?? false) {
+          if (verification.data?.isVerified ?? false) {
             peachLog('Refreshing wallet after settled top-up');
             context.read<CustomerProfileMgtCubit>()
               ..getWallet(true)
@@ -446,7 +446,7 @@ class _TopUpWalletWidgetState extends State<TopUpWalletWidget> {
                   : 'We could not confirm your top-up yet. Please try again shortly.',
             );
           }
-          if ((verification.data?.isSuccessful ?? false) && context.mounted) {
+          if ((verification.data?.isVerified ?? false) && context.mounted) {
             context.router.pop();
           }
         }

@@ -12,11 +12,12 @@ import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.d
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/datum.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/pagination_data.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
+import 'package:snip_fair/core/services/peach_deposit_reconciler.dart';
+import 'package:flutter/foundation.dart';
 
 part 'customer_profile_mgt_state.dart';
 
@@ -177,64 +178,52 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
     );
   }
 
+  /// Shared retry spacing for automatic top-up verification.
+  @visibleForTesting
+  static Duration topUpReconcileRetryGap = const Duration(seconds: 2);
+
+  /// Verifies the active top-up with `GET /customer/payment/peach/{deposit}/
+  /// status`. Per the backend contract, HTTP 200 with `status: successful`
+  /// means the wallet was credited, whatever `settled` says.
+  ///
+  /// A definitive outcome (verified, failed, cancelled) releases the attempt
+  /// so a later top-up can start; pending or unknown keeps it, so an
+  /// unconfirmed checkout is never silently replaced by a second charge.
   Future<void> reconcileWalletTopUp({bool automatic = true}) async {
-    final topUp = state.activeTopUp;
-    if (topUp?.depositId == null || state.topUpVerificationState.isLoading)
-      return;
+    final depositId = state.activeTopUp?.depositId;
+    if (depositId == null || state.topUpVerificationState.isLoading) return;
     emit(state.copyWith(topUpVerificationState: const ProcessState.loading()));
-    final attempts = automatic ? 3 : 1;
-    PaymentReconciliation? lastSeen;
-    peachLog(
-      'Reconciling top-up deposit=${topUp!.depositId} attempts=$attempts',
+
+    final check = await PeachDepositReconciler(
+      _profileRepository.reconcilePeachPayment,
+    ).reconcile(
+      depositId,
+      isVerified: (payment) => payment.isVerified,
+      retryDelays: automatic
+          ? [topUpReconcileRetryGap, topUpReconcileRetryGap]
+          : const [],
+      shouldStop: () => isClosed,
+      logLabel: 'top-up deposit',
     );
-    for (var index = 0; index < attempts; index++) {
-      if (index > 0) await Future<void>.delayed(const Duration(seconds: 2));
-      peachLog('Top-up reconcile request ${index + 1}/$attempts starting');
-      final result =
-          await _profileRepository.reconcilePeachPayment(topUp.depositId!);
-      var terminal = false;
-      var successful = false;
-      result.when(
-        success: (payment) {
-          lastSeen = payment;
-          successful = payment.isSuccessful;
-          terminal = payment.isFailed || payment.isCancelled;
-          peachLog(
-            'status=${payment.status ?? 'unknown'} '
-            'settled=${payment.settled ?? false} '
-            'purpose=${payment.purpose ?? 'unknown'}',
-          );
-        },
-        failure: (error) {
-          peachLog(
-            'Top-up reconcile request failed for deposit=${topUp.depositId}',
-          );
-          if (error is RemoteException && error.statusCode == 503) {
-            emit(state.copyWith(
-                topUpVerificationState: const ProcessState.error(
-              'We could not confirm your top-up yet. Please try again shortly.',
-            )));
-          }
-        },
-      );
-      if (successful || terminal) break;
-    }
-    if (lastSeen != null) {
-      peachLog(
-        lastSeen!.isSuccessful
-            ? 'Wallet top-up confirmed'
-            : 'Wallet top-up not settled: '
-                'result=${lastSeen!.status ?? 'unknown'}',
-      );
-      emit(state.copyWith(
-          topUpVerificationState: ProcessState.success(lastSeen!)));
-    } else if (!state.topUpVerificationState.hasError) {
-      peachLog('Wallet top-up unconfirmed: result=unknown');
-      emit(state.copyWith(
-          topUpVerificationState: const ProcessState.error(
-        'We could not confirm your top-up yet. Please try again shortly.',
-      )));
-    }
+    if (isClosed) return;
+
+    final payment = check.payment;
+    final resolved = check.verdict == PeachDepositVerdict.verified ||
+        check.verdict == PeachDepositVerdict.failed ||
+        check.verdict == PeachDepositVerdict.cancelled;
+    peachLog('Wallet top-up verification: ${check.verdict.name}');
+    emit(
+      state.copyWith(
+        topUpVerificationState: payment != null
+            ? ProcessState.success(payment)
+            : const ProcessState.error(
+                'We could not confirm your top-up yet. '
+                'Please try again shortly.',
+              ),
+        initializePaymentState:
+            resolved ? const ProcessState.init(null) : null,
+      ),
+    );
   }
 
   void clearTopUpAttempt() {

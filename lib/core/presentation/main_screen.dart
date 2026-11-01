@@ -24,6 +24,7 @@ import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 
 @RoutePage()
@@ -59,6 +60,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         context.read<AppCubit>().state.status == AuthStatus.authenticated;
     if (!authed) return;
     context.read<ConversationsCubit>().startPollingConversations();
+    _resumePaymentAttempts();
+  }
+
+  /// Restores (first time) or re-checks the signed-in customer's unresolved
+  /// payment request card payments. Never starts a checkout.
+  void _resumePaymentAttempts() {
+    final appState = context.read<AppCubit>().state;
+    final userId = appState.user.id;
+    if (appState.status != AuthStatus.authenticated || userId == null) return;
+    unawaited(
+      context
+          .read<ConversationsCubit>()
+          .restorePaymentAttempts(ownerId: userId.toString()),
+    );
   }
 
   @override
@@ -76,11 +91,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // immediate silent fetch, so the badge refreshes right away and then
       // continues ticking every 4s while foregrounded.
       context.read<ConversationsCubit>().startPollingConversations();
+      // A card payment left pending/unknown (e.g. the app was backgrounded
+      // during checkout) is checked again — never charged again.
+      _resumePaymentAttempts();
+      // Stylists: pick up activation changes (e.g. approval) on return.
+      if (context.read<AppCubit>().state.isStylist) {
+        context.read<SellerProfileMgtCubit>().getProfileDetails(true);
+      }
     } else {
       // Any non-resumed state (paused / inactive / hidden / detached) —
       // pause the polling loop to save battery / data. If a push arrives
       // while backgrounded, the OS still wakes the app for its handler.
-      context.read<ConversationsCubit>().stopPollingConversations();
+      context.read<ConversationsCubit>()
+        ..stopPollingConversations()
+        ..pausePaymentStatusPolling();
     }
   }
 

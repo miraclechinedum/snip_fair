@@ -23,6 +23,7 @@ import 'package:snip_fair/core/utils/input/input.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/features/account/customer/preferences/cubit/customer_prefs_settings_cubit.dart';
 import 'package:snip_fair/features/authentication/signup/cubit/signup_cubit.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 
 @RoutePage()
@@ -43,6 +44,9 @@ class SignupScreen extends BaseStatelessPage<SignupCubit>
           // context.pushRoute(
           //   VerifyEmailRoute(email: state.email.value, asStylist: asStylist),
           // );
+          context
+              .read<SellerProfileMgtCubit>()
+              .seedStylistAccount(state.signUpResult.data?.stylistAccount);
           context.read<AppCubit>().onLogin();
         }
       },

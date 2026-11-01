@@ -8,11 +8,11 @@ import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
+import 'package:snip_fair/core/services/peach_deposit_reconciler.dart';
 import 'package:snip_fair/core/domain/entities/tip/tip_response.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/payment_reconciliation.dart';
-import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dart';
 import 'package:snip_fair/core/domain/entities/seller_portfolio_list/seller_portfolio.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/customer_appointment.dart';
@@ -361,77 +361,68 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     }
   }
 
+  /// Spacing between automatic verification attempts.
+  @visibleForTesting
+  static Duration cardReconcileRetryGap = const Duration(seconds: 2);
+
   /// Polling body for [reconcileCardPayment]. Never called directly so the
   /// phase bookkeeping in [reconcileCardPayment] always applies.
+  ///
+  /// Booking keeps its own success rule (`successful` *and* `settled`); the
+  /// shared [PeachDepositReconciler] only does the polling.
   Future<void> _verifyCardDeposit(
     CheckoutPaymentData checkout, {
     required bool automatic,
   }) async {
-    final attempts = automatic ? 3 : 1;
-    const gap = Duration(seconds: 2);
-    PaymentReconciliation? lastSeen;
+    final check = await PeachDepositReconciler(
+      _appointmentRepository.reconcilePeachPayment,
+    ).reconcile(
+      checkout.depositId!,
+      isVerified: (payment) => payment.isSuccessful,
+      retryDelays: automatic
+          ? [cardReconcileRetryGap, cardReconcileRetryGap]
+          : const [],
+      shouldStop: () => isClosed,
+      logLabel: 'deposit',
+    );
+    if (isClosed) {
+      peachLog('Reconciliation stopped: booking screen already disposed');
+      return;
+    }
 
-    peachLog('Reconciling deposit=${checkout.depositId} attempts=$attempts');
-
-    for (var i = 0; i < attempts; i++) {
-      if (i > 0) await Future<void>.delayed(gap);
-      peachLog('Reconcile request ${i + 1}/$attempts starting');
-      final result = await _appointmentRepository
-          .reconcilePeachPayment(checkout.depositId!);
-      if (isClosed) {
-        peachLog('Reconciliation stopped: booking screen already disposed');
-        return;
+    final lastSeen = check.payment;
+    if (check.verdict == PeachDepositVerdict.verified) {
+      peachLog('Appointment payment confirmed');
+      emit(state.copyWith(
+        cardPaymentPhase: CardPaymentPhase.successful,
+        cardVerificationState: ProcessState.success(lastSeen!),
+      ));
+      final appointmentId = lastSeen.appointmentId ?? checkout.appointmentId;
+      if (appointmentId != null) {
+        peachLog('Refreshing appointment=$appointmentId');
+        await fetchAppointmentById(appointmentId, silent: true);
       }
-      var isSuccessful = false;
-      var terminal = false;
-      result.when(
-        success: (payment) {
-          lastSeen = payment;
-          isSuccessful = payment.isSuccessful;
-          terminal = payment.isFailed || payment.isCancelled;
-          peachLog(
-            'status=${payment.status ?? 'unknown'} '
-            'settled=${payment.settled ?? false} '
-            'purpose=${payment.purpose ?? 'unknown'}',
-          );
-        },
-        failure: (error) {
-          peachLog(
-            'Reconcile request failed for deposit=${checkout.depositId}',
-          );
-          if (error is RemoteException && error.statusCode == 503) {
-            peachLog('Payment verification temporarily unavailable');
-          }
-        },
-      );
-      if (isSuccessful) {
-        peachLog('Appointment payment confirmed');
-        emit(state.copyWith(
-          cardPaymentPhase: CardPaymentPhase.successful,
-          cardVerificationState: ProcessState.success(lastSeen!),
-        ));
-        final appointmentId = lastSeen!.appointmentId ?? checkout.appointmentId;
-        if (appointmentId != null) {
-          peachLog('Refreshing appointment=$appointmentId');
-          await fetchAppointmentById(appointmentId, silent: true);
-        }
-        _refreshWalletAfterCardSettlement();
-        return;
-      }
-      if (terminal) break;
+      _refreshWalletAfterCardSettlement();
+      return;
     }
 
     if (lastSeen != null) {
-      final phase = lastSeen!.isFailed
+      final phase = check.verdict == PeachDepositVerdict.failed
           ? CardPaymentPhase.failed
-          : lastSeen!.isCancelled
+          : check.verdict == PeachDepositVerdict.cancelled
               ? CardPaymentPhase.cancelled
               : CardPaymentPhase.pending;
       peachLog('Appointment payment not settled: result=${phase.name}');
       emit(
         state.copyWith(
           cardPaymentPhase: phase,
-          cardVerificationState: ProcessState.success(lastSeen!),
+          cardVerificationState: ProcessState.success(lastSeen),
+          // A definitive failure or cancellation ends this attempt: release
+          // the checkout so the customer can retry. Pending keeps it, so an
+          // unconfirmed charge is never followed by a second checkout.
+          cardCheckoutState: phase == CardPaymentPhase.pending
+              ? null
+              : const ProcessState.init(null),
         ),
       );
     } else {

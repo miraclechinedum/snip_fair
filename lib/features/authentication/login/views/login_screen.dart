@@ -21,6 +21,7 @@ import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/presentation/widgets/keyboard_dismisser.dart';
+import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/authentication/login/cubit/login_cubit.dart';
 
 @RoutePage()
@@ -39,6 +40,11 @@ class LoginScreen extends BaseStatelessPage<LoginCubit> implements AutoRouteWrap
           listenWhen: (previous, current) => previous.loginResult != current.loginResult,
           listener: (context, state) {
             if (state.loginResult.hasSuccess) {
+              // `GET /user` (used by onLogin) has no stylist_account, so keep
+              // the activation status this sign-in returned.
+              context
+                  .read<SellerProfileMgtCubit>()
+                  .seedStylistAccount(state.loginResult.data?.stylistAccount);
               context.read<AppCubit>().onLogin();
             }
           },

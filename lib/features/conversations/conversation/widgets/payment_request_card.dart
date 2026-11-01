@@ -8,8 +8,15 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_summary_widget.dart';
 import 'package:snip_fair/core/services/analytics_service.dart';
+import 'package:snip_fair/core/utils/app_extensions.dart';
+import 'package:snip_fair/core/utils/app_helper.dart';
+import 'package:snip_fair/core/utils/peach_payment_log.dart';
+import 'package:snip_fair/features/account/customer/profile_management/cubit/customer_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/conversations/conversation/widgets/payment_request_method_sheet.dart';
+import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request_status.dart';
 
@@ -20,6 +27,12 @@ class PaymentRequestCard extends StatefulWidget {
   });
 
   final int paymentRequestId;
+
+  /// Opens the Peach hosted checkout. Replaceable in tests, where the
+  /// WebView plugin is unavailable.
+  @visibleForTesting
+  static Future<bool> Function(BuildContext, CheckoutPaymentData)
+      openCheckout = AppHelper.showPaymentDialog;
 
   @override
   State<PaymentRequestCard> createState() => _PaymentRequestCardState();
@@ -60,14 +73,8 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
 
   Future<void> _respond(String action) async {
     if (_actionInProgress != null) return;
+    if (_paymentActions.contains(action)) return _runPayment(action);
     setState(() => _actionInProgress = action);
-    if (action == 'pay') {
-      unawaited(
-        AnalyticsService.instance.logInitiateCheckout(
-          amount: _paymentRequest?.totalAmount ?? 0,
-        ),
-      );
-    }
     final updated = await context
         .read<ConversationsCubit>()
         .respondToPaymentRequest(widget.paymentRequestId, action);
@@ -79,22 +86,258 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     }
   }
 
+  /// Customer payment actions, all serialised through [_runPayment]:
+  /// Pay Now, Check Payment Status, Retry Payment (wallet `/pay` only) and
+  /// adding the backend's shortfall to the wallet by card.
+  static const _paymentActions = {
+    'pay',
+    'check_status',
+    'retry_wallet',
+    'add_funds',
+  };
+
+  /// Runs one payment action. Nothing is charged before the customer chooses
+  /// a method; progress and outcomes are tracked by [ConversationsCubit] per
+  /// request, so this card (or a rebuilt one) always renders the current
+  /// phase. The card's own loading state is cleared on every exit path.
+  Future<void> _runPayment(String action) async {
+    final id = widget.paymentRequestId;
+    final cubit = context.read<ConversationsCubit>();
+    final pr = _paymentRequest;
+    final progress = cubit.paymentProgressFor(id);
+    paymentRequestLog('Payment action "$action": id=$id '
+        'status=${pr?.statusRaw} amount=${pr?.totalAmount} '
+        'canPay=${pr?.canPay} phase=${progress.phase.name}');
+    // An unresolved card payment can always be checked, even if the request
+    // changed meanwhile — the top-up lands in the wallet either way.
+    final checking =
+        action == 'check_status' || progress.phase.isUnresolvedTopUp;
+    final blocker = checking
+        ? null
+        : pr == null
+            ? 'This payment request could not be loaded. '
+                'Please reopen the chat.'
+            : cubit.payNowBlocker(pr);
+    if (blocker != null) {
+      paymentRequestLog('Payment action blocked: id=$id reason="$blocker"');
+      AppHelper.showSnackBar(context, message: blocker);
+      return;
+    }
+    if (!cubit.beginPaymentRequestPayment(id)) {
+      paymentRequestLog('Payment action ignored: id=$id already in progress');
+      return;
+    }
+    setState(() => _actionInProgress = 'pay');
+    try {
+      if (checking) {
+        // An unconfirmed card payment is checked, never paid for again.
+        await cubit.checkCardPaymentStatus(id);
+      } else if (action == 'retry_wallet' ||
+          progress.phase ==
+              PaymentRequestPaymentPhase.topUpSucceededPaymentPending) {
+        // Money already in the wallet: retry only the wallet payment.
+        await cubit.payFromWallet(id);
+      } else if (action == 'add_funds') {
+        await _addWalletFunds(cubit);
+      } else {
+        await _chooseAndPay(cubit, pr!);
+      }
+    } catch (e, stack) {
+      paymentRequestLog('Payment action threw for id=$id: $e\n$stack');
+      if (mounted) {
+        AppHelper.showSnackBar(
+          context,
+          message: "We couldn't open payment options. Please try again.",
+        );
+      }
+    } finally {
+      cubit.endPaymentRequestPayment(id);
+      if (mounted) setState(() => _actionInProgress = null);
+    }
+  }
+
+  /// Pay Now: the Wallet / Card choice, then that payment.
+  Future<void> _chooseAndPay(
+    ConversationsCubit cubit,
+    PaymentRequest pr,
+  ) async {
+    final id = widget.paymentRequestId;
+    final walletBalance =
+        (await cubit.loadWalletBalanceForPayment())?.toDouble();
+    if (!mounted) return;
+
+    final amount = pr.totalAmount!;
+    paymentRequestLog('Opening payment options: id=$id '
+        'wallet=${walletBalance ?? 'unavailable'}');
+    final method = await AppHelper.showCustomModalBottomSheet<String>(
+      context: context,
+      modal: PaymentRequestMethodSheet(
+        amount: amount,
+        walletBalance: walletBalance,
+      ),
+      isDarkMode: false,
+    );
+    paymentRequestLog('Payment options closed: id=$id '
+        'method=${method ?? 'none (dismissed)'}');
+    if (method == null || !mounted) return;
+
+    _logAnalytics(
+      () => AnalyticsService.instance.logInitiateCheckout(amount: amount),
+    );
+
+    if (method == 'card') {
+      // Contract: a card payment tops up at least the request's outstanding
+      // amount — the full amount, whatever the wallet holds.
+      await _payByCard(cubit, amount);
+      return;
+    }
+
+    // Wallet: `/pay` decides. If the wallet is short, the backend's own
+    // `shortfall` is offered as a card top-up (never local arithmetic).
+    await cubit.payFromWallet(id);
+    if (mounted &&
+        cubit.paymentProgressFor(id).phase ==
+            PaymentRequestPaymentPhase.awaitingWalletFunds) {
+      await _addWalletFunds(cubit);
+    }
+  }
+
+  /// Offers to add exactly the backend's `shortfall` to the wallet by card,
+  /// confirmed by the customer on the payment summary. Never automatic.
+  Future<void> _addWalletFunds(ConversationsCubit cubit) async {
+    final id = widget.paymentRequestId;
+    final progress = cubit.paymentProgressFor(id);
+    final shortfall = progress.shortfall;
+    if (shortfall == null || shortfall <= 0 || !mounted) return;
+    final required =
+        (progress.requiredAmount ?? _paymentRequest?.totalAmount ?? shortfall)
+            .toDouble();
+    final balance =
+        (progress.walletBalance ?? (required - shortfall)).toDouble();
+    final proceed = await AppHelper.showCustomModalBottomSheet<bool>(
+      context: context,
+      modal: PaymentSummaryWidget(
+        servicePrice: required,
+        walletBalance: balance,
+        priceLabel: 'Amount Due',
+      ),
+      isDarkMode: false,
+    );
+    if (proceed != true || !mounted) return;
+    await _payByCard(cubit, shortfall.toDouble());
+  }
+
+  /// Analytics must never interrupt a payment (e.g. Firebase not ready).
+  void _logAnalytics(Future<void> Function() event) {
+    try {
+      unawaited(
+        event().catchError(
+          (Object e) => paymentRequestLog('Analytics failed: $e'),
+        ),
+      );
+    } catch (e) {
+      paymentRequestLog('Analytics failed: $e');
+    }
+  }
+
+  /// Tops up [amount] by card via the existing Peach checkout.
+  ///
+  /// However the checkout ends — the X, the shopper-result page, a dismissal
+  /// or an error — verification is handed to the cubit without awaiting it:
+  /// the card shows the request's phase (a bounded "Confirming…", then Check
+  /// Payment Status) instead of a spinner tied to this action.
+  Future<void> _payByCard(ConversationsCubit cubit, double amount) async {
+    final id = widget.paymentRequestId;
+    final checkout = await cubit.startCardTopUp(id, amount: amount);
+    // Null: the reason is already in the request's payment progress.
+    if (checkout == null) return;
+    try {
+      if (mounted) {
+        peachLog(
+          'Payment request $id: Peach checkout opened '
+          'deposit=${checkout.depositId}',
+        );
+        final result = await PaymentRequestCard.openCheckout(context, checkout);
+        // The WebView logs *how* it closed (X, shopper-result page, …);
+        // `result` is never payment proof.
+        peachLog('Payment request $id: Peach checkout closed (result=$result)');
+      } else {
+        peachLog('Payment request $id: card gone before checkout opened');
+      }
+    } catch (e) {
+      peachLog('Payment request $id: hosted checkout threw ${e.runtimeType}');
+    } finally {
+      // Closing checkout is never proof of payment or of failure.
+      unawaited(
+        cubit.onCardCheckoutClosed(id).catchError((Object e) {
+          paymentRequestLog('Verification after checkout failed: $e');
+        }),
+      );
+    }
+  }
+
+  PaymentRequestPaymentProgress _progressIn(ConversationsState state) =>
+      state.paymentProgress[widget.paymentRequestId] ??
+      const PaymentRequestPaymentProgress();
+
+  /// Reacts once per payment transition: tells the customer what happened
+  /// and refreshes the wallet whenever money may have moved.
+  void _onPaymentProgress(PaymentRequestPaymentProgress progress) {
+    final paid = _paymentRequest;
+    switch (progress.phase) {
+      case PaymentRequestPaymentPhase.successful:
+        _logAnalytics(
+          () => AnalyticsService.instance.logPurchase(
+            amount: paid?.totalAmount ?? 0,
+            transactionId: widget.paymentRequestId.toString(),
+          ),
+        );
+        _refreshWallet();
+      case PaymentRequestPaymentPhase.topUpSucceededPaymentPending:
+      case PaymentRequestPaymentPhase.awaitingWalletFunds:
+      case PaymentRequestPaymentPhase.failed:
+        _refreshWallet();
+      default:
+        break;
+    }
+    final message = progress.message;
+    if (message != null && !progress.phase.isBusy) {
+      AppHelper.showSnackBar(context, message: message);
+    }
+  }
+
+  void _refreshWallet() {
+    context.read<CustomerProfileMgtCubit>()
+      ..getWallet(true)
+      ..getWalletTransactions();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ConversationsCubit, ConversationsState>(
-      listenWhen: (prev, curr) =>
-          curr.lastUpdatedPaymentRequestId == widget.paymentRequestId &&
-          prev.lastUpdatedPaymentRequestId != curr.lastUpdatedPaymentRequestId,
-      listener: (context, cState) {
-        // Payment request status was refreshed by a `payment_request` push
-        // (e.g. 'pending' → 'paid'). Pick up the fresh cached value.
-        final refreshed = context
-            .read<ConversationsCubit>()
-            .getCachedPaymentRequest(widget.paymentRequestId);
-        if (refreshed != null && mounted) {
-          setState(() => _paymentRequest = refreshed);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ConversationsCubit, ConversationsState>(
+          listenWhen: (prev, curr) =>
+              curr.lastUpdatedPaymentRequestId == widget.paymentRequestId &&
+              prev.paymentRequestUpdateSeq != curr.paymentRequestUpdateSeq,
+          listener: (context, cState) {
+            // The request was refreshed (a `payment_request` push, or a pay
+            // attempt). Pick up the fresh cached value — every time, even
+            // for repeated updates of the same request.
+            final refreshed = context
+                .read<ConversationsCubit>()
+                .getCachedPaymentRequest(widget.paymentRequestId);
+            if (refreshed != null && mounted) {
+              setState(() => _paymentRequest = refreshed);
+            }
+          },
+        ),
+        BlocListener<ConversationsCubit, ConversationsState>(
+          listenWhen: (prev, curr) =>
+              _progressIn(prev).revision != _progressIn(curr).revision,
+          listener: (context, cState) => _onPaymentProgress(_progressIn(cState)),
+        ),
+      ],
       child: _buildBody(context),
     );
   }
@@ -280,6 +523,10 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                     pr: pr,
                     isStylist: isStylist,
                     actionInProgress: _actionInProgress,
+                    paymentProgress: context.select(
+                      (ConversationsCubit cubit) =>
+                          cubit.paymentProgressFor(widget.paymentRequestId),
+                    ),
                     onRespond: _respond,
                   ),
                 ],
@@ -439,13 +686,35 @@ class _ActionButtons extends StatelessWidget {
     required this.pr,
     required this.isStylist,
     required this.actionInProgress,
+    required this.paymentProgress,
     required this.onRespond,
   });
 
   final PaymentRequest pr;
   final bool isStylist;
   final String? actionInProgress;
+  final PaymentRequestPaymentProgress paymentProgress;
   final void Function(String action) onRespond;
+
+  Widget _button(
+    String title,
+    String action,
+    Key? key,
+    bool busy, {
+    bool outline = false,
+  }) {
+    return CustomButton(
+      key: key,
+      title: title,
+      isLoading: busy,
+      onPressed: busy ? null : () => onRespond(action),
+      isOutline: outline,
+      borderColor: outline ? AppColors.primaryColor : AppColors.transparent,
+      textColor: outline ? AppColors.primaryColor : AppColors.white,
+      background: outline ? Colors.transparent : AppColors.primaryColor,
+      gradient: outline ? null : AppColors.appgradient,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -505,10 +774,73 @@ class _ActionButtons extends StatelessWidget {
     }
 
     if (pr.isAccepted) {
-      return CustomButton(
-        title: 'Pay Now',
-        isLoading: actionInProgress == 'pay',
-        onPressed: actionInProgress != null ? null : () => onRespond('pay'),
+      final phase = paymentProgress.phase;
+      final busy = actionInProgress != null || phase.isBusy;
+      final shortfall = paymentProgress.shortfall;
+
+      final String? note;
+      final List<Widget> buttons;
+      if (phase.isUnresolvedTopUp) {
+        note = paymentProgress.message ??
+            'Your card payment is being confirmed.';
+        buttons = [
+          _button('Check Payment Status', 'check_status',
+              const Key('payment_request_check_status'), busy),
+        ];
+      } else if (phase ==
+          PaymentRequestPaymentPhase.topUpSucceededPaymentPending) {
+        note = 'Your card payment is in your wallet. '
+            'This request is not paid yet.';
+        buttons = [
+          _button('Retry Payment', 'retry_wallet',
+              const Key('payment_request_retry_wallet'), busy),
+        ];
+      } else if (phase == PaymentRequestPaymentPhase.awaitingWalletFunds) {
+        note = paymentProgress.message ??
+            'Your wallet does not have enough to pay this request yet.';
+        buttons = [
+          if (shortfall != null && shortfall > 0)
+            _button(
+              'Add ${shortfall.toDouble().formatAmount()}',
+              'add_funds',
+              const Key('payment_request_add_funds'),
+              busy,
+            ),
+          _button('Retry Payment', 'retry_wallet',
+              const Key('payment_request_retry_wallet'), busy,
+              outline: shortfall != null && shortfall > 0),
+        ];
+      } else {
+        note = switch (phase) {
+          PaymentRequestPaymentPhase.checkoutOpen =>
+            'Complete the card payment in the checkout.',
+          PaymentRequestPaymentPhase.verifyingTopUp =>
+            'Confirming your card payment…',
+          PaymentRequestPaymentPhase.payingFromWallet =>
+            'Completing your payment…',
+          _ => null,
+        };
+        buttons = [_button('Pay Now', 'pay', null, busy)];
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (note != null) ...[
+            Text(
+              note,
+              key: const Key('payment_request_progress_note'),
+              style: AppTextStyle.caption.copyWith(
+                color: AppColors.warningText,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+          ],
+          for (final (index, button) in buttons.indexed) ...[
+            if (index > 0) SizedBox(height: 8.h),
+            button,
+          ],
+        ],
       );
     }
 

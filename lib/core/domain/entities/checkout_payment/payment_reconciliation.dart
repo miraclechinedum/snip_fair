@@ -35,7 +35,14 @@ class PaymentReconciliation {
   final String? currency;
   final String? message;
 
+  /// Appointment-booking success rule: successful *and* settled by this call.
   bool get isSuccessful => status == 'successful' && settled == true;
+
+  /// Wallet top-up rule from the backend contract: an HTTP 200 body with
+  /// `status == "successful"` means the wallet holds the money. `settled` is
+  /// only true on the one call that credited it (and false when the webhook
+  /// credited it first), so it must not decide.
+  bool get isVerified => status == 'successful';
   bool get isPending => status == 'pending';
   bool get isFailed => status == 'failed';
   bool get isCancelled => status == 'cancelled';

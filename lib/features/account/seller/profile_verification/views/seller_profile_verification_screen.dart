@@ -41,7 +41,8 @@ class SellerProfileVerificationScreen extends StatelessWidget implements AutoRou
         title: 'Profile Verification',
       ),
       bottomNavigationBar: isProfileVerified
-          ? null
+          // Approved: only social links are editable, saved on their own.
+          ? const _SaveSocialLinksBar()
           : SafeArea(
               child: SizedBox(
                 height: 80,
@@ -299,27 +300,61 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
         ...List.generate(cubit.state.socials.length, (index) {
           final social = cubit.state.socials[index];
           return ListTile(
+            key: Key('social_row_$index'),
             title: AppText(text: social.socialApp ?? ''),
             subtitle: AppText(text: social.url ?? ''),
-            tileColor: Colors.white,
-            trailing: isProfileVerified
-                ? null
-                : IconButton(
-                    onPressed: () {
-                      cubit.onRemoveSocialAccount(social);
-                    },
-                    icon: const Icon(Icons.close),
+            tileColor: cubit.state.editingSocialIndex == index
+                ? AppColors.primaryColor.withValues(alpha: 0.06)
+                : Colors.white,
+            // Social links stay editable after approval (the rest of the
+            // verification details are read-only then).
+            trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: Key('social_edit_$index'),
+                        tooltip: 'Edit ${social.socialApp ?? 'link'}',
+                        onPressed: () {
+                          cubit.onEditSocialAccount(index);
+                          socailAppController.text = social.socialApp ?? '';
+                          socailLinkController.text = social.url ?? '';
+                        },
+                        icon: const Icon(Icons.edit_outlined),
+                      ),
+                      IconButton(
+                        key: Key('social_remove_$index'),
+                        tooltip: 'Remove ${social.socialApp ?? 'link'}',
+                        onPressed: () {
+                          cubit.onRemoveSocialAccount(social);
+                          if (cubit.state.editingSocialIndex == null) {
+                            socailAppController.clear();
+                            socailLinkController.clear();
+                          }
+                        },
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
                   ),
           );
         }),
+        if (isProfileVerified && cubit.state.socials.isEmpty) ...[
+          10.verticalSpace,
+          AppText(
+            key: const Key('social_keep_one_hint'),
+            text: 'Keep at least one social link. Without one, your account '
+                'becomes unavailable to customers.',
+            fontSize: 12,
+            color: AppColors.contentColorRed,
+          ),
+        ],
         10.verticalSpace,
-        if (!isProfileVerified)
-          Column(
+        Column(
             children: [
               CustomTextField(
+                key: const Key('social_app_field'),
                 textController: socailAppController,
                 label: 'Social App',
-                hint: 'e.g Instagram, Facebook',
+                hint: 'e.g Instagram, TikTok',
                 isRequired: true,
                 onChanged: cubit.onSocialAppChanged,
                 isError: cubit.state.socialApp.isNotValid,
@@ -331,17 +366,22 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
                 children: [
                   Expanded(
                     child: CustomTextField(
+                      key: const Key('social_link_field'),
                       textController: socailLinkController,
-                      label: 'Social Handle',
-                      hint: '',
+                      label: 'Profile Link',
+                      hint: 'https://www.instagram.com/yourname',
                       isRequired: true,
                       onChanged: cubit.onSocialUrlChanged,
-                      isError: cubit.state.socialLink.isNotValid,
-                      descriptionText: cubit.state.socialLink.displayError?.message,
+                      isError: cubit.state.socialLink.isNotValid ||
+                          cubit.state.socialLinkUrlError != null,
+                      descriptionText:
+                          cubit.state.socialLink.displayError?.message ??
+                              cubit.state.socialLinkUrlError,
                     ),
                   ),
                   10.horizontalSpace,
                   GestureDetector(
+                    key: const Key('social_save_button'),
                     onTap: () {
                       if (cubit.state.canAddSocial) {
                         cubit.onAddSocialAccount();
@@ -357,17 +397,92 @@ class _SocialMediaAccountsViewState extends State<SocialMediaAccountsView> {
                         color: AppColors.primaryColor,
                         borderRadius: BorderRadius.circular(10).r,
                       ),
-                      child: const Icon(
-                        Icons.add,
+                      child: Icon(
+                        cubit.state.editingSocialIndex == null
+                            ? Icons.add
+                            : Icons.check,
                         color: AppColors.white,
+                        semanticLabel: cubit.state.editingSocialIndex == null
+                            ? 'Add social link'
+                            : 'Save social link',
                       ),
                     ),
                   ),
                 ],
               ),
+              if (cubit.state.editingSocialIndex != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const Key('social_cancel_edit'),
+                    onPressed: () {
+                      cubit.onCancelSocialEdit();
+                      socailAppController.clear();
+                      socailLinkController.clear();
+                    },
+                    child: const Text('Cancel editing'),
+                  ),
+                ),
             ],
           ),
       ],
+    );
+  }
+}
+
+/// Saves an approved stylist's social links on their own: socials only, no
+/// work images, approval and other details untouched.
+class _SaveSocialLinksBar extends StatelessWidget {
+  const _SaveSocialLinksBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.watch<SellerProfileVerificationCubit>();
+    return SafeArea(
+      child: SizedBox(
+        height: 80,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: BlocListener<SellerProfileVerificationCubit,
+              SellerProfileVerificationState>(
+            listenWhen: (previous, current) =>
+                previous.submitState != current.submitState,
+            listener: (context, state) async {
+              if (state.submitState.hasSuccess) {
+                await context
+                    .read<SellerProfileMgtCubit>()
+                    .getProfileDetails(true);
+                if (!context.mounted) return;
+                AppHelper.showSnackBar(
+                  context,
+                  message: 'Social links updated.',
+                );
+                context.pop();
+              }
+              if (state.submitState.hasError) {
+                final error = state.submitState.error;
+                AppHelper.showAppDialog<void>(
+                  context,
+                  OnFailDialogContent(
+                    subtext: error is RemoteException
+                        ? error.errorResponse?.message ?? ''
+                        : '',
+                    onDoneCallback: (_) {},
+                  ),
+                );
+              }
+            },
+            child: CustomButton(
+              key: const Key('save_social_links'),
+              title: 'Save Social Links',
+              isLoading: cubit.state.submitState.isLoading,
+              onPressed: cubit.state.canSaveSocialLinks
+                  ? cubit.saveSocialLinks
+                  : null,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

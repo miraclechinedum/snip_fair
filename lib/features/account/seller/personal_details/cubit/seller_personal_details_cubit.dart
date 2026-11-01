@@ -52,8 +52,8 @@ class SellerPersonalDetailsCubit extends BaseCubit<SellerPersonalDetailsState> {
   Future<void> updateBusinessInfo(StylistProfileDetails details) async {
     await launchApiCall(
       () => _profileRepository.updateStylistProfile(
-        socials: details.user?.stylistProfile?.socials ?? [],
-        medias: details.user?.stylistProfile?.works ?? [],
+        // Socials and work images are not edited here: omit both so the
+        // backend keeps them (never re-sent, never replaced).
         businessName: state.businessName.value,
         phone: state.phone.value,
         country: state.address.value,

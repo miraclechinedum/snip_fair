@@ -13,6 +13,8 @@ import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/widgets/app_text.dart';
 import 'package:snip_fair/core/presentation/widgets/modal_pill.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_summary_widget.dart';
+import 'package:snip_fair/core/presentation/widgets/payment_method_selector.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
 import 'package:snip_fair/core/presentation/widgets/custom_appbar.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
@@ -975,7 +977,7 @@ class BookingSummary extends StatelessWidget {
                           .read<CustomerProfileMgtCubit>()
                           .state
                           .topUpVerificationState;
-                      if (verification.data?.isSuccessful ?? false) {
+                      if (verification.data?.isVerified ?? false) {
                         context.read<CustomerProfileMgtCubit>()
                           ..getWallet()
                           ..getWalletTransactions();
@@ -1005,9 +1007,7 @@ class BookingSummary extends StatelessWidget {
                       onPressed: state.canBookAppointment &&
                               !state.isCardPaymentBusy &&
                               !(state.paymentMethod == 'card' &&
-                                  state.cardPaymentPhase ==
-                                      CardPaymentPhase.unknown &&
-                                  state.activeCardCheckout?.depositId != null)
+                                  state.hasUnresolvedCardPayment)
                           ? () async {
                               final profileCubit =
                                   context.read<CustomerProfileMgtCubit>();
@@ -1074,7 +1074,7 @@ class BookingSummary extends StatelessWidget {
                                   .state
                                   .topUpVerificationState
                                   .data
-                                  ?.isSuccessful ??
+                                  ?.isVerified ??
                               false) {
                             context.read<CustomerProfileMgtCubit>()
                               ..getWallet()
@@ -1092,8 +1092,13 @@ class BookingSummary extends StatelessWidget {
                           isLoading:
                               state.updateOrCreateAppointmentState.isLoading ||
                                   state.isCardPaymentBusy,
+                          // Same guard as Book: an unconfirmed card
+                          // checkout must be resolved via "Check Payment
+                          // Status", never by charging the card again.
                           onPressed: state.canBookAppointment &&
-                                  !state.isCardPaymentBusy
+                                  !state.isCardPaymentBusy &&
+                                  !(state.paymentMethod == 'card' &&
+                                      state.hasUnresolvedCardPayment)
                               ? () async {
                                   final profileCubit =
                                       context.read<CustomerProfileMgtCubit>();
@@ -1727,118 +1732,6 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
   }
 }
 
-class PaymentSummaryWidget extends StatelessWidget {
-  const PaymentSummaryWidget({
-    required this.servicePrice,
-    required this.walletBalance,
-    super.key,
-  });
-
-  final double servicePrice;
-  final double walletBalance;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          12.verticalSpace,
-          const ModalPill(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const AppText(
-                  text: 'Payment Summary',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-                16.verticalSpace,
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    border: Border.all(color: AppColors.grey1),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const AppText(
-                            text: 'Service Price',
-                          ),
-                          AppText(
-                            text: servicePrice.formatAmount(),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ],
-                      ),
-                      8.verticalSpace,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const AppText(
-                            text: 'Wallet Balance',
-                          ),
-                          AppText(
-                            text: '-${walletBalance.formatAmount()}',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const AppText(
-                            text: 'Amount to Pay',
-                            fontWeight: FontWeight.w600,
-                          ),
-                          AppText(
-                            text: (servicePrice - walletBalance)
-                                .clamp(0, servicePrice)
-                                .formatAmount(),
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                16.verticalSpace,
-                CustomButton(
-                  title: 'Proceed to Pay',
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                ),
-                12.verticalSpace,
-                CustomButton(
-                  title: 'Cancel',
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  gradient: null,
-                  background: const Color(0xff374757),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ReviewSuccessDialog extends StatelessWidget {
   const _ReviewSuccessDialog({this.onTipPressed});
 
@@ -2275,142 +2168,16 @@ class PaymentMethodPicker extends StatelessWidget {
             UpdateCreateAppointmentState>(
           buildWhen: (p, c) => p.paymentMethod != c.paymentMethod,
           builder: (context, state) {
-            final selected = state.paymentMethod;
-            return Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.grey1),
-                color: Colors.white,
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppText(
-                    text: 'Payment Method',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                  12.verticalSpace,
-                  _PaymentMethodTile(
-                    icon: Iconsax.wallet_2,
-                    title: 'Wallet',
-                    subtitle:
-                        'Balance: ${walletBalance.toDouble().formatAmount()}',
-                    selected: selected == 'wallet',
-                    onTap: () => context
-                        .read<UpdateCreateAppointmentCubit>()
-                        .setPaymentMethod('wallet'),
-                  ),
-                  8.verticalSpace,
-                  _PaymentMethodTile(
-                    icon: Iconsax.card,
-                    title: 'Card',
-                    subtitle: 'Pay securely by card',
-                    selected: selected == 'card',
-                    onTap: () => context
-                        .read<UpdateCreateAppointmentCubit>()
-                        .setPaymentMethod('card'),
-                  ),
-                ],
-              ),
+            return PaymentMethodSelector(
+              selected: state.paymentMethod,
+              walletBalance: walletBalance,
+              onSelected: context
+                  .read<UpdateCreateAppointmentCubit>()
+                  .setPaymentMethod,
             );
           },
         );
       },
-    );
-  }
-}
-
-class _PaymentMethodTile extends StatelessWidget {
-  const _PaymentMethodTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? AppColors.primaryColor : AppColors.grey1,
-            width: selected ? 1.5 : 1,
-          ),
-          color: selected
-              ? AppColors.primaryColor.withOpacity(0.05)
-              : Colors.white,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.primaryColor : AppColors.grey3,
-              size: 22,
-            ),
-            12.horizontalSpace,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppText(
-                    text: title,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: selected
-                        ? AppColors.primaryColor
-                        : AppColors.blackShade1,
-                  ),
-                  2.verticalSpace,
-                  AppText(
-                    text: subtitle,
-                    fontSize: 12,
-                    color: AppColors.grey3,
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? AppColors.primaryColor : AppColors.grey2,
-                  width: 2,
-                ),
-              ),
-              child: selected
-                  ? Center(
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primaryColor,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

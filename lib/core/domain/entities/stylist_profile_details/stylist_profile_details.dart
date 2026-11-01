@@ -4,13 +4,16 @@ import 'package:snip_fair/core/domain/entities/stylist_profile_details/portfolio
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/statistics.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/profile_completeness.dart';
 import 'package:snip_fair/core/utils/json_coercion.dart';
+import 'package:snip_fair/core/domain/entities/stylist_account/stylist_account_status.dart';
 
 part 'stylist_profile_details.g.dart';
 
 @JsonSerializable()
 class StylistProfileDetails {
   factory StylistProfileDetails.fromJson(Map<String, dynamic> json) {
-    return _$StylistProfileDetailsFromJson(json);
+    return _$StylistProfileDetailsFromJson(json)
+      ..stylistAccount =
+          StylistAccountStatus.tryParse(json['stylist_account']);
   }
   StylistProfileDetails({
     this.user,
@@ -31,6 +34,11 @@ class StylistProfileDetails {
   ProfileCompleteness? profileCompleteness;
   @JsonKey(name: 'profile_link')
   String? profileLink;
+
+  /// The backend's activation verdict (`stylist_account`), parsed by hand in
+  /// [StylistProfileDetails.fromJson].
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  StylistAccountStatus? stylistAccount;
 
   Map<String, dynamic> toJson() => _$StylistProfileDetailsToJson(this);
 }
