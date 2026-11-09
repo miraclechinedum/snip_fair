@@ -40,6 +40,8 @@ import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
+import 'package:snip_fair/core/domain/entities/withdrawal/withdrawal_lookup.dart';
+import 'package:snip_fair/core/domain/entities/withdrawal/withdrawal_submission.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
 import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
@@ -88,6 +90,14 @@ class AuthPath {
   static const customerWallet = '/wallet';
   static const customerWalletTransactions = '/wallet/transactions';
   static const withdrawFunds = '/wallet/withdraw';
+  static const withdrawalLookup = '/wallet/withdrawals/lookup';
+
+  /// Request header carrying a withdrawal attempt's idempotency key.
+  static const idempotencyKeyHeader = 'Idempotency-Key';
+
+  /// Response header Laravel sets when it replays an already-accepted
+  /// withdrawal instead of creating a new one.
+  static const idempotentReplayedHeader = 'Idempotent-Replayed';
 
   //Payment
   static const customerPaymentTopUp = '/payment/topup';
@@ -1193,6 +1203,21 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   }
 
   @override
+  Future<ApiResult<CheckoutPaymentData>> retryAppointmentCardPayment(
+    String appointmentId,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.customerAppointment}/$appointmentId/payment/card',
+      );
+      return ApiResult.success(
+        data: CheckoutPaymentData.fromJson(response.data!),
+      );
+    });
+  }
+
+  @override
   Future<ApiResult<CustomerAppointment>> getCustomerAppointmentById(
     String appointmentId,
   ) {
@@ -1462,23 +1487,81 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     });
   }
 
-  @override
-  Future<ApiResult<SimpleResponse>> requestPayout(
+  /// `{"amount": "150.00", "method": 12}`: rands with exactly two decimals
+  /// and the stylist's payment-method id as an integer.
+  @visibleForTesting
+  static Map<String, dynamic> withdrawalBody(
     String paymentMethodId,
     double amount,
-  ) {
+  ) =>
+      {
+        'amount': amount.toStringAsFixed(2),
+        'method': int.tryParse(paymentMethodId) ?? paymentMethodId,
+      };
+
+  @override
+  Future<ApiResult<WithdrawalSubmission>> requestPayout(
+    String paymentMethodId,
+    double amount, {
+    required String idempotencyKey,
+  }) {
     return run(() async {
+      // No retry interceptor: a resend is the caller's decision, made with
+      // the same idempotency key.
       final client = getIt<HttpService>().client();
 
-      await client.post<Map<String, dynamic>>(
+      // Laravel answers 204 with an empty body, so the body is not typed as a
+      // JSON map (an empty body must not turn a success into a failure).
+      final response = await client.post<dynamic>(
         AuthPath.withdrawFunds,
-        data: {'amount': amount.toString(), 'method': paymentMethodId},
+        data: withdrawalBody(paymentMethodId, amount),
+        options: Options(
+          headers: {AuthPath.idempotencyKeyHeader: idempotencyKey},
+        ),
       );
       return ApiResult.success(
-        data: SimpleResponse.fromJson({}),
+        data: WithdrawalSubmission(
+          amount: amount,
+          replayed:
+              response.headers.value(AuthPath.idempotentReplayedHeader)?.trim() ==
+                  'true',
+        ),
       );
     });
   }
+
+  @override
+  Future<ApiResult<WithdrawalLookup>> lookupWithdrawal(String idempotencyKey) {
+    return run(() async {
+      // No retry interceptor: the stylist checks again on their own.
+      final client = getIt<HttpService>().client();
+      try {
+        final response = await client.get<Map<String, dynamic>>(
+          AuthPath.withdrawalLookup,
+          queryParameters: {'idempotency_key': idempotencyKey},
+        );
+        final withdrawal = response.data?['withdrawal'];
+        if (withdrawal is! Map<String, dynamic>) {
+          throw const FormatException('Unexpected withdrawal lookup body');
+        }
+        return ApiResult.success(
+          data: WithdrawalLookupFound(WithdrawalRecord.fromJson(withdrawal)),
+        );
+      } on DioException catch (e) {
+        // Only Laravel's own "not recorded" answer counts: a bare 404 (say,
+        // a backend without this route) proves nothing.
+        final body = e.response?.data;
+        if (e.response?.statusCode == 404 &&
+            body is Map<String, dynamic> &&
+            body['code'] == withdrawalNotFoundCode) {
+          return const ApiResult.success(data: WithdrawalLookupNotFound());
+        }
+        rethrow;
+      }
+    });
+  }
+
+  static const withdrawalNotFoundCode = 'WITHDRAWAL_NOT_FOUND';
 
   @override
   Future<ApiResult<SimpleResponse>> deleteAccount() {

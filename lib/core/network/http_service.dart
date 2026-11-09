@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/routing/routes.dart';
@@ -8,6 +9,7 @@ import 'package:snip_fair/core/presentation/app_config/app_access_policy.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:snip_fair/core/network/error_interceptor.dart';
+import 'package:snip_fair/core/network/redacting_log_interceptor.dart';
 import 'package:snip_fair/core/network/token_interceptor.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
@@ -15,11 +17,17 @@ import 'package:snip_fair/core/utils/environment/environment.dart';
 ///
 /// Kept `false` while the Peach Payments flows are being tested so the console
 /// only carries the concise `[PEACH]` payment logs. Flip to `true` to restore
-/// the full HTTP dumps.
+/// the HTTP dumps — always through [RedactingLogInterceptor], so tokens,
+/// idempotency keys, cookies and sensitive body fields are never printed.
 const bool kEnableVerboseHttpLogging = false;
 
 @Injectable()
 class HttpService {
+  /// Whether clients log every request and response (redacted). Defaults to
+  /// [kEnableVerboseHttpLogging]; tests switch it on to check the redaction.
+  @visibleForTesting
+  static bool verboseLogging = kEnableVerboseHttpLogging;
+
   Dio client({
     bool requireAuth = true,
     bool optionalAuth = false,
@@ -90,10 +98,7 @@ class HttpService {
           ),
         )
         ..interceptors.addAll([
-          if (kEnableVerboseHttpLogging)
-            LogInterceptor(
-              responseBody: true,
-              requestBody: true,
-            ),
+          // Last, so it sees the Authorization header TokenInterceptor adds.
+          if (verboseLogging) RedactingLogInterceptor(),
         ]);
 }

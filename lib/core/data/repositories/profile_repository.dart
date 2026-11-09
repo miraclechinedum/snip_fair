@@ -20,6 +20,8 @@ import 'package:snip_fair/core/domain/entities/payment_request/payment_request_p
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
 import 'package:snip_fair/core/domain/entities/stylist_settings/stylist_settings.dart';
+import 'package:snip_fair/core/domain/entities/withdrawal/withdrawal_lookup.dart';
+import 'package:snip_fair/core/domain/entities/withdrawal/withdrawal_submission.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message_list.dart';
 import 'package:snip_fair/core/domain/entities/customer_profile_details/preferences.dart';
 import 'package:snip_fair/core/domain/entities/notifications_list/notifications_list.dart';
@@ -226,10 +228,17 @@ abstract class ProfileRepository {
 
   Future<ApiResult<DisputeList>> getDisputes();
 
-  Future<ApiResult<SimpleResponse>> requestPayout(
+  /// `POST /wallet/withdraw`. [idempotencyKey] identifies the withdrawal
+  /// attempt: resend the same key (with the same details) to retry it.
+  Future<ApiResult<WithdrawalSubmission>> requestPayout(
     String paymentMethodId,
-    double amount,
-  );
+    double amount, {
+    required String idempotencyKey,
+  });
+
+  /// `GET /wallet/withdrawals/lookup`: what became of the withdrawal sent
+  /// with [idempotencyKey]. Read-only; never sends a withdrawal.
+  Future<ApiResult<WithdrawalLookup>> lookupWithdrawal(String idempotencyKey);
 
   Future<ApiResult<SimpleResponse>> deleteAccount();
 
@@ -666,11 +675,22 @@ class ProfileRepoImpl implements ProfileRepository {
   }
 
   @override
-  Future<ApiResult<SimpleResponse>> requestPayout(
+  Future<ApiResult<WithdrawalSubmission>> requestPayout(
     String paymentMethodId,
-    double amount,
+    double amount, {
+    required String idempotencyKey,
+  }) =>
+      _remoteSource.requestPayout(
+        paymentMethodId,
+        amount,
+        idempotencyKey: idempotencyKey,
+      );
+
+  @override
+  Future<ApiResult<WithdrawalLookup>> lookupWithdrawal(
+    String idempotencyKey,
   ) =>
-      _remoteSource.requestPayout(paymentMethodId, amount);
+      _remoteSource.lookupWithdrawal(idempotencyKey);
 
   @override
   Future<ApiResult<SimpleResponse>> deleteAccount() =>

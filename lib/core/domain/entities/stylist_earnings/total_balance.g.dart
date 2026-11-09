@@ -7,7 +7,7 @@ part of 'total_balance.dart';
 // **************************************************************************
 
 TotalBalance _$TotalBalanceFromJson(Map<String, dynamic> json) => TotalBalance(
-      value: (json['value'] as num?)?.toInt(),
+      value: toNumOrNull(json['value']),
       changePercentage: (json['change_percentage'] as num?)?.toInt(),
       changeText: json['change_text'] as String?,
       isPositive: json['is_positive'] as bool?,

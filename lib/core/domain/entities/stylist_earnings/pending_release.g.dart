@@ -8,7 +8,7 @@ part of 'pending_release.dart';
 
 PendingRelease _$PendingReleaseFromJson(Map<String, dynamic> json) =>
     PendingRelease(
-      value: (json['value'] as num?)?.toInt(),
+      value: toNumOrNull(json['value']),
       changeText: json['change_text'] as String?,
       isPositive: json['is_positive'] as bool?,
     );

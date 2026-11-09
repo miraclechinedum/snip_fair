@@ -8,7 +8,7 @@ part of 'total_requests.dart';
 
 TotalRequests _$TotalRequestsFromJson(Map<String, dynamic> json) =>
     TotalRequests(
-      value: (json['value'] as num?)?.toInt(),
+      value: toIntOrNull(json['value']),
       changeText: json['change_text'] as String?,
       isPositive: json['is_positive'] as bool?,
     );

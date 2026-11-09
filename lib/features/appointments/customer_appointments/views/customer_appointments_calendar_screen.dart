@@ -412,7 +412,7 @@ class DailyAppointmentDetails extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: AppText(
-                    text: a.status.toStatusText(),
+                    text: a.cardPayment?.statusLabel ?? a.status.toStatusText(),
                     fontSize: 10,
                     color: a.status.toStatusColor(),
                   ),

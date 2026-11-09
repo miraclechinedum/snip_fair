@@ -49,8 +49,20 @@ class LocalKeyStorage {
         : null;
   }
 
+  /// Wipes the session's data, except unresolved withdrawal attempts: they
+  /// are keyed by user id and must outlive a logout, so a stylist who signs
+  /// back in can still retry the same request instead of paying out twice.
   Future<void> clearData() async {
+    final pendingWithdrawals = {
+      for (final key in _sharedPreferences.getKeys())
+        if (key.startsWith(SharedPrefKey.pendingWithdrawalPrefix))
+          key: _sharedPreferences.getString(key),
+    };
     await _sharedPreferences.clear();
+    for (final entry in pendingWithdrawals.entries) {
+      final value = entry.value;
+      if (value != null) await _sharedPreferences.setString(entry.key, value);
+    }
   }
 
   Future<bool> storeString({required String key, required String value}) async {

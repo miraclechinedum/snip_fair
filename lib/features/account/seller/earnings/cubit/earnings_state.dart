@@ -1,5 +1,26 @@
 part of 'earnings_cubit.dart';
 
+/// Where checking an unresolved withdrawal with the lookup API stands.
+enum WithdrawalRecoveryStatus {
+  /// Not checked (yet) in this session.
+  idle,
+
+  /// A lookup is running.
+  checking,
+
+  /// Nothing is recorded under the key yet: resend the original request.
+  notFound,
+
+  /// 503: the backend is still writing a withdrawal; check again shortly.
+  busy,
+
+  /// The lookup failed (network, 5xx, 401, unreadable answer).
+  unavailable,
+
+  /// 403: the account may not look up withdrawals.
+  forbidden,
+}
+
 class EarningsState extends Equatable {
   const EarningsState._({
     required this.earnings,
@@ -9,6 +30,10 @@ class EarningsState extends Equatable {
     required this.transactionsState,
     required this.transactionsPaginationData,
     required this.requestPayoutState,
+    required this.pendingWithdrawal,
+    required this.pendingWithdrawalUnreadable,
+    required this.withdrawalRecovery,
+    required this.recoveredWithdrawal,
   });
 
   const EarningsState.initial()
@@ -18,15 +43,35 @@ class EarningsState extends Equatable {
         transactionsState = const ProcessState.init(null),
           requestPayoutState = const ProcessState.init(null),
         transactionsPaginationData = const PaginationData(),
-        settings = null;
+        settings = null,
+        pendingWithdrawal = null,
+        pendingWithdrawalUnreadable = false,
+        withdrawalRecovery = WithdrawalRecoveryStatus.idle,
+        recoveredWithdrawal = null;
 
   final ProcessState<StylistEarnings> earnings;
   final Settings? settings;
   final ProcessState<bool> updatePayoutSettingState;
-  final ProcessState<bool> requestPayoutState;
+  final ProcessState<WithdrawalSubmission> requestPayoutState;
   final ProcessState<List<PaymentMethod>> paymentMethods;
   final ProcessState<List<UserTransaction>> transactionsState;
   final PaginationData transactionsPaginationData;
+
+  /// The withdrawal attempt being sent, or not yet accepted (see
+  /// [WithdrawalAttemptStatus]). Mirrored in `WithdrawalAttemptStore`, so it
+  /// survives this screen, a logout and an app restart.
+  final WithdrawalAttempt? pendingWithdrawal;
+
+  /// A saved attempt exists but could not be read. Withdrawals stay blocked
+  /// until the stylist confirms they have checked their transactions.
+  final bool pendingWithdrawalUnreadable;
+
+  /// Progress of looking up [pendingWithdrawal] by its idempotency key.
+  final WithdrawalRecoveryStatus withdrawalRecovery;
+
+  /// The withdrawal a lookup found for an earlier attempt (which is then
+  /// resolved), shown to the stylist once.
+  final WithdrawalRecord? recoveredWithdrawal;
 
   EarningsState copyWith({
     ProcessState<StylistEarnings>? earnings,
@@ -35,7 +80,13 @@ class EarningsState extends Equatable {
     ProcessState<List<PaymentMethod>>? paymentMethods,
     ProcessState<List<UserTransaction>>? transactionsState,
     PaginationData? transactionsPaginationData,
-    ProcessState<bool>? requestPayoutState,
+    ProcessState<WithdrawalSubmission>? requestPayoutState,
+    WithdrawalAttempt? pendingWithdrawal,
+    bool clearPendingWithdrawal = false,
+    bool? pendingWithdrawalUnreadable,
+    WithdrawalRecoveryStatus? withdrawalRecovery,
+    WithdrawalRecord? recoveredWithdrawal,
+    bool clearRecoveredWithdrawal = false,
   }) {
     return EarningsState._(
       earnings: earnings ?? this.earnings,
@@ -47,6 +98,15 @@ class EarningsState extends Equatable {
           transactionsPaginationData ?? this.transactionsPaginationData,
       updatePayoutSettingState:
           updatePayoutSettingState ?? this.updatePayoutSettingState,
+      pendingWithdrawal: clearPendingWithdrawal
+          ? null
+          : pendingWithdrawal ?? this.pendingWithdrawal,
+      pendingWithdrawalUnreadable:
+          pendingWithdrawalUnreadable ?? this.pendingWithdrawalUnreadable,
+      withdrawalRecovery: withdrawalRecovery ?? this.withdrawalRecovery,
+      recoveredWithdrawal: clearRecoveredWithdrawal
+          ? null
+          : recoveredWithdrawal ?? this.recoveredWithdrawal,
     );
   }
 
@@ -59,5 +119,9 @@ class EarningsState extends Equatable {
         transactionsState,
         transactionsPaginationData,
         requestPayoutState,
+        pendingWithdrawal,
+        pendingWithdrawalUnreadable,
+        withdrawalRecovery,
+        recoveredWithdrawal,
       ];
 }

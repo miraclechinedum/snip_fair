@@ -171,7 +171,9 @@ class AppointmentCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: AppText(
-                  text: appointment.status?.toStatusText() ?? '',
+                  text: appointment.cardPayment?.statusLabel ??
+                      appointment.status?.toStatusText() ??
+                      '',
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: appointment.status.toStatusColor(),

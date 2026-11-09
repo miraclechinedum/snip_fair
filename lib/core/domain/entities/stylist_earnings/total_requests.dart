@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'total_requests.g.dart';
 
@@ -10,6 +11,8 @@ class TotalRequests {
   factory TotalRequests.fromJson(Map<String, dynamic> json) {
     return _$TotalRequestsFromJson(json);
   }
+  /// A count of pending payout requests.
+  @JsonKey(fromJson: toIntOrNull)
   int? value;
   @JsonKey(name: 'change_text')
   String? changeText;

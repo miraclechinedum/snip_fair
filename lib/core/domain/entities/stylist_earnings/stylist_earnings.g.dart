@@ -11,9 +11,7 @@ StylistEarnings _$StylistEarningsFromJson(Map<String, dynamic> json) =>
       statistics: json['statistics'] == null
           ? null
           : Statistics.fromJson(json['statistics'] as Map<String, dynamic>),
-      transactions: (json['transactions'] as List<dynamic>?)
-          ?.map((e) => UserTransaction.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      transactions: earningsTransactionsFromJson(json['transactions']),
       paymentMethod: json['payment_method'] == null
           ? null
           : PaymentMethod.fromJson(

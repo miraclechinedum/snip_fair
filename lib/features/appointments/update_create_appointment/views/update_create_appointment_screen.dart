@@ -28,6 +28,7 @@ import 'package:snip_fair/features/account/seller/profile_verification/views/sel
 import 'package:snip_fair/features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/widgets/appointment_card_payment_notice.dart';
 // ignore_for_file: unawaited_futures
 
 @RoutePage()
@@ -215,8 +216,8 @@ class _UpdateCreateAppointmentScreenState
                           case CardPaymentPhase.successful:
                             AppHelper.showSnackBar(
                               context,
-                              message:
-                                  'Payment verified. Awaiting stylist approval.',
+                              message: UpdateCreateAppointmentCubit
+                                  .cardPaymentMessage(state.cardPaymentPhase),
                             );
                             context
                                 .read<CustomerAppointmentsCubit>()
@@ -229,7 +230,8 @@ class _UpdateCreateAppointmentScreenState
                           case CardPaymentPhase.pending:
                             AppHelper.showSnackBar(
                               context,
-                              message: 'Your payment is still being confirmed.',
+                              message: UpdateCreateAppointmentCubit
+                                  .cardPaymentMessage(state.cardPaymentPhase),
                             );
                             context
                                 .read<CustomerAppointmentsCubit>()
@@ -237,18 +239,15 @@ class _UpdateCreateAppointmentScreenState
                             _leaveForAppointments();
                             break;
                           case CardPaymentPhase.cancelled:
-                            AppHelper.showSnackBar(context,
-                                message: 'Payment was cancelled.');
-                            break;
                           case CardPaymentPhase.failed:
-                            AppHelper.showSnackBar(context,
-                                message: 'Payment failed. Please try again.');
-                            break;
                           case CardPaymentPhase.unknown:
                             AppHelper.showSnackBar(
                               context,
-                              message:
-                                  'Your payment status is not available yet. Please check again shortly.',
+                              message: UpdateCreateAppointmentCubit
+                                  .cardPaymentMessage(
+                                state.cardPaymentPhase,
+                                canRetry: state.retryAppointmentId != null,
+                              ),
                             );
                             break;
                           default:
@@ -423,12 +422,9 @@ class _UpdateCreateAppointmentScreenState
                   if (appointState.fetchAppointmentState.hasSuccess) {
                     return CustomPlaceSearchField(
                       label: 'Location',
-                      onSelected: (place) {
-                        if (place == null) return;
-                        context
-                            .read<UpdateCreateAppointmentCubit>()
-                            .onAddressChanged(place.address);
-                      },
+                      onSelected: context
+                          .read<UpdateCreateAppointmentCubit>()
+                          .onPlaceSelected,
                       readOnly: appointState.fetchAppointmentState
                           .hasSuccess, // make readOnly if update
                       initialPlace: appointState
@@ -450,12 +446,9 @@ class _UpdateCreateAppointmentScreenState
                   }
                   return CustomPlaceSearchField(
                     label: 'Location',
-                    onSelected: (place) {
-                      if (place == null) return;
-                      context
-                          .read<UpdateCreateAppointmentCubit>()
-                          .onAddressChanged(place.address);
-                    },
+                    onSelected: context
+                        .read<UpdateCreateAppointmentCubit>()
+                        .onPlaceSelected,
                     readOnly: appointState.fetchAppointmentState
                         .hasSuccess, // make readOnly if update
                     initialPlace: state.profileDetails.data?.user?.country !=
@@ -646,7 +639,11 @@ class BookingSummary extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   child: Center(
                     child: AppText(
-                      text: state.fetchAppointmentState.data!.status
+                      // An unpaid card booking says what happened to its
+                      // payment instead of a bare "Processing".
+                      text: state.fetchAppointmentState.data!.cardPayment
+                              ?.statusLabel ??
+                          state.fetchAppointmentState.data!.status
                               ?.toStatusText() ??
                           '',
                       fontWeight: FontWeight.w600,
@@ -654,6 +651,24 @@ class BookingSummary extends StatelessWidget {
                           .toStatusColor(),
                     ),
                   ),
+                ),
+              if (state.fetchAppointmentState.data?.cardPayment
+                  case final cardPayment?)
+                AppointmentCardPaymentNotice(
+                  payment: cardPayment,
+                  isBusy: state.isCardPaymentBusy,
+                  onRetry: () => context
+                      .read<UpdateCreateAppointmentCubit>()
+                      .retryAppointmentPayment(
+                        state.fetchAppointmentState.data!.id.toString(),
+                      ),
+                  onCheckStatus: () => context
+                      .read<UpdateCreateAppointmentCubit>()
+                      .checkAppointmentPayment(
+                        appointmentId:
+                            state.fetchAppointmentState.data!.id.toString(),
+                        depositId: cardPayment.depositId!,
+                      ),
                 ),
               const AppText(
                 text: 'Booking Summary',
@@ -997,7 +1012,12 @@ class BookingSummary extends StatelessWidget {
                         profileState.walletState.data?.balance ?? 0.0;
 
                     return CustomButton(
-                      title: 'Book Appointment',
+                      // After Peach confirmed a cancelled or failed card
+                      // payment, booking by card pays the SAME booking again.
+                      title: state.paymentMethod == 'card' &&
+                              state.retryAppointmentId != null
+                          ? 'Retry Payment'
+                          : 'Book Appointment',
                       isLoading:
                           state.updateOrCreateAppointmentState.isLoading ||
                               state.isCardPaymentBusy,

@@ -8,7 +8,7 @@ part of 'total_earnings.dart';
 
 TotalEarnings _$TotalEarningsFromJson(Map<String, dynamic> json) =>
     TotalEarnings(
-      value: (json['value'] as num?)?.toInt(),
+      value: toNumOrNull(json['value']),
       currentPeriod: json['current_period'],
       changePercentage: json['change_percentage'],
       changeText: json['change_text'],

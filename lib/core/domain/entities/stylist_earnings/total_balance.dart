@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'total_balance.g.dart';
 
@@ -14,7 +15,9 @@ class TotalBalance {
   factory TotalBalance.fromJson(Map<String, dynamic> json) {
     return _$TotalBalanceFromJson(json);
   }
-  int? value;
+  /// Money: kept as sent (cents included); null when missing or invalid.
+  @JsonKey(fromJson: toNumOrNull)
+  num? value;
   @JsonKey(name: 'change_percentage')
   int? changePercentage;
   @JsonKey(name: 'change_text')

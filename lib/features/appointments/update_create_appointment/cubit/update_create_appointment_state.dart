@@ -33,6 +33,8 @@ class UpdateCreateAppointmentState extends Equatable {
         cardPaymentPhase: CardPaymentPhase.idle,
         cardCheckoutState: ProcessState.init(null),
         cardVerificationState: ProcessState.init(null),
+        retryAppointmentId: null,
+        addressPlace: null,
       );
 
   const UpdateCreateAppointmentState._({
@@ -51,6 +53,8 @@ class UpdateCreateAppointmentState extends Equatable {
     required this.cardPaymentPhase,
     required this.cardCheckoutState,
     required this.cardVerificationState,
+    required this.retryAppointmentId,
+    required this.addressPlace,
   });
 
   final ProcessState<SellerPortfolio> fetchPortfolioState;
@@ -68,6 +72,15 @@ class UpdateCreateAppointmentState extends Equatable {
   final CardPaymentPhase cardPaymentPhase;
   final ProcessState<CheckoutPaymentData> cardCheckoutState;
   final ProcessState<PaymentReconciliation> cardVerificationState;
+
+  /// The unpaid booking whose card payment Peach confirmed cancelled or
+  /// failed, and that may be paid again. Booking by card then retries THIS
+  /// booking (`POST .../payment/card`) instead of creating another one.
+  final String? retryAppointmentId;
+
+  /// The address suggestion the customer picked, with its coordinates; null
+  /// when the address was typed by hand (or none was picked).
+  final GeoPlace? addressPlace;
 
   CheckoutPaymentData? get activeCardCheckout => cardCheckoutState.data;
   /// A card checkout whose outcome is not known yet. A new card checkout
@@ -104,7 +117,9 @@ class UpdateCreateAppointmentState extends Equatable {
         paymentMethod,
         cardPaymentPhase,
         cardCheckoutState,
-        cardVerificationState
+        cardVerificationState,
+        retryAppointmentId,
+        addressPlace,
       ];
 
   UpdateCreateAppointmentState copyWith({
@@ -123,6 +138,10 @@ class UpdateCreateAppointmentState extends Equatable {
     CardPaymentPhase? cardPaymentPhase,
     ProcessState<CheckoutPaymentData>? cardCheckoutState,
     ProcessState<PaymentReconciliation>? cardVerificationState,
+    String? retryAppointmentId,
+    bool clearRetryAppointmentId = false,
+    GeoPlace? addressPlace,
+    bool clearAddress = false,
   }) =>
       UpdateCreateAppointmentState._(
         fetchPortfolioState: fetchPortfolioState ?? this.fetchPortfolioState,
@@ -132,7 +151,7 @@ class UpdateCreateAppointmentState extends Equatable {
             this.updateOrCreateAppointmentState,
         selectedDate: selectedDate ?? this.selectedDate,
         selectedTime: selectedTime ?? this.selectedTime,
-        address: address ?? this.address,
+        address: clearAddress ? null : address ?? this.address,
         notes: notes ?? this.notes,
         fetchSellerDetailsState:
             fetchSellerDetailsState ?? this.fetchSellerDetailsState,
@@ -145,5 +164,11 @@ class UpdateCreateAppointmentState extends Equatable {
         cardCheckoutState: cardCheckoutState ?? this.cardCheckoutState,
         cardVerificationState:
             cardVerificationState ?? this.cardVerificationState,
+        retryAppointmentId: clearRetryAppointmentId
+            ? null
+            : retryAppointmentId ?? this.retryAppointmentId,
+        addressPlace: clearAddress || (address != null && addressPlace == null)
+            ? null
+            : addressPlace ?? this.addressPlace,
       );
 }

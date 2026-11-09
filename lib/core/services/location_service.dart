@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
@@ -8,7 +9,6 @@ import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/network/http_service.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
-import 'package:snip_fair/core/data/models/remote/auto_complete_result.dart';
 
 @LazySingleton()
 class LocationService {
@@ -126,37 +126,94 @@ class LocationService {
     return Geolocator.getCurrentPosition();
   }
 
+  /// Fewer characters than this never call the address provider.
+  static const placeSearchMinChars = 3;
+
+  /// Creates the HTTP client for [placeSearch]; replaced in tests.
+  @visibleForTesting
+  static Dio Function(BaseOptions options) createPlaceSearchClient = Dio.new;
+
+  /// Address suggestions in South Africa from Geoapify's autocomplete.
+  ///
+  /// Returns an empty list when nothing matches (or the query is shorter than
+  /// [placeSearchMinChars]). Throws [PlaceSearchException] when the provider
+  /// could not be asked or answered with an error, so the field can tell "no
+  /// results" from "unavailable". The request URL carries the API key, so only
+  /// the error type and HTTP status are ever logged.
   Future<List<GeoPlace>> placeSearch(String query) async {
+    final text = query.trim();
+    if (text.length < placeSearchMinChars) return [];
     try {
-      final response = await Dio(
+      final response = await createPlaceSearchClient(
         BaseOptions(
           baseUrl: 'https://api.geoapify.com',
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
           validateStatus: (status) => status == 200,
         ),
       ).get<Map<String, dynamic>>(
         '/v1/geocode/autocomplete',
         queryParameters: {
-          'text': query,
+          'text': text,
           'apiKey': '444cf10f491e417d81d839ee58801389',
           'limit': '5',
-          'lang': 'za',
+          'lang': 'en',
           'filter': 'countrycode:za',
         },
       );
-
-      final autocomplete = AutoCompleteResult.fromJson(response.data!);
-      return autocomplete.features!
-          .map(
-            (element) => GeoPlace(
-              address: element.properties?.formatted ?? 'N/A',
-              lat: element.properties?.lat ?? 0.0,
-              lng: element.properties?.lon ?? 0.0,
-            ),
-          )
-          .toList();
+      return parsePlaceSuggestions(response.data);
+    } on PlaceSearchException {
+      rethrow;
+    } on DioException catch (e) {
+      Logger().w(
+        'Place search unavailable: type=${e.type.name} '
+        'http=${e.response?.statusCode ?? 'none'}',
+      );
+      throw PlaceSearchException(e.response?.statusCode);
     } catch (e) {
-      Logger().e('PLACE SEARCH ERROR: ', error: e);
-      return [];
+      Logger().w('Place search failed: ${e.runtimeType}');
+      throw const PlaceSearchException(null);
     }
   }
+
+  /// The places in a Geoapify autocomplete response: the formatted address
+  /// and its coordinates. A suggestion without an address or coordinates is
+  /// skipped (never fatal for the others); duplicates are dropped.
+  @visibleForTesting
+  static List<GeoPlace> parsePlaceSuggestions(Object? body) {
+    final features = body is Map ? body['features'] : null;
+    if (features is! List) throw const PlaceSearchException(null);
+
+    final places = <GeoPlace>[];
+    final seen = <String>{};
+    for (final feature in features) {
+      final properties = feature is Map ? feature['properties'] : null;
+      if (properties is! Map) continue;
+      final address = properties['formatted'];
+      final lat = properties['lat'];
+      final lng = properties['lon'];
+      if (address is! String || address.trim().isEmpty) continue;
+      if (lat is! num || lng is! num) continue;
+      if (!seen.add(address.trim())) continue;
+      places.add(
+        GeoPlace(
+          address: address.trim(),
+          lat: lat.toDouble(),
+          lng: lng.toDouble(),
+        ),
+      );
+    }
+    return places;
+  }
+}
+
+/// The address provider could not be asked, or answered with an error.
+class PlaceSearchException implements Exception {
+  const PlaceSearchException(this.statusCode);
+
+  /// The provider's HTTP status, when it answered.
+  final int? statusCode;
+
+  @override
+  String toString() => 'PlaceSearchException(http: ${statusCode ?? 'none'})';
 }

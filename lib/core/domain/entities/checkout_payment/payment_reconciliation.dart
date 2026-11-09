@@ -9,6 +9,8 @@ class PaymentReconciliation {
     this.amount,
     this.currency,
     this.message,
+    this.appointmentStatus,
+    this.canRetry,
   });
 
   factory PaymentReconciliation.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,8 @@ class PaymentReconciliation {
       amount: json['amount'] as num?,
       currency: json['currency']?.toString(),
       message: json['message']?.toString(),
+      appointmentStatus: json['appointment_status']?.toString(),
+      canRetry: json['can_retry'] is bool ? json['can_retry'] as bool : null,
     );
   }
 
@@ -35,8 +39,22 @@ class PaymentReconciliation {
   final String? currency;
   final String? message;
 
-  /// Appointment-booking success rule: successful *and* settled by this call.
-  bool get isSuccessful => status == 'successful' && settled == true;
+  /// The booking's status after this check (appointment payments only).
+  /// `processing` is "not paid yet"; anything else means it was paid.
+  final String? appointmentStatus;
+
+  /// Appointment payments: Peach confirmed this attempt cancelled or failed
+  /// and the SAME booking may be paid again (`POST .../payment/card`).
+  final bool? canRetry;
+
+  /// Appointment-booking success rule: `successful` and the booking is paid —
+  /// either settled by this very call, or already moved past `processing` (the
+  /// webhook or the checkout return settled it first). A bare `successful`
+  /// from an older server without `appointment_status` still needs `settled`.
+  bool get isSuccessful =>
+      status == 'successful' &&
+      (settled == true ||
+          (appointmentStatus != null && appointmentStatus != 'processing'));
 
   /// Wallet top-up rule from the backend contract: an HTTP 200 body with
   /// `status == "successful"` means the wallet holds the money. `settled` is

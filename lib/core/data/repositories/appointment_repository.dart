@@ -96,6 +96,13 @@ abstract class AppointmentRepository {
     String? address,
   });
 
+  /// `POST /customer/appointment/{id}/payment/card`: a new card payment
+  /// attempt for the SAME unpaid booking, allowed only once Peach confirmed
+  /// its earlier attempt cancelled or failed (never creates a booking).
+  Future<ApiResult<CheckoutPaymentData>> retryAppointmentCardPayment(
+    String appointmentId,
+  );
+
   Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(
     String depositId,
   );
@@ -295,6 +302,12 @@ class AppointmentRepoImpl implements AppointmentRepository {
         note: note,
         address: address,
       );
+
+  @override
+  Future<ApiResult<CheckoutPaymentData>> retryAppointmentCardPayment(
+    String appointmentId,
+  ) =>
+      _remoteSource.retryAppointmentCardPayment(appointmentId);
 
   @override
   Future<ApiResult<PaymentReconciliation>> reconcilePeachPayment(

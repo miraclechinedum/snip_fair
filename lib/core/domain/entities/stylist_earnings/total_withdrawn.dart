@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'total_withdrawn.g.dart';
 
@@ -15,7 +16,9 @@ class TotalWithdrawn {
   factory TotalWithdrawn.fromJson(Map<String, dynamic> json) {
     return _$TotalWithdrawnFromJson(json);
   }
-  dynamic value;
+  /// Money: kept as sent (cents included); null when missing or invalid.
+  @JsonKey(fromJson: toNumOrNull)
+  num? value;
   @JsonKey(name: 'current_period')
   dynamic currentPeriod;
   @JsonKey(name: 'change_percentage')

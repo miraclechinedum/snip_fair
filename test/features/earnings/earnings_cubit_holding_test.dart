@@ -6,6 +6,9 @@ import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings
 import 'package:snip_fair/core/domain/entities/customer_wallet_transaction_list/customer_wallet_transaction_list.dart';
 import 'package:snip_fair/features/account/seller/earnings/cubit/earnings_cubit.dart';
 
+import 'earnings_fixtures.dart';
+import 'withdrawal_test_support.dart';
+
 class _MockProfileRepository extends Mock implements ProfileRepository {}
 
 StylistEarnings _earnings(List<Map<String, dynamic>> transactions) {
@@ -18,9 +21,9 @@ void main() {
   late _MockProfileRepository repo;
   late EarningsCubit cubit;
 
-  setUp(() {
+  setUp(() async {
     repo = _MockProfileRepository();
-    cubit = EarningsCubit(repo);
+    cubit = EarningsCubit(repo, await stylistAttemptStore());
   });
 
   tearDown(() => cubit.close());
@@ -41,17 +44,7 @@ void main() {
   test('surfaces the holding pouch once the stylist approves', () async {
     when(repo.getEarnings).thenAnswer(
       (_) async => ApiResult.success(
-        data: _earnings([
-          {
-            'id': 501,
-            'type': 'earning',
-            'amount': 480.75,
-            'status': 'holding',
-            'description': 'Escrow held for booking BK-1783504974-10',
-            'reference': 'BK-1783504974-10',
-            'created_at': '2026-08-20T10:00:00.000Z',
-          },
-        ]),
+        data: _earnings([pouchRow(id: 'pouch_501')]),
       ),
     );
 
@@ -61,25 +54,13 @@ void main() {
     expect(rows, hasLength(1));
     expect(rows.single.status, 'holding');
     expect(rows.single.amount, 480.75);
-    expect(
-      rows.single.description,
-      'Escrow held for booking BK-1783504974-10',
-    );
+    expect(rows.single.reference, 'BK-1783504974-10');
   });
 
   test('holding pouches survive a Transactions-tab refresh', () async {
     when(repo.getEarnings).thenAnswer(
       (_) async => ApiResult.success(
-        data: _earnings([
-          {
-            'id': 501,
-            'type': 'earning',
-            'amount': 480.75,
-            'status': 'holding',
-            'description': 'Escrow held',
-            'created_at': '2026-08-20T10:00:00.000Z',
-          },
-        ]),
+        data: _earnings([pouchRow(id: 'pouch_501')]),
       ),
     );
     // /wallet/transactions does not carry holding pouches — the merge is
@@ -110,23 +91,17 @@ void main() {
     await cubit.fetchTransactions(isInitial: true);
 
     final rows = cubit.state.transactionsState.data!;
-    expect(rows.map((r) => r.id), containsAll(<int>[501, 402]));
+    expect(rows.map((r) => r.id), containsAll(<int>[-501, 402]));
     // Newest first.
-    expect(rows.first.id, 501);
+    expect(rows.first.id, -501);
   });
 
   test('does not duplicate a row present in both collections', () async {
+    // `/stylist/earnings` repeats real transactions in its own, poorer
+    // shape; the wallet's row is the one shown.
     when(repo.getEarnings).thenAnswer(
       (_) async => ApiResult.success(
-        data: _earnings([
-          {
-            'id': 501,
-            'type': 'earning',
-            'amount': 480.75,
-            'status': 'holding',
-            'created_at': '2026-08-20T10:00:00.000Z',
-          },
-        ]),
+        data: _earnings([transactionRow(id: 501)]),
       ),
     );
     when(
@@ -140,10 +115,11 @@ void main() {
           'data': [
             {
               'id': 501,
-              'type': 'earning',
-              'amount': 480.75,
-              'status': 'holding',
-              'created_at': '2026-08-20T10:00:00.000Z',
+              'type': 'withdraw',
+              'amount': 1250.0,
+              'status': 'completed',
+              'description': 'Payout to Capitec Bank',
+              'created_at': '2026-08-19T08:00:00.000Z',
             },
           ],
         }),
@@ -153,6 +129,32 @@ void main() {
     await cubit.getEarnings();
     await cubit.fetchTransactions(isInitial: true);
 
+    final rows = cubit.state.transactionsState.data!;
+    expect(rows, hasLength(1));
+    expect(rows.single.description, 'Payout to Capitec Bank');
+
+    // Refreshing earnings afterwards keeps the wallet row.
+    await cubit.getEarnings();
     expect(cubit.state.transactionsState.data, hasLength(1));
+    expect(
+      cubit.state.transactionsState.data!.single.description,
+      'Payout to Capitec Bank',
+    );
+  });
+
+  test('a released pouch disappears on the next earnings refresh', () async {
+    var released = false;
+    when(repo.getEarnings).thenAnswer(
+      (_) async => ApiResult.success(
+        data: _earnings(released ? const [] : [pouchRow(id: 'pouch_501')]),
+      ),
+    );
+
+    await cubit.getEarnings();
+    expect(cubit.state.transactionsState.data, hasLength(1));
+
+    released = true;
+    await cubit.getEarnings();
+    expect(cubit.state.transactionsState.data, isEmpty);
   });
 }

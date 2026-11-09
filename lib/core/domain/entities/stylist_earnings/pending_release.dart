@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:snip_fair/core/utils/json_coercion.dart';
 
 part 'pending_release.g.dart';
 
@@ -9,7 +10,9 @@ class PendingRelease {
   factory PendingRelease.fromJson(Map<String, dynamic> json) {
     return _$PendingReleaseFromJson(json);
   }
-  int? value;
+  /// Money: kept as sent (cents included); null when missing or invalid.
+  @JsonKey(fromJson: toNumOrNull)
+  num? value;
   @JsonKey(name: 'change_text')
   String? changeText;
   @JsonKey(name: 'is_positive')

@@ -12,12 +12,21 @@ class OnSuccessDialogContent extends StatelessWidget {
     this.onDoneCallback,
     this.buttonText,
     this.mainText,
+    this.compactIcon = false,
     super.key,
   });
   final String subtext;
   final String? mainText;
   final String? buttonText;
   final void Function(BuildContext)? onDoneCallback;
+
+  /// A small check in a light-green circle, with the content centred and
+  /// scrollable, instead of the large square glyph in an `Expanded` — which
+  /// paints past its box (over the heading) when a long message leaves it
+  /// less than its size. Opt-in, so other dialogs keep their look.
+  final bool compactIcon;
+
+  static const successColor = Color(0xff008000);
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +35,7 @@ class OnSuccessDialogContent extends StatelessWidget {
         Navigator.pop(context);
       });
     }
+    if (compactIcon) return _buildCompact(context);
     return SizedBox(
       // height: (context.heightPx * 0.5),
       width: double.infinity,
@@ -83,6 +93,75 @@ class OnSuccessDialogContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Icon, heading, message and button sized to their content and centred in
+  /// the dialog; scrolls instead of overflowing when the dialog is short
+  /// (small screens, large text).
+  Widget _buildCompact(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8).dg,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _SuccessBadge(key: Key('success_dialog_icon')),
+              16.verticalSpace,
+              AppText(
+                text: mainText ?? 'Success',
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontSize: 24,
+                textAlign: TextAlign.center,
+              ),
+              8.verticalSpace,
+              AppText(
+                text: subtext,
+                color: AppColors.grey3,
+                fontWeight: FontWeight.w600,
+                textAlign: TextAlign.center,
+              ),
+              if (onDoneCallback != null) ...[
+                24.verticalSpace,
+                CustomButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onDoneCallback?.call(context);
+                  },
+                  title: buttonText ?? 'Continue',
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A 56 × 56 light-green circle holding a 32 px green check. Fixed logical
+/// sizes, so it never outgrows its box.
+class _SuccessBadge extends StatelessWidget {
+  const _SuccessBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: OnSuccessDialogContent.successColor.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.check_rounded,
+        size: 32,
+        color: OnSuccessDialogContent.successColor,
       ),
     );
   }

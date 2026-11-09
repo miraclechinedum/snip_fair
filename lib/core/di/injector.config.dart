@@ -72,6 +72,7 @@ import '../network/http_service.dart' as _i944;
 import '../presentation/cubit/app_cubit.dart' as _i782;
 import '../services/location_service.dart' as _i669;
 import '../utils/preferences/app_preferences.dart' as _i395;
+import '../utils/preferences/withdrawal_attempt_store.dart' as _i419;
 import 'register_module.dart' as _i291;
 
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -99,6 +100,8 @@ Future<_i174.GetIt> $initGetIt(
       () => _i806.HttpRequestExceptionMapper(gh<_i1015.ErrorResponseMapper>()));
   gh.factory<_i395.LocalKeyStorage>(
       () => _i395.LocalKeyStorage(gh<_i460.SharedPreferences>()));
+  gh.factory<_i419.WithdrawalAttemptStore>(
+      () => _i419.WithdrawalAttemptStore(gh<_i460.SharedPreferences>()));
   gh.factory<_i939.AppointmentRepository>(
       () => _i939.AppointmentRepoImpl(gh<_i637.SnipFairBackendRemoteSource>()));
   gh.factory<_i438.CustomerAppointmentsCubit>(
@@ -147,8 +150,10 @@ Future<_i174.GetIt> $initGetIt(
       () => _i1025.CustomerProfileMgtCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i735.SellerAvailabilityScheduleCubit>(() =>
       _i735.SellerAvailabilityScheduleCubit(gh<_i990.ProfileRepository>()));
-  gh.factory<_i759.EarningsCubit>(
-      () => _i759.EarningsCubit(gh<_i990.ProfileRepository>()));
+  gh.factory<_i759.EarningsCubit>(() => _i759.EarningsCubit(
+        gh<_i990.ProfileRepository>(),
+        gh<_i419.WithdrawalAttemptStore>(),
+      ));
   gh.factory<_i485.SellerPaymentMethodsCubit>(
       () => _i485.SellerPaymentMethodsCubit(gh<_i990.ProfileRepository>()));
   gh.factory<_i570.SellerPersonalDetailsCubit>(

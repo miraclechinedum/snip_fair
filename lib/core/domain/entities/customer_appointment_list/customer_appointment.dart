@@ -1,7 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:snip_fair/core/domain/entities/apointment/customer.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/stylist.dart';
+import 'package:snip_fair/core/domain/entities/customer_appointment_list/appointment_card_payment.dart';
 import 'package:snip_fair/core/domain/entities/customer_appointment_list/portfolio.dart';
+
+export 'package:snip_fair/core/domain/entities/customer_appointment_list/appointment_card_payment.dart';
 
 part 'customer_appointment.g.dart';
 
@@ -35,10 +38,14 @@ class CustomerAppointment {
     this.distanceFromStylist,
     this.tipAmount,
     this.tippedAt,
+    this.cardPayment,
   });
 
+  /// The generated mapping, plus the optional `card_payment` of an unpaid
+  /// card booking (read tolerantly, so older payloads still parse).
   factory CustomerAppointment.fromJson(Map<String, dynamic> json) =>
-      _$CustomerAppointmentFromJson(json);
+      _$CustomerAppointmentFromJson(json)
+        ..cardPayment = AppointmentCardPayment.tryParse(json['card_payment']);
   int? id;
   @JsonKey(name: 'stylist_id')
   String? stylistId;
@@ -83,6 +90,11 @@ class CustomerAppointment {
   double? tipAmount;
   @JsonKey(name: 'tipped_at')
   DateTime? tippedAt;
+
+  /// What happened to the card payment of this booking while it is unpaid
+  /// (`processing`); null for every other booking.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  AppointmentCardPayment? cardPayment;
 
   bool get hasBeenTipped => tippedAt != null;
 

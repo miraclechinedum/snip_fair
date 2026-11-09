@@ -362,6 +362,16 @@ class CustomPhoneTextField extends StatelessWidget {
   }
 }
 
+/// Pause in typing before address suggestions are requested.
+const placeSearchDebounce = Duration(milliseconds: 400);
+
+const placeSearchEmptyMessage =
+    'No matching addresses found. Keep typing, or use the address as typed.';
+
+const placeSearchErrorMessage =
+    'Address suggestions are unavailable right now. You can still type your '
+    'address.';
+
 class CustomPlaceSearchField extends StatefulWidget {
   const CustomPlaceSearchField({
     super.key,
@@ -454,7 +464,14 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
           )
         else
           DropDownSearchField<GeoPlace>(
-            displayAllSuggestionWhenTap: true,
+            // Suggestions start at a few characters, one request per pause in
+            // typing. Deep in a scrolling form the keyboard leaves almost no
+            // room below the field, so the list opens upward instead of being
+            // clipped to nothing.
+            displayAllSuggestionWhenTap: false,
+            minCharsForSuggestions: LocationService.placeSearchMinChars,
+            debounceDuration: placeSearchDebounce,
+            autoFlipDirection: true,
             isMultiSelectDropdown: false,
             textFieldConfiguration: (() {
               var lastTyped = '';
@@ -489,10 +506,8 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
                 ),
               );
             })(),
-            suggestionsCallback: (pattern) async {
-              if (pattern.isEmpty) return [];
-              return getIt<LocationService>().placeSearch(pattern);
-            },
+            suggestionsCallback: (pattern) =>
+                getIt<LocationService>().placeSearch(pattern),
             itemBuilder: (context, suggestion) {
               return ListTile(
                 leading: const Icon(Iconsax.location),
@@ -502,7 +517,36 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
                 ),
               );
             },
-            hideOnEmpty: true,
+            // Say why there are no suggestions instead of showing nothing;
+            // the typed address can always be kept as entered.
+            hideOnEmpty: false,
+            hideOnError: false,
+            loadingBuilder: (context) => const Padding(
+              padding: EdgeInsets.all(12),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+            noItemsFoundBuilder: (context) => const Padding(
+              padding: EdgeInsets.all(12),
+              child: AppText(
+                key: Key('place_search_empty'),
+                text: placeSearchEmptyMessage,
+                fontSize: 12,
+              ),
+            ),
+            errorBuilder: (context, error) => const Padding(
+              padding: EdgeInsets.all(12),
+              child: AppText(
+                key: Key('place_search_error'),
+                text: placeSearchErrorMessage,
+                fontSize: 12,
+              ),
+            ),
             onSuggestionSelected: _selectedAddress,
           ),
         if (widget.descriptionText != null)
