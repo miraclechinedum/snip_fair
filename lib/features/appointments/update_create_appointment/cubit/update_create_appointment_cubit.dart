@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +8,15 @@ import 'package:injectable/injectable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/network/api_result.dart';
+import 'package:snip_fair/core/services/location_service.dart';
 import 'package:snip_fair/core/utils/base/process_state.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/services/peach_deposit_reconciler.dart';
 import 'package:snip_fair/core/domain/entities/tip/tip_response.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/data/card_tip_attempt_store.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/data/card_tip_recovery.dart';
+import 'package:snip_fair/core/errors/exception/remote_exception.dart';
+import 'package:snip_fair/core/utils/app_extensions.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/data/repositories/appointment_repository.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
@@ -23,10 +30,44 @@ part 'update_create_appointment_state.dart';
 
 @Injectable()
 class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
-  UpdateCreateAppointmentCubit(this._appointmentRepository)
-      : super(UpdateCreateAppointmentState.initial());
+  UpdateCreateAppointmentCubit(
+    this._appointmentRepository, {
+    CardTipRecovery? tipRecovery,
+    @ignoreParam Future<LocationRefreshResult> Function()? refreshLocation,
+  })  : _refreshLocation = refreshLocation ?? _refreshDeviceLocation,
+        _tipRecovery = tipRecovery ??
+            CardTipRecovery(
+              _appointmentRepository,
+              store: MemoryCardTipAttemptStore(),
+            ),
+        super(UpdateCreateAppointmentState.initial()) {
+    _tipEvents = _tipRecovery.events.listen(_onTipRecoveryEvent);
+  }
 
   final AppointmentRepository _appointmentRepository;
+
+  /// Sends the customer's current position, so the stylist's distance is
+  /// measured from where they are now.
+  final Future<LocationRefreshResult> Function() _refreshLocation;
+
+  static Future<LocationRefreshResult> _refreshDeviceLocation() =>
+      getIt.isRegistered<LocationService>()
+          ? getIt<LocationService>().refreshLocation()
+          : Future.value(LocationRefreshResult.unavailable);
+
+  /// The app-wide record of unresolved card tips (persisted, shared with
+  /// start-up recovery). Provided by DI; a private one only in tests.
+  final CardTipRecovery _tipRecovery;
+  late final StreamSubscription<CardTipCheck> _tipEvents;
+
+  /// Identifies this cubit's own checks among [CardTipRecovery.events].
+  final Object _tipSource = Object();
+
+  @override
+  Future<void> close() async {
+    await _tipEvents.cancel();
+    return super.close();
+  }
 
   late BuildContext context;
 
@@ -38,6 +79,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     this.context = context;
     if (portfolioId != null) {
       fetchPortfolioById(portfolioId);
+      unawaited(_refreshDistance());
     } else if (appointmentId != null) {
       fetchAppointmentById(appointmentId);
     }
@@ -102,6 +144,7 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
         fetchPortfolioById(
           data.portfolioId.toString(),
         );
+        _resumeTipAttempt(appointmentId);
       },
       failure: (error) {
         if (!silent) {
@@ -113,6 +156,26 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
         }
       },
     );
+  }
+
+  /// Before booking: refresh the customer's location (bounded, never
+  /// prompting, never blocking the booking) and, when a new position was
+  /// sent, the stylist's distance from it.
+  Future<void> _refreshDistance() async {
+    LocationRefreshResult result;
+    try {
+      result = await _refreshLocation();
+    } catch (_) {
+      return;
+    }
+    if (isClosed || result != LocationRefreshResult.sent) return;
+    final stylistId = state.fetchPortfolioState.data?.userId;
+    if (stylistId == null || !state.fetchSellerDetailsState.hasSuccess) {
+      // The stylist is still loading and will be measured from the new
+      // position.
+      return;
+    }
+    await _fetchStylistDetailsById(stylistId.toString(), silent: true);
   }
 
   Future<void> _fetchStylistDetailsById(
@@ -166,18 +229,17 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
   }
 
   /// The address field's selection: a picked suggestion keeps its
-  /// coordinates; an address typed by hand has none (GeoPlace 0, 0); a
+  /// coordinates; an address typed by hand has none (null coordinates); a
   /// cleared field clears the address.
   void onPlaceSelected(GeoPlace? place) {
     if (place == null) {
       emit(state.copyWith(clearAddress: true));
       return;
     }
-    final hasCoordinates = place.lat != 0 || place.lng != 0;
     emit(
       state.copyWith(
         address: place.address,
-        addressPlace: hasCoordinates ? place : null,
+        addressPlace: place.hasValidCoordinates ? place : null,
       ),
     );
   }
@@ -651,29 +713,455 @@ class UpdateCreateAppointmentCubit extends Cubit<UpdateCreateAppointmentState> {
     );
   }
 
-  Future<void> tipAppointment(double amount) async {
-    emit(state.copyWith(tipAppointmentState: const ProcessState.loading()));
-    final id = state.fetchAppointmentState.data!.id!.toString();
-    final response = await _appointmentRepository.tipCustomerAppointment(
-      id,
-      amount: amount,
-    );
+  // ---------------------------------------------------------------------------
+  // Tipping the stylist — wallet or card
+  //
+  // `POST /customer/appointment/{id}/tip` with `payment_method`:
+  //   wallet → the tip is sent at once (`code: tipped`);
+  //   card   → a Peach checkout (the booking's hosted checkout), then
+  //            `GET /customer/payment/peach/{deposit}/status`, whose
+  //            `tip.status` alone decides the outcome.
+  // Balances are never computed here: wallet and booking are re-fetched.
+  // ---------------------------------------------------------------------------
 
-    response.when(
-      success: (TipResponse data) {
-        final appointment = state.fetchAppointmentState.data!;
-        appointment.tipAmount = data.tipAmount;
-        appointment.tippedAt = DateTime.now();
-        emit(
-          state.copyWith(
-            tipAppointmentState: ProcessState.success(data),
-            fetchAppointmentState: ProcessState.success(appointment),
-          ),
+  /// Starts a tip of [amount] by [paymentMethod] (`wallet` or `card`).
+  /// Refused while another tip is in progress or a card tip is unresolved.
+  Future<TipStartResult> startTip(
+    double amount, {
+    required String paymentMethod,
+  }) async {
+    final current = state.tipPayment;
+    if (current.phase.isBusy) return TipStartResult.busy;
+    // A card tip saved earlier (even before an app restart) that is not yet
+    // decided blocks a new tip: it is checked, never paid again.
+    final bookingId = state.fetchAppointmentState.data?.id?.toString();
+    final saved =
+        bookingId == null ? null : _tipRecovery.unresolvedFor(bookingId);
+    if (saved != null && !current.phase.isUnresolved) {
+      _setTip(
+        TipPaymentPhase.pending,
+        checkout: _checkoutFor(saved),
+        amount: saved.amount,
+        paymentMethod: 'card',
+        message: tipUnresolvedMessage,
+      );
+      unawaited(verifyTipPayment(automatic: false));
+      return TipStartResult.unresolved;
+    }
+    if (current.phase.isUnresolved) {
+      _setTip(
+        current.phase,
+        checkout: current.checkout,
+        amount: current.amount,
+        paymentMethod: current.paymentMethod,
+        message: tipUnresolvedMessage,
+      );
+      return TipStartResult.unresolved;
+    }
+    final appointmentId = state.fetchAppointmentState.data?.id?.toString();
+    if (appointmentId == null) {
+      _setTip(TipPaymentPhase.failed, message: tipFailedMessage);
+      return TipStartResult.failed;
+    }
+
+    emit(
+      state.copyWith(
+        tipAppointmentState: const ProcessState.loading(),
+        tipPayment: _tipProgress(
+          TipPaymentPhase.submitting,
+          amount: amount,
+          paymentMethod: paymentMethod,
+        ),
+      ),
+    );
+    final response = await _appointmentRepository.tipCustomerAppointment(
+      appointmentId,
+      amount: amount,
+      paymentMethod: paymentMethod,
+    );
+    if (isClosed) return TipStartResult.failed;
+
+    return response.when(
+      success: (tip) async {
+        if (paymentMethod == 'wallet' && tip.isTipped) {
+          emit(
+            state.copyWith(
+              tipAppointmentState: ProcessState.success(tip),
+              tipPayment: _tipProgress(
+                TipPaymentPhase.tipped,
+                amount: tip.tipAmount,
+                paymentMethod: paymentMethod,
+                message: tip.message.isNotEmpty ? tip.message : tipSentMessage,
+              ),
+            ),
+          );
+          _refreshAfterTip(appointmentId);
+          return TipStartResult.tipped;
+        }
+        if (paymentMethod == 'card' && tip.isCheckoutStarted) {
+          peachLog('Tip checkout created deposit=${tip.checkout!.depositId}');
+          // Saved before the checkout opens: if the app is closed or killed
+          // during checkout, start-up recovery still asks Laravel.
+          await _tipRecovery.record(
+            CardTipAttempt(
+              appointmentId: appointmentId,
+              depositId: tip.checkout!.depositId!,
+              checkoutId: tip.checkout!.checkoutId,
+              amount: amount,
+              createdAt: CardTipRecovery.clock(),
+            ),
+          );
+          _setTip(
+            TipPaymentPhase.checkoutOpen,
+            checkout: tip.checkout,
+            amount: amount,
+            paymentMethod: paymentMethod,
+          );
+          return TipStartResult.checkoutStarted;
+        }
+        // A 2xx that is neither a sent tip nor an openable checkout.
+        peachLog('Tip response unusable: code=${tip.code ?? 'none'}');
+        _setTip(
+          TipPaymentPhase.failed,
+          amount: amount,
+          paymentMethod: paymentMethod,
+          message: tipFailedMessage,
         );
+        return TipStartResult.failed;
       },
       failure: (error) {
         emit(state.copyWith(tipAppointmentState: ProcessState.error(error)));
+        final (result, message) = _tipRefusal(error);
+        _setTip(
+          TipPaymentPhase.failed,
+          amount: amount,
+          paymentMethod: paymentMethod,
+          message: message,
+        );
+        if (error.code == 'already_tipped') _refreshAfterTip(appointmentId);
+        return result;
       },
     );
   }
+
+  /// Each documented refusal, as Laravel means it. Nothing was paid.
+  static (TipStartResult, String) _tipRefusal(RemoteException error) {
+    final backend = (error.errorResponse?.message ?? '').trim();
+    String orBackend(String fallback) =>
+        error.kind == RemoteExceptionKind.server && backend.isNotEmpty
+            ? backend
+            : fallback;
+    switch (error.code) {
+      case 'payment_method_unavailable':
+        return (TipStartResult.cardUnavailable, tipCardUnavailableMessage);
+      case 'insufficient_wallet_balance':
+        final balance = error.numberField('wallet_balance');
+        return (
+          TipStartResult.insufficientBalance,
+          balance == null
+              ? 'Your wallet balance is too low for this tip. '
+                  'You can pay by card instead.'
+              : 'Your wallet balance (${balance.toDouble().formatAmount()}) '
+                  'is too low for this tip. You can pay by card instead.',
+        );
+      case 'already_tipped':
+        return (
+          TipStartResult.failed,
+          orBackend('You have already tipped for this appointment.'),
+        );
+      case 'checkout_initialization_failed':
+        return (
+          TipStartResult.failed,
+          orBackend('Card payment could not be started. '
+              'You have not been charged.'),
+        );
+    }
+    final status = error.statusCode;
+    if (error.kind == RemoteExceptionKind.server &&
+        status != null &&
+        status >= 400 &&
+        status < 500 &&
+        status != 401 &&
+        status != 404 &&
+        backend.isNotEmpty) {
+      // `not_tippable`, validation errors (422) and other refusals.
+      return (TipStartResult.failed, backend);
+    }
+    return (TipStartResult.failed, tipFailedMessage);
+  }
+
+  /// The card tip's checkout is no longer in front of the customer. Closing
+  /// it is never proof of payment: only Laravel's `tip.status` decides.
+  Future<void> onTipCheckoutClosed() async {
+    final phase = state.tipPayment.phase;
+    if (phase != TipPaymentPhase.checkoutOpen && !phase.isUnresolved) return;
+    await verifyTipPayment();
+  }
+
+  /// Spacing between automatic tip verification attempts.
+  @visibleForTesting
+  static Duration tipReconcileRetryGap = const Duration(seconds: 2);
+
+  /// Checks the card tip with Laravel (after checkout, or Check Payment
+  /// Status). Always leaves [TipPaymentPhase.verifying].
+  Future<void> verifyTipPayment({bool automatic = true}) async {
+    final current = state.tipPayment;
+    final depositId = current.checkout?.depositId;
+    if (depositId == null ||
+        current.phase == TipPaymentPhase.verifying ||
+        !(current.phase == TipPaymentPhase.checkoutOpen ||
+            current.phase.isUnresolved)) {
+      return;
+    }
+    final appointmentId =
+        state.fetchAppointmentState.data?.id?.toString() ??
+            _tipRecovery.unresolved
+                .where((a) => a.depositId == depositId)
+                .firstOrNull
+                ?.appointmentId;
+    if (appointmentId == null) return;
+    _setTip(
+      TipPaymentPhase.verifying,
+      checkout: current.checkout,
+      amount: current.amount,
+      paymentMethod: current.paymentMethod,
+    );
+    try {
+      final result = await _tipRecovery.check(
+        appointmentId,
+        retryDelays: automatic
+            ? [tipReconcileRetryGap, tipReconcileRetryGap]
+            : const [],
+        source: _tipSource,
+      );
+      if (isClosed) return;
+      _applyTipVerdict(result, current);
+    } catch (e) {
+      peachLog('Tip verification threw: ${e.runtimeType}');
+    } finally {
+      if (!isClosed && state.tipPayment.phase == TipPaymentPhase.verifying) {
+        _setTip(
+          TipPaymentPhase.unknown,
+          checkout: current.checkout,
+          amount: current.amount,
+          paymentMethod: current.paymentMethod,
+          message: tipUnconfirmedMessage,
+        );
+      }
+    }
+  }
+
+  /// Turns Laravel's verdict into the booking's tip state. Only `tipped`
+  /// says the stylist was tipped.
+  void _applyTipVerdict(
+    CardTipCheck result,
+    TipPaymentProgress attempt, {
+    bool announced = false,
+  }) {
+    final amount = result.amount ?? attempt.amount;
+    switch (result.verdict) {
+      case CardTipVerdict.tipped:
+        _setTip(
+          TipPaymentPhase.tipped,
+          amount: amount,
+          paymentMethod: 'card',
+          message: result.message ?? tipSentMessage,
+          announced: announced,
+        );
+        _refreshAfterTip(result.appointmentId);
+      case CardTipVerdict.creditedToWallet:
+        _setTip(
+          TipPaymentPhase.creditedToWallet,
+          amount: amount,
+          paymentMethod: 'card',
+          message: tipCreditedToWalletMessage,
+          announced: announced,
+        );
+        _refreshAfterTip(result.appointmentId);
+      case CardTipVerdict.notPaid:
+        _setTip(
+          TipPaymentPhase.notPaid,
+          amount: amount,
+          paymentMethod: 'card',
+          message: result.message ?? tipNotPaidMessage,
+          announced: announced,
+        );
+      case CardTipVerdict.pending:
+        _setTip(
+          TipPaymentPhase.pending,
+          checkout: attempt.checkout,
+          amount: amount,
+          paymentMethod: 'card',
+          message: tipPendingMessage,
+          announced: announced,
+        );
+      case CardTipVerdict.unknown:
+        _setTip(
+          TipPaymentPhase.unknown,
+          checkout: attempt.checkout,
+          amount: amount,
+          paymentMethod: 'card',
+          message: tipUnconfirmedMessage,
+          announced: announced,
+        );
+      case CardTipVerdict.unverifiable:
+        _setTip(
+          TipPaymentPhase.failed,
+          amount: amount,
+          paymentMethod: 'card',
+          message: "We couldn't verify this card payment. If you were "
+              'charged, please contact Snipfair support.',
+          announced: announced,
+        );
+    }
+  }
+
+  /// A check of this booking's card tip run elsewhere (start-up or resume
+  /// recovery, or another screen): reflect it without announcing it again.
+  void _onTipRecoveryEvent(CardTipCheck event) {
+    if (isClosed || identical(event.source, _tipSource)) return;
+    final bookingId = state.fetchAppointmentState.data?.id?.toString();
+    if (bookingId == null || event.appointmentId != bookingId) return;
+    final current = state.tipPayment;
+    // While the checkout is still open, only a final outcome is applied;
+    // closing it then checks again.
+    if (current.phase == TipPaymentPhase.checkoutOpen &&
+        !event.verdict.isTerminal) {
+      return;
+    }
+    if (current.phase == TipPaymentPhase.verifying) return;
+    _applyTipVerdict(event, current, announced: true);
+  }
+
+  /// Opening a booking with an unresolved card tip shows it as pending and
+  /// asks Laravel once (sharing any check already running).
+  void _resumeTipAttempt(String appointmentId) {
+    final saved = _tipRecovery.unresolvedFor(appointmentId);
+    final phase = state.tipPayment.phase;
+    if (saved == null || phase.isBusy || phase.isUnresolved) return;
+    _setTip(
+      TipPaymentPhase.pending,
+      checkout: _checkoutFor(saved),
+      amount: saved.amount,
+      paymentMethod: 'card',
+      message: tipPendingMessage,
+      announced: true,
+    );
+    unawaited(verifyTipPayment(automatic: false));
+  }
+
+  static CheckoutPaymentData _checkoutFor(CardTipAttempt attempt) =>
+      CheckoutPaymentData(
+        isInitialized: true,
+        processor: 'peachpayment',
+        depositId: attempt.depositId,
+        checkoutId: attempt.checkoutId,
+      );
+
+  /// Check Payment Status for this booking's undecided card tip, whether it
+  /// started in this session or was saved by an earlier one.
+  Future<void> checkUnresolvedTip() async {
+    if (state.tipPayment.phase.isUnresolved) {
+      return verifyTipPayment(automatic: false);
+    }
+    final bookingId = state.fetchAppointmentState.data?.id?.toString();
+    if (bookingId != null) _resumeTipAttempt(bookingId);
+  }
+
+  /// Whether this booking has a card tip whose outcome is not yet known —
+  /// in this session or saved from an earlier one.
+  bool get hasUnresolvedCardTip {
+    if (state.tipPayment.phase.isUnresolved) return true;
+    final bookingId = state.fetchAppointmentState.data?.id?.toString();
+    return bookingId != null && _tipRecovery.unresolvedFor(bookingId) != null;
+  }
+
+  /// Re-fetches the booking (its tip) from the server. The wallet and
+  /// transactions are refreshed by the screen through the app's own
+  /// `CustomerProfileMgtCubit` (see `TipOutcomePresenter`).
+  void _refreshAfterTip(String appointmentId) {
+    fetchAppointmentById(appointmentId, silent: true);
+  }
+
+  TipPaymentProgress _tipProgress(
+    TipPaymentPhase phase, {
+    CheckoutPaymentData? checkout,
+    double? amount,
+    String? paymentMethod,
+    String? message,
+    bool announced = false,
+  }) =>
+      TipPaymentProgress(
+        phase: phase,
+        checkout: checkout,
+        amount: amount,
+        paymentMethod: paymentMethod,
+        message: message,
+        revision: state.tipPayment.revision + 1,
+        announced: announced,
+      );
+
+  void _setTip(
+    TipPaymentPhase phase, {
+    CheckoutPaymentData? checkout,
+    double? amount,
+    String? paymentMethod,
+    String? message,
+    bool announced = false,
+  }) {
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        tipPayment: _tipProgress(
+          phase,
+          checkout: checkout,
+          amount: amount,
+          paymentMethod: paymentMethod,
+          message: message,
+          announced: announced,
+        ),
+      ),
+    );
+  }
+
+  static const tipSentMessage =
+      'Tip sent successfully. Thank you for appreciating your stylist!';
+  static const tipFailedMessage =
+      "We couldn't send your tip. Please try again.";
+  static const tipCardUnavailableMessage =
+      "Card tipping isn't available yet. Nothing was charged. "
+      'You can tip from your wallet instead.';
+  static const tipPendingMessage =
+      'Your card payment has not been confirmed yet, so your tip has not '
+      'been sent. Please check again shortly.';
+  static const tipUnconfirmedMessage =
+      "We couldn't confirm your card payment yet. Your tip has not been "
+      'confirmed. Please check again shortly.';
+  static const tipUnresolvedMessage =
+      'Your previous card tip is still being confirmed. '
+      'Check its status before trying again.';
+  static const tipNotPaidMessage =
+      'The card payment was not completed. No tip was sent.';
+  static const tipCreditedToWalletMessage =
+      'Your card payment was received, but this booking had already been '
+      'tipped through another payment, so your stylist did not receive this '
+      'tip. The amount has been added to your Snipfair wallet instead.';
+}
+
+/// What starting a tip did.
+enum TipStartResult {
+  /// Wallet tip sent.
+  tipped,
+
+  /// Card checkout ready to open (nothing paid yet).
+  checkoutStarted,
+
+  /// Card tipping is switched off on the server; nothing was charged.
+  cardUnavailable,
+  insufficientBalance,
+
+  /// An earlier card tip must be checked first.
+  unresolved,
+  busy,
+  failed,
 }

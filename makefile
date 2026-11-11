@@ -1,4 +1,4 @@
-.PHONY: all run_dev_web run_dev_mobile run_unit clean upgrade lint format build_dev_mobile help watch gen run_stg_mobile run_prd_mobile build_apk_dev build_apk_stg build_apk_prd purge 
+.PHONY: all run_dev_web run_dev_mobile run_unit clean upgrade lint format build_dev_mobile help watch gen run_stg_mobile run_prd_mobile build_apk_dev build_apk_stg build_apk_prd purge check_staging_config check_ios_targets 
 
 all: lint format run_dev_mobile
 
@@ -73,7 +73,19 @@ run_dev_mobile: ## Runs the mobile application in dev
 	@echo "╠ Running the app"
 	@flutter run --flavor development -t lib/main_development.dart
 
-run_stg_mobile: ## Runs the mobile application in dev
+check_staging_config: ## Refuses staging builds without a real staging backend
+	@url=$$(grep -E '^STAGING_API_BASE_URL=' .env | cut -d= -f2- | tr -d '[:space:]'); \
+	if [ -z "$$url" ]; then \
+		echo "✖ No staging backend: STAGING_API_BASE_URL is empty in .env. Refusing to build staging."; exit 1; \
+	fi; \
+	case "$$url" in \
+		http://snipfair.com*|https://snipfair.com*|http://www.snipfair.com*|https://www.snipfair.com*) \
+			echo "✖ STAGING_API_BASE_URL points at production ($$url). Refusing to build staging."; exit 1;; \
+		https://*) echo "╠ Staging API: $$url";; \
+		*) echo "✖ STAGING_API_BASE_URL must be an https:// address, not $$url."; exit 1;; \
+	esac
+
+run_stg_mobile: check_staging_config ## Runs the mobile application in staging
 	@echo "╠ Running the app"
 	@flutter run --flavor staging -t lib/main_staging.dart
 
@@ -86,7 +98,7 @@ build_apk_dev: ## Runs the mobile application in dev
 	@flutter pub get
 	@flutter build apk --flavor development -t lib/main_development.dart
 
-build_apk_stg: ## Runs the mobile application in staging
+build_apk_stg: check_staging_config ## Builds the staging apk
 	@flutter clean
 	@flutter pub get
 	@flutter build apk --flavor staging -t lib/main_staging.dart
@@ -105,6 +117,12 @@ build_ipa_prod: ## Builds the ipa in prod
 	@flutter clean
 	@flutter pub get
 	@flutter build ipa --no-tree-shake-icons --flavor production -t lib/main_production.dart
+
+check_ios_targets: ## Prints the Flutter entry point each iOS configuration compiles
+	@for config in Release-production Profile-production Debug-production Release-staging Release-development; do \
+		printf "%-20s " "$$config"; \
+		xcodebuild -project ios/Runner.xcodeproj -target Runner -configuration $$config -showBuildSettings 2>/dev/null | awk '$$1 == "FLUTTER_TARGET" {print $$3}'; \
+	done
 
 purge: ## Purges the Flutter 
 	@cd ios

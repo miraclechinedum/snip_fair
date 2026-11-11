@@ -1,5 +1,6 @@
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
@@ -19,7 +20,13 @@ class StylistOnboardCubit extends BaseCubit<StylistOnboardState> {
     emit(state.copyWith(businessName: StringInput.dirty(value)));
   }
 
-  void onAddressChanged(String value) {
+  /// Coordinates of the address, when it was picked from address search.
+  GeoPlace? _addressPlace;
+
+  /// [place] is the search result the address came from, if any; an address
+  /// typed by hand has no coordinates.
+  void onAddressChanged(String value, {GeoPlace? place}) {
+    _addressPlace = place?.address == value ? place : null;
     emit(state.copyWith(address: StringInput.dirty(value)));
   }
 
@@ -44,6 +51,7 @@ class StylistOnboardCubit extends BaseCubit<StylistOnboardState> {
       () => _profileRepository.updateBusinessInfo(
         businessName: state.businessName.value,
         country: state.address.value,
+        addressPlace: _addressPlace,
         yearsOfExperience: state.yearsOfExperience.value,
         bio: state.bio.value,
       ),

@@ -16,6 +16,7 @@ import 'package:snip_fair/features/account/seller/earnings/cubit/earnings_cubit.
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/chat_message_list/chat_message.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request_card_payment.dart';
 import 'package:snip_fair/core/domain/entities/chat_conversations_list/chat_conversation.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/core/errors/exception/remote_exception.dart';
@@ -585,13 +586,17 @@ class ConversationsCubit extends Cubit<ConversationsState> {
   }
 
   // ---------------------------------------------------------------------------
-  // Paying a payment request (customer side) — Option A
+  // Paying a payment request (customer side)
   //
   // Wallet: `POST /payment-requests/{id}/pay` (no body).
-  // Card:   `POST /payment/topup` for the amount, the existing Peach hosted
-  //         checkout, `GET /customer/payment/peach/{deposit}/status` until it
-  //         answers HTTP 200 `successful`, then the wallet `/pay`.
-  // The request is shown as paid only when `/pay` answers `code: paid`.
+  // Card:   `POST /payment-requests/{id}/pay` with `payment_method: card`,
+  //         the existing Peach hosted checkout, then the payer-only
+  //         `GET /payment-requests/{id}/payments/{paymentId}/status` until it
+  //         answers `paid: true` (the only success signal) or a final outcome.
+  // Top-up (only when the customer chooses it, e.g. while native card is
+  //         unavailable or to cover a wallet shortfall): `POST /payment/topup`,
+  //         the deposit status endpoint, then the wallet `/pay`.
+  // The request is shown as paid only on `code: paid` or `paid: true`.
   //
   // Progress lives in [ConversationsState.paymentProgress] so every card for
   // a request renders the same phase. The top-up endpoints are called
@@ -772,6 +777,28 @@ class ConversationsCubit extends Cubit<ConversationsState> {
             await _confirmAlreadyPaid(id, error, depositId: depositId);
           case 'insufficient_wallet_balance':
             await _awaitWalletFunds(id, error, afterTopUp: afterTopUp);
+          case 'card_payment_in_progress':
+            // A card checkout for this request could still take the money:
+            // check that attempt; never pay a second time from the wallet.
+            final paymentId = _blockingCardPaymentId(error);
+            if (paymentId != null && depositId == null) {
+              await _refreshPaymentRequest(id);
+              _setProgress(
+                id,
+                PaymentRequestPaymentPhase.topUpUnknown,
+                cardPaymentId: paymentId,
+                message: 'A card payment for this request is still in '
+                    'progress, so your wallet was not charged. '
+                    'Tap Check Payment Status.',
+              );
+              return;
+            }
+            await _walletPaymentFailed(
+              id,
+              depositId: depositId,
+              retryable: true,
+              reason: paymentFailureMessage(error),
+            );
           case 'payment_request_not_payable':
           case 'payment_request_expired':
           case 'not_payer':
@@ -784,9 +811,9 @@ class ConversationsCubit extends Cubit<ConversationsState> {
               reason: paymentFailureMessage(error),
             );
           default:
-            // `payment_failed` (rolled back), `card_payment_in_progress`, a
-            // network failure or an unrecognised error: nothing was debited
-            // that a retry could duplicate — `/pay` pays at most once.
+            // `payment_failed` (rolled back), a network failure or an
+            // unrecognised error: nothing was debited that a retry could
+            // duplicate — `/pay` pays at most once.
             await _walletPaymentFailed(
               id,
               depositId: depositId,
@@ -972,6 +999,132 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     );
   }
 
+  /// Starts (or resumes) the request's native card checkout and returns it,
+  /// or null with the reason in the request's progress. Refuses while an
+  /// earlier card payment is unresolved or its money is already in the
+  /// wallet. Laravel reuses a pending attempt's checkout, so reopening never
+  /// opens a second one; a `paid` status is the only proof of payment.
+  Future<PaymentRequestCardCheckout?> startCardCheckout(int id) async {
+    final current = paymentProgressFor(id);
+    if (current.phase.isBusy) return null;
+    if (current.phase.isUnresolvedTopUp ||
+        current.phase ==
+            PaymentRequestPaymentPhase.topUpSucceededPaymentPending) {
+      _setProgress(
+        id,
+        current.phase,
+        depositId: current.depositId,
+        cardPaymentId: current.cardPaymentId,
+        message: current.phase.isUnresolvedTopUp
+            ? 'Your previous card payment is still being confirmed. '
+                'Tap Check Payment Status first.'
+            : 'Your card payment is already in your wallet. '
+                'Tap Retry Payment to pay from your wallet.',
+      );
+      return null;
+    }
+
+    _setProgress(id, PaymentRequestPaymentPhase.initializingCardCheckout);
+    peachLog('Payment request $id: native card checkout started');
+    final result = await _profileRepository.startPaymentRequestCardCheckout(id);
+    return result.when(
+      success: (checkout) {
+        final request = checkout.paymentRequest;
+        if (request != null) _cacheAndNotify(id, request);
+        if (!checkout.canOpenCheckout) {
+          paymentRequestLog(
+            'Card checkout for $id unusable: '
+            'hasPayment=${checkout.paymentId != null} '
+            'hasRedirect=${checkout.redirectUrl?.isNotEmpty ?? false}',
+          );
+          _setProgress(
+            id,
+            PaymentRequestPaymentPhase.failed,
+            message: paymentStartFailedMessage,
+          );
+          return null;
+        }
+        peachLog(
+          'Payment request $id: checkout ready payment=${checkout.paymentId} '
+          'reused=${checkout.reused}',
+        );
+        _setProgress(
+          id,
+          PaymentRequestPaymentPhase.checkoutOpen,
+          cardPaymentId: checkout.paymentId,
+        );
+        return checkout;
+      },
+      failure: (error) async {
+        paymentRequestLog(
+          'POST /payment-requests/$id/pay (card) failed: '
+          '${_describeError(error)}',
+        );
+        await _cardCheckoutRefused(id, error);
+        return null;
+      },
+    );
+  }
+
+  /// Why `POST /pay` (card) started nothing — each answer handled as Laravel
+  /// means it. Never falls back to another payment method by itself.
+  Future<void> _cardCheckoutRefused(int id, RemoteException error) async {
+    switch (error.code) {
+      case 'payment_method_unavailable':
+        _setProgress(
+          id,
+          PaymentRequestPaymentPhase.cardUnavailable,
+          message: cardUnavailableMessage,
+        );
+      case 'card_payment_unresolved':
+      case 'checkout_initializing':
+      case 'card_payment_in_progress':
+        final paymentId = _blockingCardPaymentId(error);
+        if (paymentId == null) {
+          _setProgress(
+            id,
+            PaymentRequestPaymentPhase.failed,
+            message: paymentFailureMessage(error),
+          );
+          return;
+        }
+        // An earlier attempt may still take the money: check it instead.
+        _setProgress(
+          id,
+          PaymentRequestPaymentPhase.topUpUnknown,
+          cardPaymentId: paymentId,
+          message: 'A previous card payment for this request has not been '
+              'confirmed yet. Tap Check Payment Status.',
+        );
+        await _checkNow(id, trigger: 'unresolved attempt');
+        _startBackgroundPolling(id);
+      case 'already_paid':
+        await _confirmAlreadyPaid(id, error, depositId: null);
+      default:
+        // `checkout_initialization_failed` (nothing charged), `checkout_conflict`,
+        // not payable / expired / not the payer, or a network failure.
+        await _refreshPaymentRequest(id);
+        _setProgress(
+          id,
+          PaymentRequestPaymentPhase.failed,
+          message: paymentFailureMessage(error),
+        );
+    }
+  }
+
+  /// The `payment.payment_id` Laravel names when an earlier card attempt
+  /// blocks this action.
+  static String? _blockingCardPaymentId(RemoteException error) {
+    final payment = error.responseBody?['payment'];
+    final id = payment is Map ? payment['payment_id']?.toString() : null;
+    return id == null || id.isEmpty ? null : id;
+  }
+
+  static const cardUnavailableMessage =
+      "Card payment isn't available for payment requests yet. Nothing was "
+      'charged. You can pay from your wallet, or top up your wallet by card '
+      'and then pay from it.';
+
   /// The hosted checkout is no longer in front of the customer — X, the
   /// shopper-result page, a dismissal or an error. Closing is never proof of
   /// payment *or* of failure: one quick check, bounded for the UI, then quiet
@@ -1020,6 +1173,10 @@ class ConversationsCubit extends Cubit<ConversationsState> {
 
   Future<void> _checkNow(int id, {required String trigger}) async {
     final current = paymentProgressFor(id);
+    final cardPaymentId = current.cardPaymentId;
+    if (cardPaymentId != null) {
+      return _checkCardNow(id, cardPaymentId, trigger: trigger);
+    }
     final depositId = current.depositId;
     if (depositId == null ||
         !(current.phase.isUnresolvedTopUp ||
@@ -1057,6 +1214,10 @@ class ConversationsCubit extends Cubit<ConversationsState> {
 
   void _startBackgroundPolling(int id, {bool restart = false}) {
     final progress = paymentProgressFor(id);
+    final cardPaymentId = progress.cardPaymentId;
+    if (cardPaymentId != null) {
+      return _startCardPolling(id, cardPaymentId, restart: restart);
+    }
     final depositId = progress.depositId;
     if (_pollingPaused ||
         isClosed ||
@@ -1159,7 +1320,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
         _setUnresolved(
           id,
           PaymentRequestPaymentPhase.topUpPending,
-          depositId,
+          depositId: depositId,
           quiet: quiet,
           message: 'Your card payment is still being confirmed. '
               'Tap Check Payment Status to try again.',
@@ -1180,7 +1341,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
           _setUnresolved(
             id,
             PaymentRequestPaymentPhase.topUpUnknown,
-            depositId,
+            depositId: depositId,
             quiet: quiet,
             message: "We couldn't confirm your card payment yet. "
                 'Tap Check Payment Status before paying again.',
@@ -1189,20 +1350,236 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     }
   }
 
+  // --- Native card status -----------------------------------------------------
+
+  /// One check of the native card attempt [paymentId], bounded for the UI.
+  Future<void> _checkCardNow(
+    int id,
+    String paymentId, {
+    required String trigger,
+  }) async {
+    final current = paymentProgressFor(id);
+    if (!(current.phase.isUnresolvedTopUp ||
+        current.phase == PaymentRequestPaymentPhase.checkoutOpen)) {
+      paymentRequestLog('Card status check ($trigger) skipped for $id: '
+          'phase=${current.phase.name}');
+      return;
+    }
+    paymentRequestLog(
+      'Card status check started ($trigger): request=$id payment=$paymentId',
+    );
+    _setProgress(
+      id,
+      PaymentRequestPaymentPhase.verifyingTopUp,
+      cardPaymentId: paymentId,
+    );
+    final result = await _fetchCardStatusOnce(id, paymentId)
+        .then<ApiResult<PaymentRequestCardPaymentStatus>?>((r) => r)
+        .timeout(
+      paymentStatusCheckTimeout,
+      onTimeout: () {
+        paymentRequestLog('Card status check for $id outlasted the UI wait');
+        return null;
+      },
+    );
+    await _applyCardStatus(id, paymentId, result, quiet: false);
+  }
+
+  void _startCardPolling(int id, String paymentId, {bool restart = false}) {
+    final progress = paymentProgressFor(id);
+    if (_pollingPaused ||
+        isClosed ||
+        !progress.phase.isUnresolvedTopUp ||
+        (!restart && _pollTokens.containsKey(id))) {
+      return;
+    }
+    final token = Object();
+    _pollTokens[id] = token;
+
+    bool stopped() {
+      final now = paymentProgressFor(id);
+      return isClosed ||
+          _pollingPaused ||
+          !identical(_pollTokens[id], token) ||
+          now.cardPaymentId != paymentId ||
+          !(now.phase.isUnresolvedTopUp ||
+              now.phase == PaymentRequestPaymentPhase.verifyingTopUp);
+    }
+
+    final schedule = paymentStatusPolling;
+    final loop = () async {
+      final started = paymentClock();
+      for (final wait in schedule.delays) {
+        if (paymentClock().difference(started) + wait > schedule.maxDuration) {
+          break;
+        }
+        await paymentPollSleep(wait);
+        if (stopped()) break;
+        final result = await _fetchCardStatusOnce(id, paymentId);
+        if (stopped()) break;
+        await _applyCardStatus(id, paymentId, result, quiet: true);
+        if (!paymentProgressFor(id).phase.isUnresolvedTopUp) break;
+      }
+      if (identical(_pollTokens[id], token)) _pollTokens.remove(id);
+    }();
+    _pollLoops[id] = loop;
+    unawaited(
+      loop.whenComplete(() {
+        if (identical(_pollLoops[id], loop)) _pollLoops.remove(id);
+      }),
+    );
+  }
+
+  /// Applies a native card status unless the attempt moved on meanwhile.
+  /// `paid: true` is the only success; everything not final keeps the
+  /// attempt to be checked again.
+  Future<void> _applyCardStatus(
+    int id,
+    String paymentId,
+    ApiResult<PaymentRequestCardPaymentStatus>? result, {
+    required bool quiet,
+  }) async {
+    if (isClosed) return;
+    final current = paymentProgressFor(id);
+    if (current.cardPaymentId != paymentId ||
+        !(current.phase.isUnresolvedTopUp ||
+            current.phase == PaymentRequestPaymentPhase.verifyingTopUp)) {
+      paymentRequestLog('Stale card status ignored for $id: '
+          'payment=$paymentId now=${current.phase.name}');
+      return;
+    }
+    if (result == null) {
+      _setUnresolved(
+        id,
+        PaymentRequestPaymentPhase.topUpUnknown,
+        quiet: quiet,
+        cardPaymentId: paymentId,
+        message: "We couldn't confirm your card payment yet. "
+            'Tap Check Payment Status before paying again.',
+      );
+      return;
+    }
+    await result.when(
+      success: (status) async {
+        final request = status.paymentRequest;
+        if (request != null) _cacheAndNotify(id, request);
+        if (status.paid) {
+          _pollTokens.remove(id);
+          _setProgress(
+            id,
+            PaymentRequestPaymentPhase.successful,
+            message: status.message ?? 'Payment successful.',
+          );
+          return;
+        }
+        if (status.isFailedOrCancelled) {
+          _pollTokens.remove(id);
+          _setProgress(
+            id,
+            status.paymentStatus == 'cancelled'
+                ? PaymentRequestPaymentPhase.cancelled
+                : PaymentRequestPaymentPhase.failed,
+            message: status.message ??
+                'The card payment was not completed. You have not been '
+                    'charged. You can try again.',
+          );
+          return;
+        }
+        if (status.isEndedUnpaid) {
+          _pollTokens.remove(id);
+          _setProgress(
+            id,
+            PaymentRequestPaymentPhase.failed,
+            message: status.message ??
+                'This card payment did not pay the request. '
+                    'Please contact Snipfair support.',
+          );
+          return;
+        }
+        // pending, requires_review, successful-but-not-paid or unknown.
+        _setUnresolved(
+          id,
+          PaymentRequestPaymentPhase.topUpPending,
+          quiet: quiet,
+          cardPaymentId: paymentId,
+          message: status.message ??
+              'Your card payment is still being confirmed. '
+                  'Tap Check Payment Status to try again.',
+        );
+      },
+      failure: (error) async {
+        final code = error.statusCode;
+        if (code == 403 || code == 404) {
+          // Definitively not this customer's attempt for this request.
+          _pollTokens.remove(id);
+          await _refreshPaymentRequest(id);
+          _setProgress(
+            id,
+            PaymentRequestPaymentPhase.failed,
+            message: "We couldn't verify this card payment. If you were "
+                'charged, please contact Snipfair support.',
+          );
+          return;
+        }
+        // 503 (Peach unreachable), network failure, 5xx: unknown.
+        _setUnresolved(
+          id,
+          PaymentRequestPaymentPhase.topUpUnknown,
+          quiet: quiet,
+          cardPaymentId: paymentId,
+          message: "We couldn't confirm your card payment yet. "
+              'Tap Check Payment Status before paying again.',
+        );
+      },
+    );
+  }
+
+  /// One status request per card attempt at a time.
+  final Map<String, Future<ApiResult<PaymentRequestCardPaymentStatus>>>
+      _cardStatusInFlight = {};
+
+  Future<ApiResult<PaymentRequestCardPaymentStatus>> _fetchCardStatusOnce(
+    int id,
+    String paymentId,
+  ) {
+    final inFlight = _cardStatusInFlight[paymentId];
+    if (inFlight != null) return inFlight;
+    final request = _profileRepository
+        .getPaymentRequestCardPaymentStatus(id, paymentId)
+        .whenComplete(() {
+      _cardStatusInFlight.remove(paymentId);
+    });
+    _cardStatusInFlight[paymentId] = request;
+    return request;
+  }
+
   void _setUnresolved(
     int id,
-    PaymentRequestPaymentPhase phase,
-    String depositId, {
+    PaymentRequestPaymentPhase phase, {
     required bool quiet,
     required String message,
+    String? depositId,
+    String? cardPaymentId,
   }) {
     final current = paymentProgressFor(id);
     if (quiet && current.phase.isUnresolvedTopUp) {
       if (current.phase == phase) return;
-      _setProgress(id, phase, depositId: depositId, message: current.message);
+      _setProgress(
+        id,
+        phase,
+        depositId: depositId,
+        cardPaymentId: cardPaymentId,
+        message: current.message,
+      );
       return;
     }
-    _setProgress(id, phase, depositId: depositId, message: message);
+    _setProgress(
+      id,
+      phase,
+      depositId: depositId,
+      cardPaymentId: cardPaymentId,
+      message: message,
+    );
   }
 
   PeachDepositReconciler _reconciler() => PeachDepositReconciler(
@@ -1260,11 +1637,20 @@ class ConversationsCubit extends Cubit<ConversationsState> {
       _setProgress(
         attempt.requestId,
         PaymentRequestPaymentPhase.topUpUnknown,
-        depositId: attempt.depositId,
+        depositId: attempt.isNativeCard ? null : attempt.depositId,
+        cardPaymentId: attempt.cardPaymentId,
       );
     }
     await recheckUnresolvedPayments();
   }
+
+  /// A native card attempt is kept while its outcome may still change.
+  static const _persistedCardPhases = {
+    PaymentRequestPaymentPhase.checkoutOpen,
+    PaymentRequestPaymentPhase.verifyingTopUp,
+    PaymentRequestPaymentPhase.topUpPending,
+    PaymentRequestPaymentPhase.topUpUnknown,
+  };
 
   static const _persistedPhases = {
     PaymentRequestPaymentPhase.checkoutOpen,
@@ -1280,8 +1666,27 @@ class ConversationsCubit extends Cubit<ConversationsState> {
   /// attempt is paid, failed, cancelled or otherwise finished.
   void _syncPersistedAttempt(int id, PaymentRequestPaymentProgress progress) {
     if (_attemptOwnerId == null) return;
-    final depositId = progress.depositId;
     final previous = _persistedAttempts[id];
+    final cardPaymentId = progress.cardPaymentId;
+    if (cardPaymentId != null) {
+      if (!_persistedCardPhases.contains(progress.phase)) {
+        if (previous == null) return;
+        _persistedAttempts = {..._persistedAttempts}..remove(id);
+      } else {
+        if (previous?.cardPaymentId == cardPaymentId) return;
+        _persistedAttempts = {
+          ..._persistedAttempts,
+          id: PaymentRequestAttempt.card(
+            requestId: id,
+            cardPaymentId: cardPaymentId,
+            updatedAt: paymentClock(),
+          ),
+        };
+      }
+      _writeAttempts();
+      return;
+    }
+    final depositId = progress.depositId;
     if (depositId != null && _persistedPhases.contains(progress.phase)) {
       final verified = progress.phase ==
               PaymentRequestPaymentPhase.topUpSucceededPaymentPending ||
@@ -1328,6 +1733,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     int id,
     PaymentRequestPaymentPhase phase, {
     String? depositId,
+    String? cardPaymentId,
     String? message,
     num? shortfall,
     num? walletBalance,
@@ -1338,6 +1744,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     final progress = PaymentRequestPaymentProgress(
       phase: phase,
       depositId: depositId,
+      cardPaymentId: cardPaymentId,
       message: message,
       revision: paymentProgressFor(id).revision + 1,
       shortfall: shortfall,

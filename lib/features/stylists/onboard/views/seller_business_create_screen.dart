@@ -91,7 +91,7 @@ class SellerBusinessCreateScreen extends BaseStatelessPage<StylistOnboardCubit>
                       return CustomPlaceSearchField(
                         onSelected: (p0) {
                           if (p0 != null) {
-                            cubit.onAddressChanged(p0.address);
+                            cubit.onAddressChanged(p0.address, place: p0);
                           }
                         },
                         label: 'Location',

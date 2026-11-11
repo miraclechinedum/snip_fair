@@ -12,6 +12,7 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/services/notification_service.dart';
 import 'package:snip_fair/features/onboarding/views/splash_screen.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/data/card_tip_recovery.dart';
 import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/appointments/stylist_appointments/cubit/seller_appoint_mgt_cubit.dart';
@@ -175,6 +176,9 @@ class _AppState extends State<App> {
                                     context.read<SellerProfileMgtCubit>().onLogout();
                                     context.read<CustomerProfileMgtCubit>().onLogout();
                                     context.read<ConversationsCubit>().onLogout();
+                                    // Forget the customer's card tips in memory;
+                                    // their saved attempts stay under their own key.
+                                    getIt<CardTipRecovery>().onLogout();
                                     context.read<CustomerAppointmentsCubit>().onLogout();
                                     context.read<SellerAppointMgtCubit>().onLogout();
                                     context.read<NotificationsCubit>().onLogout();

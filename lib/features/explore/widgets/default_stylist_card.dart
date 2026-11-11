@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:snip_fair/gen/assets.gen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/distance_format.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:snip_fair/core/routing/routes.gr.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -97,26 +98,30 @@ class DefaultStylistCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        5.verticalSpace,
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.circular(24),
+                        // Unknown distance: no badge, never "0 km".
+                        if (formatDistanceKm(seller.distance)
+                            case final distance?) ...[
+                          5.verticalSpace,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 5,
+                            ),
+                            child: Row(
+                              children: [
+                                AppText(
+                                  text: distance,
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 5,
-                          ),
-                          child: Row(
-                            children: [
-                              AppText(
-                                text: '${seller.distance?.round() ?? 0}Km',
-                                fontSize: 10,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

@@ -1,3 +1,4 @@
+import 'package:snip_fair/features/account/shared/account_closure.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
@@ -409,14 +410,13 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const AppText(
-                                      text: 'Delete Account',
+                                      text: AccountClosure.heading,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w900,
                                     ),
                                     8.verticalSpace,
                                     const AppText(
-                                      text:
-                                          '''Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain. ''',
+                                      text: AccountClosure.description,
                                       color: AppColors.grey3,
                                     ),
                                     12.verticalSpace,
@@ -424,26 +424,23 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                       listenWhen: (previous, current) =>
                                           previous.deleteAccountState != current.deleteAccountState,
                                       listener: (context, state) {
-                                        if (state.deleteAccountState.hasSuccess) {
-                                          Fluttertoast.showToast(
-                                            msg: 'Account deleted successfully',
-                                          );
-                                          // Navigate to initial route or login screen
-                                          context.read<AppCubit>().onLogout();
-                                        }
+                                        // Shows what happens next; never logs out or claims a deletion.
+                                        AccountClosure.showResult(
+                                          context,
+                                          state.deleteAccountState,
+                                        );
                                       },
                                       child: TextButton(
                                         onPressed: () {
                                           AppHelper.showAppDialog(
                                             context,
                                             OnConfirmDialog(
-                                              title: 'Delete Account',
-                                              content:
-                                                  'Are you sure you want to delete your account? This action cannot be undone.',
+                                              title: AccountClosure.confirmTitle,
+                                              content: AccountClosure.confirmContent,
                                               onConfirmed: (ctx) {
                                                 context
                                                     .read<SellerProfileMgtCubit>()
-                                                    .deleteAccount();
+                                                    .requestAccountClosure();
                                               },
                                             ),
                                           );
@@ -458,7 +455,7 @@ class SellerProfileManagementScreen extends StatelessWidget {
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                         ),
-                                        child: const Text('DELETE ACCOUNT'),
+                                        child: const Text(AccountClosure.buttonLabel),
                                       ),
                                     ),
                                   ],

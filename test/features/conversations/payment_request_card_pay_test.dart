@@ -107,7 +107,48 @@ void main() {
     when(() => repo.getWalletTransactions(page: any(named: 'page'))).thenAnswer(
       (_) async => ApiResult.success(data: CustomerWalletTransactionList()),
     );
+    // The backend's current state: native card payment for requests is off
+    // (`PEACH_PAYMENT_REQUEST_CARD_ENABLED`). The wallet top-up route is
+    // then only taken when the customer chooses it.
+    when(() => repo.startPaymentRequestCardCheckout(_kId)).thenAnswer(
+      (_) async => const ApiResult.failure(
+        error: RemoteException.serverError(
+          422,
+          ServerError(
+            message: 'Card payment is not available yet. '
+                'Please pay from your wallet.',
+          ),
+          code: 'payment_method_unavailable',
+        ),
+      ),
+    );
   });
+
+  /// Card → Continue; Laravel says card payment is unavailable, so the
+  /// customer explicitly picks "Add Funds by Card, then Pay" and confirms.
+  Future<void> chooseCardThenTopUpRoute(WidgetTester tester) async {
+    await tester.tap(find.byKey(const Key('payment_method_card')));
+    await _settle(tester);
+    await tester.tap(find.byKey(const Key('payment_request_method_continue')));
+    await _settle(tester);
+    verify(() => repo.startPaymentRequestCardCheckout(_kId)).called(1);
+    verifyNever(() => repo.initializeWalletTopUp(amount: any(named: 'amount')));
+    // The same explanation stays on the card; let its snackbar go first.
+    ScaffoldMessenger.of(tester.element(find.byType(PaymentRequestCard)))
+        .hideCurrentSnackBar();
+    await _settle(tester);
+    await tester.ensureVisible(
+      find.byKey(const Key('payment_request_topup_and_pay')),
+    );
+    await tester.tap(find.byKey(const Key('payment_request_topup_and_pay')));
+    await _settle(tester);
+    expect(
+      find.byKey(const Key('payment_request_topup_consent')),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Add Funds & Pay'));
+    await _settle(tester);
+  }
 
   tearDown(() async {
     await conversationsCubit.close();
@@ -413,10 +454,7 @@ void main() {
       await pumpCard(tester);
       await tester.tap(find.text('Pay Now'));
       await _settle(tester);
-      await tester.tap(find.byKey(const Key('payment_method_card')));
-      await _settle(tester);
-      await tester.tap(find.byKey(const Key('payment_request_method_continue')));
-      await _settle(tester);
+      await chooseCardThenTopUpRoute(tester);
     }
 
     void stubTopUpFailure(RemoteException error) {
@@ -679,15 +717,12 @@ void main() {
           .thenAnswer((_) async => answer);
     }
 
-    /// Pay Now → Card → Continue → checkout opens → X.
+    /// Pay Now → Card → (unavailable) → Add Funds by Card → checkout → X.
     Future<void> payByCardAndCloseWithX(WidgetTester tester) async {
       await pumpCard(tester);
       await tester.tap(find.text('Pay Now'));
       await _settle(tester);
-      await tester.tap(find.byKey(const Key('payment_method_card')));
-      await _settle(tester);
-      await tester.tap(find.byKey(const Key('payment_request_method_continue')));
-      await _settle(tester);
+      await chooseCardThenTopUpRoute(tester);
       expect(openedUrls, ['https://checkout.example.test/chk_88']);
       await tester.tap(find.byKey(const Key('checkout_x')));
       await _settle(tester);

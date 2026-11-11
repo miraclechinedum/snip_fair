@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
@@ -35,6 +36,7 @@ import 'package:snip_fair/core/domain/entities/seller_details/seller_details.dar
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request_card_payment.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request_pay_result.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
@@ -319,6 +321,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     required String country,
     required String yearsOfExperience,
     required String bio,
+    GeoPlace? addressPlace,
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
@@ -327,6 +330,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         data: {
           'business_name': businessName,
           'country': country,
+          ...?addressPlace?.coordinateFields,
           'years_of_experience': yearsOfExperience,
           'bio': bio,
         },
@@ -496,6 +500,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -508,6 +513,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (lastName != null) 'last_name': lastName,
         if (phone != null) 'phone': phone,
         if (country != null) 'country': country,
+        if (country != null) ...?addressPlace?.coordinateFields,
         if (yearsOfExperience != null) 'years_of_experience': yearsOfExperience,
         if (bio != null) 'bio': bio,
         if (gender != null) 'gender': gender,
@@ -900,6 +906,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   Future<ApiResult<SimpleResponse>> updateUser({
     bool? useLocation,
     String? address,
+    GeoPlace? addressPlace,
     String? fcmToken,
   }) {
     return run(() async {
@@ -909,6 +916,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         data: {
           if (useLocation != null) 'use_location': useLocation,
           if (address != null) 'country': address,
+          if (address != null) ...?addressPlace?.coordinateFields,
           if (fcmToken != null) 'firebase_device_token': fcmToken,
         },
       );
@@ -1399,17 +1407,26 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   Future<ApiResult<TipResponse>> tipCustomerAppointment(
     String id, {
     required double amount,
+    String paymentMethod = 'wallet',
   }) {
     return run(() async {
       final client = getIt<HttpService>().client();
-
+      peachLog('POST ${AuthPath.customerAppointment}/$id/tip '
+          'method=$paymentMethod');
       final response = await client.post<Map<String, dynamic>>(
         '${AuthPath.customerAppointment}/$id/tip',
-        data: {'amount': amount},
+        // Laravel validates `decimal:0,2`: always two decimals, as a string.
+        data: {
+          'amount': amount.toStringAsFixed(2),
+          'payment_method': paymentMethod,
+        },
       );
-      return ApiResult.success(
-        data: TipResponse.fromJson(response.data!),
-      );
+      final tip = TipResponse.fromJson(response.data!);
+      // Shape only: never the redirect URL or checkout id.
+      peachLog('POST ${AuthPath.customerAppointment}/$id/tip -> '
+          'HTTP ${response.statusCode} code=${tip.code ?? 'none'} '
+          'deposit=${tip.checkout?.depositId ?? 'none'}');
+      return ApiResult.success(data: tip);
     });
   }
 
@@ -1453,6 +1470,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -1465,6 +1483,7 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
         if (lastName != null) 'last_name': lastName,
         if (phone != null) 'phone': phone,
         if (country != null) 'country': country,
+        if (country != null) ...?addressPlace?.coordinateFields,
         if (bio != null) 'bio': bio,
         if (gender != null) 'gender': gender,
         if (avatar != null)
@@ -1564,14 +1583,17 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
   static const withdrawalNotFoundCode = 'WITHDRAWAL_NOT_FOUND';
 
   @override
-  Future<ApiResult<SimpleResponse>> deleteAccount() {
+  Future<ApiResult<SimpleResponse>> requestAccountClosure() {
+    // Accounts are never deleted outright: this asks Snipfair to close
+    // the account and erase personal data (Snipfair decides; payment
+    // records are kept by law).
     return run(() async {
       final client = getIt<HttpService>().client();
-      await client.delete<Map<String, dynamic>>(
-        AuthPath.user,
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.user}/privacy-requests',
       );
       return ApiResult.success(
-        data: SimpleResponse.fromJson({}),
+        data: SimpleResponse.fromJson(response.data ?? {}),
       );
     });
   }
@@ -1855,6 +1877,43 @@ class SnipFairBackendRemoteSource extends BaseRemoteSource
       return ApiResult.success(
         data: PaymentRequestPayResult.fromJson(response.data!),
       );
+    });
+  }
+
+  /// Native card checkout for a payment request. Laravel reuses a pending
+  /// attempt's checkout rather than opening a second one.
+  @override
+  Future<ApiResult<PaymentRequestCardCheckout>> startPaymentRequestCardCheckout(
+    int id,
+  ) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      peachLog('POST ${AuthPath.paymentRequests}/$id/pay method=card');
+      final response = await client.post<Map<String, dynamic>>(
+        '${AuthPath.paymentRequests}/$id/pay',
+        data: {'payment_method': 'card'},
+      );
+      final checkout = PaymentRequestCardCheckout.fromJson(response.data!);
+      // Shape only: never the redirect URL or checkout id.
+      peachLog('POST ${AuthPath.paymentRequests}/$id/pay -> '
+          'HTTP ${response.statusCode} payment=${checkout.paymentId ?? 'none'} '
+          'reused=${checkout.reused} '
+          'hasRedirect=${checkout.redirectUrl?.isNotEmpty ?? false}');
+      return ApiResult.success(data: checkout);
+    });
+  }
+
+  @override
+  Future<ApiResult<PaymentRequestCardPaymentStatus>>
+      getPaymentRequestCardPaymentStatus(int id, String paymentId) {
+    return run(() async {
+      final client = getIt<HttpService>().client();
+      final path = '${AuthPath.paymentRequests}/$id/payments/$paymentId/status';
+      final response = await client.get<Map<String, dynamic>>(path);
+      final status = PaymentRequestCardPaymentStatus.fromJson(response.data!);
+      peachLog('GET $path -> HTTP ${response.statusCode} '
+          'status=${status.paymentStatus ?? 'none'} paid=${status.paid}');
+      return ApiResult.success(data: status);
     });
   }
 

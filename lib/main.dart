@@ -1,58 +1,37 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'core/version_checker.dart';
-import 'features/onboarding/force_update_screen.dart';
-import 'firebase_options.dart';
-import 'dart:developer' as developer;
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:snip_fair/core/presentation/configuration_error_app.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/main_development.dart' as development;
+import 'package:snip_fair/main_production.dart' as production;
+import 'package:snip_fair/main_staging.dart' as staging;
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  developer.log('📱 Initializing Firebase...', name: 'Main');
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  developer.log('✅ Firebase Initialized', name: 'Main');
-  runApp(const MainApp());
-}
-
-class MainApp extends StatefulWidget {
-  const MainApp({super.key});
-
-  @override
-  State<MainApp> createState() => _MainAppState();
-}
-
-class _MainAppState extends State<MainApp> {
-  bool? _forceUpdate;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkVersion();
-  }
-
-  Future<void> _checkVersion() async {
-    developer.log('🔍 Starting version check...', name: 'Main');
-    final updateRequired = await VersionChecker.isUpdateRequired();
-    developer.log('✅ Version check completed. Update required: $updateRequired', name: 'Main');
-    setState(() {
-      _forceUpdate = updateRequired;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_forceUpdate == null) {
-      return const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+/// The default entry point (a build or run without `-t`). It starts the
+/// app for the build's own flavor, so `flutter build apk --flavor
+/// production` without a target still produces the production app — never
+/// a placeholder, and never another environment.
+Future<void> main() {
+  switch (environmentForFlavor(appFlavor)) {
+    case Environment.prod:
+      return production.main();
+    case Environment.staging:
+      return staging.main();
+    case Environment.dev:
+      return development.main();
+    default:
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(
+        const ConfigurationErrorApp(
+          message: 'This build has no flavor. Build or run with '
+              '--flavor production, staging or development.',
+        ),
       );
-    }
-    if (_forceUpdate == true) {
-      return const MaterialApp(
-        home: ForceUpdateScreen(updateUrl: ''), // URL is handled in the screen
-      );
-    }
-    // ...existing app home...
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
-    );
+      return Future.value();
   }
 }
+
+/// The environment for a native [flavor]; null when there is none.
+String? environmentForFlavor(String? flavor) => Environment.flavorFor.entries
+    .where((entry) => entry.value == flavor)
+    .map((entry) => entry.key)
+    .firstOrNull;

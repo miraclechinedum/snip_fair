@@ -2,7 +2,9 @@ import 'package:snip_fair/bootstrap.dart';
 import 'package:snip_fair/core/presentation/app.dart';
 import 'package:snip_fair/core/utils/environment/environment.dart';
 
-void main() {
-  Environment().initConfig(Environment.staging);
-  bootstrap(() => const App());
-}
+/// Entry point for `--flavor staging`. The environment is loaded and checked
+/// against the build's flavor inside [bootstrap], before anything starts.
+Future<void> main() => bootstrap(
+      () => const App(),
+      environment: Environment.staging,
+    );

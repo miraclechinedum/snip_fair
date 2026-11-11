@@ -369,8 +369,20 @@ const placeSearchEmptyMessage =
     'No matching addresses found. Keep typing, or use the address as typed.';
 
 const placeSearchErrorMessage =
-    'Address suggestions are unavailable right now. You can still type your '
+    'Address search is temporarily unavailable. You can still type your '
     'address.';
+
+const placeSearchNotConfiguredMessage =
+    "Address search isn't available. You can still type your address.";
+
+/// Why address search failed, for the suggestions box: "not configured" and
+/// "temporarily unavailable" are different problems, and neither is "no
+/// matching addresses".
+String placeSearchFailureMessage(Object? error) =>
+    error is PlaceSearchException &&
+            error.failure == PlaceSearchFailure.notConfigured
+        ? placeSearchNotConfiguredMessage
+        : placeSearchErrorMessage;
 
 class CustomPlaceSearchField extends StatefulWidget {
   const CustomPlaceSearchField({
@@ -480,7 +492,7 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
               void selectIfValid() {
                 final t = lastTyped.trim();
                 if (t.isNotEmpty) {
-                  _selectedAddress(GeoPlace(address: t, lat: 0, lng: 0));
+                  _selectedAddress(GeoPlace(address: t));
                 }
               }
 
@@ -539,11 +551,11 @@ class _CustomPlaceSearchFieldState extends State<CustomPlaceSearchField> {
                 fontSize: 12,
               ),
             ),
-            errorBuilder: (context, error) => const Padding(
-              padding: EdgeInsets.all(12),
+            errorBuilder: (context, error) => Padding(
+              padding: const EdgeInsets.all(12),
               child: AppText(
-                key: Key('place_search_error'),
-                text: placeSearchErrorMessage,
+                key: const Key('place_search_error'),
+                text: placeSearchFailureMessage(error),
                 fontSize: 12,
               ),
             ),

@@ -159,6 +159,8 @@ class LocationSettings extends StatefulWidget {
 
 class _LocationSettingsState extends State<LocationSettings> {
   String? _address;
+  // Coordinates of [_address], when it was picked from address search.
+  GeoPlace? _addressPlace;
   bool _useLocation = false;
 
   @override
@@ -220,6 +222,7 @@ class _LocationSettingsState extends State<LocationSettings> {
                 onSelected: (p0) {
                   setState(() {
                     _address = p0?.address;
+                    _addressPlace = p0;
                   });
                 },
                 label: 'Location',
@@ -228,8 +231,6 @@ class _LocationSettingsState extends State<LocationSettings> {
                 initialPlace: state.profileDetails.hasSuccess
                     ? GeoPlace(
                         address: state.profileDetails.data!.user!.country!,
-                        lat: 0,
-                        lng: 0,
                       )
                     : null,
                 descriptionText:
@@ -258,6 +259,7 @@ class _LocationSettingsState extends State<LocationSettings> {
                   if (_address == null) return;
                   context.read<SellerProfileMgtCubit>().updateLocationSettings(
                         address: _address!,
+                        addressPlace: _addressPlace,
                         useLocation: _useLocation,
                       );
                 },

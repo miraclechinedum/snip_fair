@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/stylist_profile_details.dart';
@@ -136,6 +137,7 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
   Future<void> updateLocationSettings({
     required String address,
     required bool useLocation,
+    GeoPlace? addressPlace,
   }) async {
     emit(
       state.copyWith(
@@ -146,6 +148,7 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
     final result = await _profileRepository.updateUser(
       useLocation: useLocation,
       address: address,
+      addressPlace: addressPlace?.address == address ? addressPlace : null,
     );
     result.when(
       success: (stats) {
@@ -270,10 +273,11 @@ class SellerProfileMgtCubit extends Cubit<SellerProfileMgtState> {
     );
   }
 
-  Future<void> deleteAccount() async {
+  /// Sends a request to close the account and erase personal data (never a deletion).
+  Future<void> requestAccountClosure() async {
     emit(state.copyWith(deleteAccountState: const ProcessState.loading()));
 
-    final result = await _profileRepository.deleteAccount();
+    final result = await _profileRepository.requestAccountClosure();
     result.when(
       success: (data) {
         emit(

@@ -8,6 +8,7 @@ import 'package:snip_fair/core/presentation/cubit/app_cubit.dart';
 import 'package:snip_fair/core/presentation/theme/app_colors.dart';
 import 'package:snip_fair/core/presentation/theme/app_textstyle.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/custom_button.dart';
+import 'package:snip_fair/core/presentation/widgets/dialogs.dart';
 import 'package:snip_fair/core/presentation/widgets/payment_summary_widget.dart';
 import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:snip_fair/core/utils/app_extensions.dart';
@@ -87,13 +88,16 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
   }
 
   /// Customer payment actions, all serialised through [_runPayment]:
-  /// Pay Now, Check Payment Status, Retry Payment (wallet `/pay` only) and
-  /// adding the backend's shortfall to the wallet by card.
+  /// Pay Now, Check Payment Status, Retry Payment (wallet `/pay` only),
+  /// adding the backend's shortfall to the wallet by card, and — only when
+  /// the customer picks it after native card payment was unavailable —
+  /// adding the full amount to the wallet by card, then paying from it.
   static const _paymentActions = {
     'pay',
     'check_status',
     'retry_wallet',
     'add_funds',
+    'topup_and_pay',
   };
 
   /// Runs one payment action. Nothing is charged before the customer chooses
@@ -139,6 +143,8 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
         await cubit.payFromWallet(id);
       } else if (action == 'add_funds') {
         await _addWalletFunds(cubit);
+      } else if (action == 'topup_and_pay') {
+        await _topUpThenPay(cubit, pr!.totalAmount!);
       } else {
         await _chooseAndPay(cubit, pr!);
       }
@@ -186,9 +192,9 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     );
 
     if (method == 'card') {
-      // Contract: a card payment tops up at least the request's outstanding
-      // amount — the full amount, whatever the wallet holds.
-      await _payByCard(cubit, amount);
+      // Native card checkout. If Laravel says card payment is unavailable,
+      // nothing else is started: the card then offers the alternatives.
+      await _payByNativeCard(cubit);
       return;
     }
 
@@ -227,6 +233,56 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     await _payByCard(cubit, shortfall.toDouble());
   }
 
+  /// The customer's explicit choice while native card payment is
+  /// unavailable: add the request's full amount to the wallet by card,
+  /// confirmed on the payment summary, then pay from the wallet.
+  Future<void> _topUpThenPay(ConversationsCubit cubit, double amount) async {
+    final proceed = await AppHelper.showAppDialog<bool>(
+      context,
+      OnConfirmDialog(
+        key: const Key('payment_request_topup_consent'),
+        title: 'Top up by card?',
+        content: 'Add ${amount.formatAmount()} to your wallet by card. Once '
+            'confirmed, this request is paid from your wallet.',
+        confirmText: 'Add Funds & Pay',
+        cancelText: 'Not now',
+      ),
+    );
+    if (proceed != true || !mounted) return;
+    await _payByCard(cubit, amount);
+  }
+
+  /// Pays by card through Laravel's native checkout for this request, using
+  /// the same hosted checkout as bookings. However the checkout ends, the
+  /// cubit then asks Laravel; returning from checkout is never proof.
+  Future<void> _payByNativeCard(ConversationsCubit cubit) async {
+    final id = widget.paymentRequestId;
+    final checkout = await cubit.startCardCheckout(id);
+    // Null: the reason is already in the request's payment progress.
+    if (checkout == null) return;
+    try {
+      if (mounted) {
+        peachLog('Payment request $id: card checkout opened '
+            'payment=${checkout.paymentId} reused=${checkout.reused}');
+        final result = await PaymentRequestCard.openCheckout(
+          context,
+          checkout.toCheckoutData(),
+        );
+        peachLog('Payment request $id: card checkout closed (result=$result)');
+      } else {
+        peachLog('Payment request $id: card gone before checkout opened');
+      }
+    } catch (e) {
+      peachLog('Payment request $id: hosted checkout threw ${e.runtimeType}');
+    } finally {
+      unawaited(
+        cubit.onCardCheckoutClosed(id).catchError((Object e) {
+          paymentRequestLog('Verification after checkout failed: $e');
+        }),
+      );
+    }
+  }
+
   /// Analytics must never interrupt a payment (e.g. Firebase not ready).
   void _logAnalytics(Future<void> Function() event) {
     try {
@@ -240,7 +296,8 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     }
   }
 
-  /// Tops up [amount] by card via the existing Peach checkout.
+  /// Tops up [amount] to the wallet by card via the existing Peach checkout,
+  /// then pays from the wallet once the top-up is verified.
   ///
   /// However the checkout ends — the X, the shopper-result page, a dismissal
   /// or an error — verification is handed to the cubit without awaiting it:
@@ -795,6 +852,16 @@ class _ActionButtons extends StatelessWidget {
           _button('Retry Payment', 'retry_wallet',
               const Key('payment_request_retry_wallet'), busy),
         ];
+      } else if (phase == PaymentRequestPaymentPhase.cardUnavailable) {
+        note = paymentProgress.message ??
+            ConversationsCubit.cardUnavailableMessage;
+        buttons = [
+          _button('Pay from Wallet', 'retry_wallet',
+              const Key('payment_request_pay_wallet'), busy),
+          _button('Top Up & Pay', 'topup_and_pay',
+              const Key('payment_request_topup_and_pay'), busy,
+              outline: true),
+        ];
       } else if (phase == PaymentRequestPaymentPhase.awaitingWalletFunds) {
         note = paymentProgress.message ??
             'Your wallet does not have enough to pay this request yet.';
@@ -812,6 +879,8 @@ class _ActionButtons extends StatelessWidget {
         ];
       } else {
         note = switch (phase) {
+          PaymentRequestPaymentPhase.initializingCardCheckout =>
+            'Starting your card payment…',
           PaymentRequestPaymentPhase.checkoutOpen =>
             'Complete the card payment in the checkout.',
           PaymentRequestPaymentPhase.verifyingTopUp =>

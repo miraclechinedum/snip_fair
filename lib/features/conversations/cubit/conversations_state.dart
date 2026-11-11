@@ -86,12 +86,23 @@ class ConversationsState extends Equatable {
 
 /// Where a customer's payment of one payment request currently stands.
 ///
-/// Card payments are a wallet top-up (`POST /payment/topup`, verified with
-/// the Peach status endpoint) followed by a wallet `/pay`. The request is
-/// paid only when `/pay` answers `code: paid`.
+/// Card payments are either
+/// - native (Phase 6B.2.5A): `POST /payment-requests/{id}/pay` with
+///   `payment_method: card`, verified only by the payer-only status endpoint
+///   (`paid: true` is the only success) — tracked by
+///   [PaymentRequestPaymentProgress.cardPaymentId]; or
+/// - a wallet top-up (`POST /payment/topup`, verified with the Peach deposit
+///   status endpoint) followed by a wallet `/pay` — tracked by
+///   [PaymentRequestPaymentProgress.depositId]. Used only when the customer
+///   chooses it, e.g. while native card payment is unavailable.
+///
+/// The checkout, verifying, pending and unknown phases cover both kinds.
 enum PaymentRequestPaymentPhase {
   idle,
   initializingTopUp,
+
+  /// `POST /pay` with `payment_method: card` is in flight.
+  initializingCardCheckout,
   checkoutOpen,
   verifyingTopUp,
 
@@ -100,6 +111,11 @@ enum PaymentRequestPaymentPhase {
 
   /// The status endpoint could not give a verdict (503 / network).
   topUpUnknown,
+
+  /// Laravel answered `payment_method_unavailable`: native card payment is
+  /// switched off. Nothing was charged. The customer may pay from the wallet,
+  /// or choose to add the amount to the wallet by card first.
+  cardUnavailable,
   payingFromWallet,
 
   /// The card top-up is verified (money is in the wallet) but `/pay` has not
@@ -118,6 +134,7 @@ enum PaymentRequestPaymentPhase {
   /// A request to the backend or the hosted checkout is in progress.
   bool get isBusy =>
       this == initializingTopUp ||
+      this == initializingCardCheckout ||
       this == checkoutOpen ||
       this == verifyingTopUp ||
       this == payingFromWallet;
@@ -131,6 +148,7 @@ class PaymentRequestPaymentProgress extends Equatable {
   const PaymentRequestPaymentProgress({
     this.phase = PaymentRequestPaymentPhase.idle,
     this.depositId,
+    this.cardPaymentId,
     this.message,
     this.revision = 0,
     this.shortfall,
@@ -144,6 +162,10 @@ class PaymentRequestPaymentProgress extends Equatable {
   /// unverified and until `/pay` succeeds after it, so the card is never
   /// charged again for this attempt (and a restart can resume it).
   final String? depositId;
+
+  /// The native card attempt (`payment_id`) of the current attempt: kept
+  /// while its outcome is unknown, so it is checked — never paid again.
+  final String? cardPaymentId;
 
   /// Customer-facing explanation of the latest transition, if any.
   final String? message;
@@ -163,6 +185,7 @@ class PaymentRequestPaymentProgress extends Equatable {
   List<Object?> get props => [
         phase,
         depositId,
+        cardPaymentId,
         message,
         revision,
         shortfall,

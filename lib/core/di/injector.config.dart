@@ -45,6 +45,8 @@ import '../../features/appointments/stylist_appointments/details/cubit/seller_ap
     as _i368;
 import '../../features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart'
     as _i400;
+import '../../features/appointments/update_create_appointment/data/card_tip_recovery.dart'
+    as _i733;
 import '../../features/authentication/forgot_password/cubit/forgot_password_cubit.dart'
     as _i368;
 import '../../features/authentication/login/cubit/login_cubit.dart' as _i553;
@@ -110,8 +112,13 @@ Future<_i174.GetIt> $initGetIt(
       () => _i329.SellerAppointMgtCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i368.SellerAppointmentDetailsCubit>(() =>
       _i368.SellerAppointmentDetailsCubit(gh<_i939.AppointmentRepository>()));
-  gh.factory<_i400.UpdateCreateAppointmentCubit>(() =>
-      _i400.UpdateCreateAppointmentCubit(gh<_i939.AppointmentRepository>()));
+  gh.lazySingleton<_i733.CardTipRecovery>(
+      () => _i733.CardTipRecovery(gh<_i939.AppointmentRepository>()));
+  gh.factory<_i400.UpdateCreateAppointmentCubit>(
+      () => _i400.UpdateCreateAppointmentCubit(
+            gh<_i939.AppointmentRepository>(),
+            tipRecovery: gh<_i733.CardTipRecovery>(),
+          ));
   gh.factory<_i561.ExploreCubit>(
       () => _i561.ExploreCubit(gh<_i939.AppointmentRepository>()));
   gh.factory<_i200.CustomerFavoritesCubit>(

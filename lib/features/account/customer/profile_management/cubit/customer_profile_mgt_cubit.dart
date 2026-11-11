@@ -282,10 +282,11 @@ class CustomerProfileMgtCubit extends Cubit<CustomerProfileMgtState> {
     return result?.path;
   }
 
-  Future<void> deleteAccount() async {
+  /// Sends a request to close the account and erase personal data (never a deletion).
+  Future<void> requestAccountClosure() async {
     emit(state.copyWith(deleteAccountState: const ProcessState.loading()));
 
-    final result = await _profileRepository.deleteAccount();
+    final result = await _profileRepository.requestAccountClosure();
     result.when(
       success: (data) {
         emit(

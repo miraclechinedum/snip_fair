@@ -93,7 +93,9 @@ android {
         }
         development {
             dimension "default"
-            applicationIdSuffix ""
+            // Its own package: a development build installs beside, and can
+            // never replace, the production app (com.snipfair.app).
+            applicationIdSuffix ".dev"
             manifestPlaceholders = [appName: "[DEV] Snipfair"]
         }
     }
@@ -112,6 +114,45 @@ android {
 
 flutter {
     source '../..'
+}
+
+// Firebase has no Android app registered for com.snipfair.app.dev yet, so the
+// Google Services plugin cannot configure development builds. Until
+// android/app/src/development/google-services.json exists (register the app in
+// the Firebase console), development builds skip that step: Firebase is still
+// initialised from lib/firebase_options.dart, but push may not work.
+def developmentGoogleServices = file('src/development/google-services.json')
+tasks.configureEach { task ->
+    if (!developmentGoogleServices.exists() &&
+            task.name ==~ /process(Development)(Debug|Profile|Release)GoogleServices/) {
+        task.enabled = false
+    }
+}
+
+// Each flavor must be built from its own Dart entry point, or from
+// lib/main.dart (which starts the build's own flavor). Stops, e.g., a
+// production package built with the development entry point.
+def allowedEntryPoints = [
+    production : ['main_production.dart', 'main.dart'],
+    staging    : ['main_staging.dart', 'main.dart'],
+    development: ['main_development.dart', 'main.dart'],
+]
+gradle.taskGraph.whenReady { graph ->
+    def target = project.findProperty('target')?.toString()
+    if (target == null) return
+    def entryPoint = new File(target).name
+    graph.allTasks.findAll { it.project == project }.each { task ->
+        def match = task.name =~ /^(?:assemble|bundle)(Production|Staging|Development)(Debug|Profile|Release)$/
+        if (match.matches()) {
+            def flavor = match.group(1).toLowerCase()
+            if (!allowedEntryPoints[flavor].contains(entryPoint)) {
+                throw new GradleException(
+                    "The ${flavor} flavor must be built with -t lib/main_${flavor}.dart " +
+                    "(or lib/main.dart), not ${target}."
+                )
+            }
+        }
+    }
 }
 
 dependencies {

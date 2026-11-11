@@ -24,6 +24,8 @@ import 'package:snip_fair/core/utils/preferences/app_preferences.dart';
 import 'package:snip_fair/core/presentation/widgets/buttons/buttons.dart';
 import 'package:snip_fair/core/presentation/widgets/support_webview_widget.dart';
 import 'package:snip_fair/features/conversations/cubit/conversations_cubit.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/data/card_tip_recovery.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/widgets/tip_payment.dart';
 import 'package:snip_fair/features/account/seller/profile_management/cubit/seller_profile_mgt_cubit.dart';
 import 'package:snip_fair/features/notifications/cubit/notifications_cubit.dart';
 
@@ -39,6 +41,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final locationService = getIt<LocationService>();
   final notificationService = NotificationService.instance;
   StreamSubscription<Map<String, dynamic>>? _chatNotifSub;
+  StreamSubscription<CardTipCheck>? _tipRecoverySub;
 
   @override
   void initState() {
@@ -52,6 +55,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // icon updates in real time without needing a push. Works on simulator.
     // Pauses/resumes on lifecycle transitions in didChangeAppLifecycleState.
     _startChatBadgePollingIfAuthed();
+    // Card tips recovered at start-up or on resume (the app may have been
+    // closed during checkout) are announced here; a booking screen that ran
+    // its own check announces it itself.
+    _tipRecoverySub = getIt<CardTipRecovery>().events.listen((check) {
+      if (!mounted || check.source != null) return;
+      final phase = TipOutcomePresenter.phaseFor(check.verdict);
+      if (phase == null) return;
+      TipOutcomePresenter.present(
+        context,
+        phase: phase,
+        message: check.message,
+      );
+    });
   }
 
   void _startChatBadgePollingIfAuthed() {
@@ -74,6 +90,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           .read<ConversationsCubit>()
           .restorePaymentAttempts(ownerId: userId.toString()),
     );
+    // The customer's unresolved card tips: loaded once, checked once per
+    // start-up / resume. Never starts a checkout.
+    if (appState.isCustomer) {
+      unawaited(getIt<CardTipRecovery>().restore(ownerId: userId.toString()));
+    }
   }
 
   @override
@@ -94,6 +115,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // A card payment left pending/unknown (e.g. the app was backgrounded
       // during checkout) is checked again — never charged again.
       _resumePaymentAttempts();
+      // Distances are measured from where the user is now: send the current
+      // position (bounded, throttled, never prompting).
+      unawaited(locationService.refreshLocation());
       // Stylists: pick up activation changes (e.g. approval) on return.
       if (context.read<AppCubit>().state.isStylist) {
         context.read<SellerProfileMgtCubit>().getProfileDetails(true);
@@ -414,6 +438,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _chatNotifSub?.cancel();
+    _tipRecoverySub?.cancel();
     // Defensive: cubit's onLogout also stops this, but if MainScreen ever
     // unmounts for any other reason, don't leave a timer running.
     getIt<ConversationsCubit>().stopPollingConversations();

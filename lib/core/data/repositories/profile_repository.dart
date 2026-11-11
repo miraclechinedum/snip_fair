@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/domain/entities/bank/bank.dart';
 import 'package:snip_fair/core/domain/entities/user/user.dart';
@@ -16,6 +17,7 @@ import 'package:snip_fair/core/domain/entities/payment_method/payment_method.dar
 import 'package:snip_fair/core/domain/entities/stylist_profile_details/social.dart';
 import 'package:snip_fair/core/domain/entities/customer_wallet/customer_wallet.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request.dart';
+import 'package:snip_fair/core/domain/entities/payment_request/payment_request_card_payment.dart';
 import 'package:snip_fair/core/domain/entities/payment_request/payment_request_pay_result.dart';
 import 'package:snip_fair/core/domain/entities/stylist_earnings/stylist_earnings.dart';
 import 'package:snip_fair/core/domain/entities/stylist_escrow/escrow_breakdown.dart';
@@ -58,6 +60,7 @@ abstract class ProfileRepository {
     required String country,
     required String yearsOfExperience,
     required String bio,
+    GeoPlace? addressPlace,
   });
 
   Future<ApiResult<SimpleResponse>> updateIdentityInfo({
@@ -77,6 +80,7 @@ abstract class ProfileRepository {
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -88,6 +92,7 @@ abstract class ProfileRepository {
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -188,6 +193,7 @@ abstract class ProfileRepository {
   Future<ApiResult<SimpleResponse>> updateUser({
     bool? useLocation,
     String? address,
+    GeoPlace? addressPlace,
     String? fcmToken,
   });
 
@@ -240,7 +246,7 @@ abstract class ProfileRepository {
   /// with [idempotencyKey]. Read-only; never sends a withdrawal.
   Future<ApiResult<WithdrawalLookup>> lookupWithdrawal(String idempotencyKey);
 
-  Future<ApiResult<SimpleResponse>> deleteAccount();
+  Future<ApiResult<SimpleResponse>> requestAccountClosure();
 
   Future<ApiResult<NotificationsList>> getNotifications({
     String? page,
@@ -279,6 +285,16 @@ abstract class ProfileRepository {
   Future<ApiResult<PaymentRequest>> getPaymentRequest(int id);
 
   Future<ApiResult<PaymentRequestPayResult>> payPaymentRequest(int id);
+
+  /// `POST /payment-requests/{id}/pay` with `payment_method: card`: starts
+  /// (or resumes) the request's native Peach card checkout. Nothing is paid.
+  Future<ApiResult<PaymentRequestCardCheckout>> startPaymentRequestCardCheckout(
+    int id,
+  );
+
+  /// `GET /payment-requests/{id}/payments/{paymentId}/status` (payer only).
+  Future<ApiResult<PaymentRequestCardPaymentStatus>>
+      getPaymentRequestCardPaymentStatus(int id, String paymentId);
 
   Future<ApiResult<PaymentRequest>> respondToPaymentRequest(
     int id,
@@ -348,10 +364,12 @@ class ProfileRepoImpl implements ProfileRepository {
     required String country,
     required String yearsOfExperience,
     required String bio,
+    GeoPlace? addressPlace,
   }) =>
       _remoteSource.updateBusinessInfo(
         businessName: businessName,
         country: country,
+        addressPlace: addressPlace,
         yearsOfExperience: yearsOfExperience,
         bio: bio,
       );
@@ -437,6 +455,7 @@ class ProfileRepoImpl implements ProfileRepository {
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -449,6 +468,7 @@ class ProfileRepoImpl implements ProfileRepository {
         lastName: lastName,
         phone: phone,
         country: country,
+        addressPlace: addressPlace,
         yearsOfExperience: yearsOfExperience,
         bio: bio,
         gender: gender,
@@ -572,11 +592,13 @@ class ProfileRepoImpl implements ProfileRepository {
   Future<ApiResult<SimpleResponse>> updateUser({
     bool? useLocation,
     String? address,
+    GeoPlace? addressPlace,
     String? fcmToken,
   }) =>
       _remoteSource.updateUser(
         useLocation: useLocation,
         address: address,
+        addressPlace: addressPlace,
         fcmToken: fcmToken,
       );
 
@@ -658,6 +680,7 @@ class ProfileRepoImpl implements ProfileRepository {
     String? lastName,
     String? phone,
     String? country,
+    GeoPlace? addressPlace,
     String? yearsOfExperience,
     String? bio,
     String? gender,
@@ -668,6 +691,7 @@ class ProfileRepoImpl implements ProfileRepository {
       lastName: lastName,
       phone: phone,
       country: country,
+      addressPlace: addressPlace,
       yearsOfExperience: yearsOfExperience,
       bio: bio,
       gender: gender,
@@ -693,8 +717,8 @@ class ProfileRepoImpl implements ProfileRepository {
       _remoteSource.lookupWithdrawal(idempotencyKey);
 
   @override
-  Future<ApiResult<SimpleResponse>> deleteAccount() =>
-      _remoteSource.deleteAccount();
+  Future<ApiResult<SimpleResponse>> requestAccountClosure() =>
+      _remoteSource.requestAccountClosure();
 
   @override
   Future<ApiResult<NotificationsList>> getNotifications({
@@ -765,6 +789,17 @@ class ProfileRepoImpl implements ProfileRepository {
   @override
   Future<ApiResult<PaymentRequestPayResult>> payPaymentRequest(int id) =>
       _remoteSource.payPaymentRequest(id);
+
+  @override
+  Future<ApiResult<PaymentRequestCardCheckout>> startPaymentRequestCardCheckout(
+    int id,
+  ) =>
+      _remoteSource.startPaymentRequestCardCheckout(id);
+
+  @override
+  Future<ApiResult<PaymentRequestCardPaymentStatus>>
+      getPaymentRequestCardPaymentStatus(int id, String paymentId) =>
+          _remoteSource.getPaymentRequestCardPaymentStatus(id, paymentId);
 
   @override
   Future<ApiResult<PaymentRequest>> respondToPaymentRequest(

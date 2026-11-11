@@ -145,9 +145,13 @@ abstract class AppointmentRepository {
     String? perPage,
   });
 
+  /// `POST /customer/appointment/{id}/tip`. [paymentMethod] is `wallet`
+  /// (the tip is sent at once) or `card` (a checkout is started; the outcome
+  /// comes from [reconcilePeachPayment]).
   Future<ApiResult<TipResponse>> tipCustomerAppointment(
     String id, {
     required double amount,
+    String paymentMethod = 'wallet',
   });
 }
 
@@ -390,6 +394,11 @@ class AppointmentRepoImpl implements AppointmentRepository {
   Future<ApiResult<TipResponse>> tipCustomerAppointment(
     String id, {
     required double amount,
+    String paymentMethod = 'wallet',
   }) =>
-      _remoteSource.tipCustomerAppointment(id, amount: amount);
+      _remoteSource.tipCustomerAppointment(
+        id,
+        amount: amount,
+        paymentMethod: paymentMethod,
+      );
 }

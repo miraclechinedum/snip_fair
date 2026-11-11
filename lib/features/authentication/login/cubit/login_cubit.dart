@@ -106,14 +106,24 @@ class LoginCubit extends BaseCubit<LoginState> {
       final authClient = _googleSignIn.authorizationClient;
       final authorization = await authClient.authorizationForScopes(['email', 'profile']);
 
-      if (authorization == null) return;
+      if (authorization == null) {
+        emit(state.copyWith(googleLoginResult: const ProcessState.init(null)));
+        return;
+      }
 
       await _loginWithGoogle(
         accessToken: authorization.accessToken,
         role: isStylist ? 'stylist' : 'customer',
       );
     } on GoogleSignInException catch (e) {
-      emit(state.copyWith(googleLoginResult: ProcessState.error(e)));
+      // Closing Google's sheet is not an error.
+      emit(
+        state.copyWith(
+          googleLoginResult: e.code == GoogleSignInExceptionCode.canceled
+              ? const ProcessState.init(null)
+              : ProcessState.error(e),
+        ),
+      );
     } catch (error) {
       emit(state.copyWith(googleLoginResult: ProcessState.error(error)));
     }

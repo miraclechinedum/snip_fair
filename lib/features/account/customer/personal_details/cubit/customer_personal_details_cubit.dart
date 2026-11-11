@@ -1,5 +1,6 @@
 import 'package:formz/formz.dart';
 import 'package:injectable/injectable.dart';
+import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/utils/base/base_cubit.dart';
 import 'package:snip_fair/core/utils/base/base_state.dart';
 import 'package:snip_fair/core/utils/input/phone_input.dart';
@@ -30,7 +31,13 @@ class CustomerPersonalDetailsCubit
     emit(state.copyWith(phone: PhoneInput.dirty(value.trim())));
   }
 
-  void onAddressChanged(String value) {
+  /// Coordinates of the address, when it was picked from address search.
+  GeoPlace? _addressPlace;
+
+  /// [place] is the search result the address came from, if any; an address
+  /// typed by hand has no coordinates.
+  void onAddressChanged(String value, {GeoPlace? place}) {
+    _addressPlace = place?.address == value ? place : null;
     emit(state.copyWith(address: StringInput.dirty(value)));
   }
 
@@ -49,6 +56,7 @@ class CustomerPersonalDetailsCubit
         lastName: state.lastName.value,
         phone: state.phone.value,
         country: state.address.value,
+        addressPlace: _addressPlace,
         bio: state.bio.value,
         gender: state.gender.value,
       ),

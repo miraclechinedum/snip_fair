@@ -15,6 +15,90 @@ enum CardPaymentPhase {
       this == successful || this == failed || this == cancelled;
 }
 
+/// Where tipping the stylist stands (`POST .../tip`, and for a card tip the
+/// deposit status endpoint's `tip.status`).
+enum TipPaymentPhase {
+  idle,
+
+  /// `POST .../tip` is in flight (wallet or card).
+  submitting,
+
+  /// The card tip's hosted checkout is open.
+  checkoutOpen,
+
+  /// Asking Laravel what became of the card tip.
+  verifying,
+
+  /// `tip.status: tipped` (card) or `code: tipped` (wallet): the stylist
+  /// received the tip.
+  tipped,
+
+  /// `tip.status: pending`: Peach has not confirmed the card payment yet.
+  pending,
+
+  /// `tip.status: credited_to_wallet`: the card was charged, but the money
+  /// went to the customer's wallet — the booking could no longer be tipped.
+  creditedToWallet,
+
+  /// `tip.status: not_paid`: the card payment was cancelled or abandoned; no
+  /// tip was sent. A new attempt may be made.
+  notPaid,
+
+  /// No verdict (HTTP 503, network): the card tip must be checked again
+  /// before another attempt.
+  unknown,
+
+  /// The tip was refused or could not be started (nothing was paid).
+  failed;
+
+  bool get isBusy =>
+      this == submitting || this == checkoutOpen || this == verifying;
+
+  /// A card tip whose outcome is not known: checked, never paid again.
+  bool get isUnresolved => this == pending || this == unknown;
+}
+
+class TipPaymentProgress extends Equatable {
+  const TipPaymentProgress({
+    this.phase = TipPaymentPhase.idle,
+    this.checkout,
+    this.amount,
+    this.paymentMethod,
+    this.message,
+    this.revision = 0,
+    this.announced = false,
+  });
+
+  final TipPaymentPhase phase;
+
+  /// The card tip's checkout (its `deposit_id` is what gets verified). Kept
+  /// while the outcome is unresolved.
+  final CheckoutPaymentData? checkout;
+  final double? amount;
+  final String? paymentMethod;
+
+  /// Laravel's (or a safe fallback) customer-facing explanation.
+  final String? message;
+
+  /// Increments on every transition, so repeated outcomes still notify.
+  final int revision;
+
+  /// The outcome was already shown to the customer elsewhere (app-level
+  /// recovery), so the booking screen does not announce it again.
+  final bool announced;
+
+  @override
+  List<Object?> get props => [
+        phase,
+        checkout?.depositId,
+        amount,
+        paymentMethod,
+        message,
+        revision,
+        announced,
+      ];
+}
+
 class UpdateCreateAppointmentState extends Equatable {
   factory UpdateCreateAppointmentState.initial() =>
       const UpdateCreateAppointmentState._(
@@ -35,6 +119,7 @@ class UpdateCreateAppointmentState extends Equatable {
         cardVerificationState: ProcessState.init(null),
         retryAppointmentId: null,
         addressPlace: null,
+        tipPayment: TipPaymentProgress(),
       );
 
   const UpdateCreateAppointmentState._({
@@ -55,6 +140,7 @@ class UpdateCreateAppointmentState extends Equatable {
     required this.cardVerificationState,
     required this.retryAppointmentId,
     required this.addressPlace,
+    required this.tipPayment,
   });
 
   final ProcessState<SellerPortfolio> fetchPortfolioState;
@@ -81,6 +167,9 @@ class UpdateCreateAppointmentState extends Equatable {
   /// The address suggestion the customer picked, with its coordinates; null
   /// when the address was typed by hand (or none was picked).
   final GeoPlace? addressPlace;
+
+  /// Tipping the stylist on this booking.
+  final TipPaymentProgress tipPayment;
 
   CheckoutPaymentData? get activeCardCheckout => cardCheckoutState.data;
   /// A card checkout whose outcome is not known yet. A new card checkout
@@ -120,6 +209,7 @@ class UpdateCreateAppointmentState extends Equatable {
         cardVerificationState,
         retryAppointmentId,
         addressPlace,
+        tipPayment,
       ];
 
   UpdateCreateAppointmentState copyWith({
@@ -142,6 +232,7 @@ class UpdateCreateAppointmentState extends Equatable {
     bool clearRetryAppointmentId = false,
     GeoPlace? addressPlace,
     bool clearAddress = false,
+    TipPaymentProgress? tipPayment,
   }) =>
       UpdateCreateAppointmentState._(
         fetchPortfolioState: fetchPortfolioState ?? this.fetchPortfolioState,
@@ -170,5 +261,6 @@ class UpdateCreateAppointmentState extends Equatable {
         addressPlace: clearAddress || (address != null && addressPlace == null)
             ? null
             : addressPlace ?? this.addressPlace,
+        tipPayment: tipPayment ?? this.tipPayment,
       );
 }

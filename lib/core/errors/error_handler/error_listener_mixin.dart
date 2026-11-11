@@ -43,10 +43,11 @@ mixin ErrorListenerMixin implements LocalErrorListener, RemoteErrorListener {
     BuildContext context,
     RemoteException exception,
   ) {
+    // An empty server message (e.g. a body with no "message") falls back too.
+    final message = exception.errorResponse?.message.trim() ?? '';
     _showErrorAlertDialog(
       context: context,
-      message:
-          exception.errorResponse?.message ?? 'An unexpected error occurred',
+      message: message.isNotEmpty ? message : 'An unexpected error occurred',
     );
   }
 

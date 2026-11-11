@@ -161,8 +161,7 @@ class CustomerBillingInfoScreen extends StatelessWidget
                               ? GeoPlace(
                                   address: initialBillingInfo!.billingLocation!
                                       .toString(),
-                                  lat: 0,
-                                  lng: 0,)
+                                )
                               : null,
                           onSelected: (place) => place != null
                               ? cubit.locationChanged(place.address)

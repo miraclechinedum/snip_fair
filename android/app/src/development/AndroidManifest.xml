@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Development flavor (any build type): its backend is a local Laravel
+         server over plain HTTP (DEV_API_BASE_URL). Production and staging
+         are HTTPS-only. -->
+    <application android:usesCleartextTraffic="true"/>
+</manifest>

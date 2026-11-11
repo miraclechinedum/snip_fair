@@ -6,31 +6,86 @@ import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/network/api_result.dart';
 import 'package:snip_fair/core/network/http_service.dart';
 import 'package:snip_fair/core/domain/entities/geo_place.dart';
 import 'package:snip_fair/core/data/repositories/profile_repository.dart';
 
+/// What one [LocationService.refreshLocation] did.
+enum LocationRefreshResult {
+  /// A fresh, valid device position was sent to Laravel.
+  sent,
+
+  /// A position was sent recently; nothing was done.
+  throttled,
+
+  /// Location permission not granted (never prompted from here).
+  permissionDenied,
+
+  /// Location permission permanently denied; only device settings can fix it.
+  permissionDeniedForever,
+
+  /// Location services are switched off.
+  serviceDisabled,
+
+  /// No position within the time limit, or an invalid one (e.g. 0, 0):
+  /// nothing was sent.
+  unavailable,
+
+  /// Laravel did not accept the position.
+  failed,
+}
+
+/// The device's location services, behind a seam for tests.
+class DeviceLocation {
+  const DeviceLocation();
+
+  Future<bool> isServiceEnabled() => Geolocator.isLocationServiceEnabled();
+
+  Future<LocationPermission> checkPermission() => Geolocator.checkPermission();
+
+  Future<Position> currentPosition(Duration timeLimit) =>
+      Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(timeLimit: timeLimit),
+      );
+
+  Future<Position?> lastKnownPosition() => Geolocator.getLastKnownPosition();
+}
+
 @LazySingleton()
 class LocationService {
-  Timer? _timer;
+  LocationService({
+    @ignoreParam DeviceLocation? device,
+    @ignoreParam ProfileRepository? repository,
+  })  : _device = device ?? const DeviceLocation(),
+        _repository = repository;
 
-  void startPingingLocationToServer() {
-    _timer?.cancel();
-    _timer = null;
-    _timer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) => _updateCurrentLocationToServer(),
-    );
-  }
+  final DeviceLocation _device;
+  final ProfileRepository? _repository;
 
-  void stopPingingLocationToServer() {
-    _timer?.toString();
-  }
+  ProfileRepository get _repo => _repository ?? getIt<ProfileRepository>();
+
+  /// How long to wait for a position fix before giving up.
+  static const positionTimeLimit = Duration(seconds: 12);
+
+  /// A last known position older than this is not used.
+  static const maxLastKnownAge = Duration(minutes: 10);
+
+  /// Refreshes closer together than this are skipped (unless forced).
+  static const minRefreshInterval = Duration(minutes: 2);
+
+  /// When positions are taken and refreshes throttled; replaceable in tests.
+  @visibleForTesting
+  static DateTime Function() clock = DateTime.now;
+
+  DateTime? _lastSentAt;
+  Future<LocationRefreshResult>? _inFlight;
 
   ///Write function to check location permission and return true or false
   Future<bool> checkLocationPermission() async {
     final permission = await Geolocator.checkPermission();
-    if (permission != LocationPermission.always && permission != LocationPermission.whileInUse) {
+    if (permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;
@@ -39,7 +94,8 @@ class LocationService {
   //Write functions to request location permission
   Future<bool> requestLocationPermission() async {
     final permission = await Geolocator.requestPermission();
-    if (permission != LocationPermission.always && permission != LocationPermission.whileInUse) {
+    if (permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
       return false;
     }
     return true;
@@ -50,22 +106,91 @@ class LocationService {
     await Geolocator.openLocationSettings();
   }
 
-  Future<void> _updateCurrentLocationToServer() async {
-    final repo = getIt<ProfileRepository>();
+  /// Sends the device's current position to Laravel (`PATCH /user/location`)
+  /// so stylist distances are measured from where the customer is now.
+  ///
+  /// Never prompts for permission (that is [requestLocationPermission]'s
+  /// job, behind the app's consent sheet), never waits longer than
+  /// [positionTimeLimit] for a fix, and never sends an invalid position.
+  /// Called at start-up, on resume and before booking; never blocks them.
+  /// Concurrent calls share one refresh; [force] skips the throttle.
+  Future<LocationRefreshResult> refreshLocation({bool force = false}) {
+    final inFlight = _inFlight;
+    if (inFlight != null) return inFlight;
+    final lastSent = _lastSentAt;
+    if (!force &&
+        lastSent != null &&
+        clock().difference(lastSent) < minRefreshInterval) {
+      return Future.value(LocationRefreshResult.throttled);
+    }
+    // Block body: an arrow would hand whenComplete this same future.
+    final refresh = _refresh().whenComplete(() {
+      _inFlight = null;
+    });
+    _inFlight = refresh;
+    return refresh;
+  }
+
+  Future<LocationRefreshResult> _refresh() async {
     try {
-      final position = await _determinePosition();
-      await repo.updateUserLocation(
+      if (!await _device.isServiceEnabled()) {
+        return LocationRefreshResult.serviceDisabled;
+      }
+      switch (await _device.checkPermission()) {
+        case LocationPermission.always:
+        case LocationPermission.whileInUse:
+          break;
+        case LocationPermission.deniedForever:
+          return LocationRefreshResult.permissionDeniedForever;
+        case LocationPermission.denied:
+        case LocationPermission.unableToDetermine:
+          return LocationRefreshResult.permissionDenied;
+      }
+
+      final position = await _position();
+      if (position == null ||
+          !GeoPlace.isValidPair(position.latitude, position.longitude)) {
+        Logger().w('LocationService: no valid position to send');
+        return LocationRefreshResult.unavailable;
+      }
+
+      final result = await _repo.updateUserLocation(
         latitude: position.latitude,
         longitude: position.longitude,
         accuracy: position.accuracy,
       );
-    } catch (e, s) {
-      Logger().e('LocationService: ', error: e, stackTrace: s);
+      return result.when(
+        success: (_) {
+          _lastSentAt = clock();
+          return LocationRefreshResult.sent;
+        },
+        failure: (_) => LocationRefreshResult.failed,
+      );
+    } catch (e) {
+      Logger().w('LocationService: refresh failed: ${e.runtimeType}');
+      return LocationRefreshResult.unavailable;
     }
   }
 
+  /// A fresh fix, or a recent last known position when no fix arrives in
+  /// time.
+  Future<Position?> _position() async {
+    try {
+      return await _device.currentPosition(positionTimeLimit);
+    } on TimeoutException {
+      Logger().w('LocationService: no position fix within the time limit');
+    } catch (e) {
+      Logger().w('LocationService: position failed: ${e.runtimeType}');
+    }
+    final last = await _device.lastKnownPosition().catchError((_) => null);
+    if (last == null) return null;
+    final age = clock().difference(last.timestamp);
+    return age <= maxLastKnownAge ? last : null;
+  }
+
+  /// Right after the customer granted permission: send the position now.
   void sendLocationUpdateRequest() {
-    unawaited(_updateCurrentLocationToServer());
+    unawaited(refreshLocation(force: true));
   }
 
   void sendConsentToUseLocation(bool consentGiven) {
@@ -75,131 +200,101 @@ class LocationService {
   Future<void> _updateLocationConsentToServer({
     required bool consentGiven,
   }) async {
-    final repo = getIt<ProfileRepository>();
     try {
-      await repo.updateLocationConsent(consentGiven);
+      await _repo.updateLocationConsent(consentGiven);
       Fluttertoast.showToast(msg: 'Location consent updated');
     } catch (e, s) {
       Logger().e('LocationService: ', error: e, stackTrace: s);
     }
   }
 
-  /// Determine the current position of the device.
-  ///
-  /// When the location services are not enabled or permissions
-  /// are denied the `Future` will return an error.
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
-      );
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return Geolocator.getCurrentPosition();
-  }
-
-  /// Fewer characters than this never call the address provider.
+  /// Fewer characters than this never call address search.
   static const placeSearchMinChars = 3;
 
   /// Creates the HTTP client for [placeSearch]; replaced in tests.
   @visibleForTesting
-  static Dio Function(BaseOptions options) createPlaceSearchClient = Dio.new;
+  static Dio Function() createPlaceSearchClient =
+      () => getIt<HttpService>().client();
 
-  /// Address suggestions in South Africa from Geoapify's autocomplete.
+  /// Address suggestions in South Africa, from Laravel's address search
+  /// (`GET /geocode/autocomplete`), which holds the provider key: the app
+  /// carries none.
   ///
   /// Returns an empty list when nothing matches (or the query is shorter than
-  /// [placeSearchMinChars]). Throws [PlaceSearchException] when the provider
-  /// could not be asked or answered with an error, so the field can tell "no
-  /// results" from "unavailable". The request URL carries the API key, so only
-  /// the error type and HTTP status are ever logged.
+  /// [placeSearchMinChars]). Throws [PlaceSearchException] when search is not
+  /// configured on the server or is unavailable, so the field can tell "no
+  /// results" from "unavailable".
   Future<List<GeoPlace>> placeSearch(String query) async {
     final text = query.trim();
     if (text.length < placeSearchMinChars) return [];
     try {
-      final response = await createPlaceSearchClient(
-        BaseOptions(
-          baseUrl: 'https://api.geoapify.com',
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-          validateStatus: (status) => status == 200,
+      final response = await createPlaceSearchClient().get<Object?>(
+        '/geocode/autocomplete',
+        queryParameters: {'text': text},
+        options: Options(
+          sendTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
         ),
-      ).get<Map<String, dynamic>>(
-        '/v1/geocode/autocomplete',
-        queryParameters: {
-          'text': text,
-          'apiKey': '444cf10f491e417d81d839ee58801389',
-          'limit': '5',
-          'lang': 'en',
-          'filter': 'countrycode:za',
-        },
       );
       return parsePlaceSuggestions(response.data);
     } on PlaceSearchException {
       rethrow;
     } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final body = e.response?.data;
+      final code = body is Map ? body['code'] : null;
       Logger().w(
         'Place search unavailable: type=${e.type.name} '
-        'http=${e.response?.statusCode ?? 'none'}',
+        'http=${status ?? 'none'} code=${code ?? 'none'}',
       );
-      throw PlaceSearchException(e.response?.statusCode);
+      // Too long or otherwise rejected: nothing can match.
+      if (status == 422) return [];
+      if (status == 503 && code == 'geocoding_not_configured') {
+        throw const PlaceSearchException(
+          PlaceSearchFailure.notConfigured,
+          statusCode: 503,
+        );
+      }
+      throw PlaceSearchException(
+        PlaceSearchFailure.unavailable,
+        statusCode: status,
+      );
     } catch (e) {
       Logger().w('Place search failed: ${e.runtimeType}');
-      throw const PlaceSearchException(null);
+      throw const PlaceSearchException(PlaceSearchFailure.unavailable);
     }
   }
 
-  /// The places in a Geoapify autocomplete response: the formatted address
-  /// and its coordinates. A suggestion without an address or coordinates is
-  /// skipped (never fatal for the others); duplicates are dropped.
+  /// The places in an address search response
+  /// (`{"data": [{"address", "latitude", "longitude", "place_id"}]}`). A
+  /// suggestion without an address or valid coordinates is skipped (never
+  /// fatal for the others); duplicates are dropped.
   @visibleForTesting
   static List<GeoPlace> parsePlaceSuggestions(Object? body) {
-    final features = body is Map ? body['features'] : null;
-    if (features is! List) throw const PlaceSearchException(null);
+    final data = body is Map ? body['data'] : null;
+    if (data is! List) {
+      throw const PlaceSearchException(PlaceSearchFailure.unavailable);
+    }
 
     final places = <GeoPlace>[];
     final seen = <String>{};
-    for (final feature in features) {
-      final properties = feature is Map ? feature['properties'] : null;
-      if (properties is! Map) continue;
-      final address = properties['formatted'];
-      final lat = properties['lat'];
-      final lng = properties['lon'];
+    for (final item in data) {
+      if (item is! Map) continue;
+      final address = item['address'];
+      final lat = item['latitude'];
+      final lng = item['longitude'];
+      final placeId = item['place_id'];
       if (address is! String || address.trim().isEmpty) continue;
-      if (lat is! num || lng is! num) continue;
+      if (lat is! num || lng is! num || !GeoPlace.isValidPair(lat, lng)) {
+        continue;
+      }
       if (!seen.add(address.trim())) continue;
       places.add(
         GeoPlace(
           address: address.trim(),
           lat: lat.toDouble(),
           lng: lng.toDouble(),
+          placeId: placeId is String && placeId.isNotEmpty ? placeId : null,
         ),
       );
     }
@@ -207,13 +302,25 @@ class LocationService {
   }
 }
 
-/// The address provider could not be asked, or answered with an error.
-class PlaceSearchException implements Exception {
-  const PlaceSearchException(this.statusCode);
+enum PlaceSearchFailure {
+  /// The server has no address search key configured.
+  notConfigured,
 
-  /// The provider's HTTP status, when it answered.
+  /// The server or the provider could not answer (auth, rate limit, outage,
+  /// network).
+  unavailable,
+}
+
+/// Address search could not be asked, or answered with an error.
+class PlaceSearchException implements Exception {
+  const PlaceSearchException(this.failure, {this.statusCode});
+
+  final PlaceSearchFailure failure;
+
+  /// The HTTP status, when the server answered.
   final int? statusCode;
 
   @override
-  String toString() => 'PlaceSearchException(http: ${statusCode ?? 'none'})';
+  String toString() =>
+      'PlaceSearchException(${failure.name}, http: ${statusCode ?? 'none'})';
 }

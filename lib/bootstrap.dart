@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:snip_fair/core/di/injector.dart';
+import 'package:snip_fair/core/presentation/configuration_error_app.dart';
+import 'package:snip_fair/core/utils/environment/environment.dart';
+import 'package:snip_fair/core/utils/environment/environment_configs.dart';
 import 'package:snip_fair/core/presentation/app_config/app_config_controller.dart';
 import 'package:snip_fair/core/services/analytics_service.dart';
 import 'package:snip_fair/core/services/chat_draft_service.dart';
@@ -37,7 +40,16 @@ void _bootstrapLog(String message) {
   log(message);
 }
 
-Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
+/// Starts the app for [environment] (`Environment.prod`, `staging` or `dev`).
+///
+/// The environment is loaded and validated first — before dependency
+/// injection, Firebase or any service that could create an API client — so
+/// nothing can run against a missing or wrong backend. An invalid
+/// environment shows [ConfigurationErrorApp] instead of the app.
+Future<void> bootstrap(
+  FutureOr<Widget> Function() builder, {
+  required String environment,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   FlutterError.onError = (details) {
@@ -46,7 +58,16 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
   Bloc.observer = const AppBlocObserver();
 
-  _bootstrapLog('🚀 BOOTSTRAP STARTED');
+  _bootstrapLog('🚀 BOOTSTRAP STARTED ($environment)');
+
+  try {
+    await Environment().initConfig(environment);
+  } on EnvironmentConfigException catch (e) {
+    _bootstrapLog('⛔ ${e.message}');
+    runApp(ConfigurationErrorApp(message: e.message));
+    return;
+  }
+  _bootstrapLog('🌐 API: ${Environment().config.apiHost}');
 
   await configureDependencies();
 

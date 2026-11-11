@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -14,29 +15,19 @@ import 'package:snip_fair/core/presentation/widgets/custom_text_field.dart';
 import 'package:snip_fair/core/services/location_service.dart';
 import 'package:snip_fair/features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart';
 
-/// A Geoapify autocomplete feature as the API returns it: fractional rank
-/// confidence, whole-number coordinates and the extra fields that used to
-/// break parsing.
-Map<String, dynamic> _feature(
-  String formatted, {
-  num lat = -33.9,
-  num lon = 18,
+/// A suggestion as Laravel's address search (`GET /geocode/autocomplete`)
+/// returns it.
+Map<String, dynamic> _suggestion(
+  String address, {
+  num? lat = -33.9,
+  num? lng = 18,
+  String? placeId = 'place-1',
 }) =>
     {
-      'type': 'Feature',
-      'properties': {
-        'formatted': formatted,
-        'lat': lat,
-        'lon': lon,
-        'country_code': 'za',
-        'rank': {'confidence': 0.85, 'confidence_street_level': 0.5},
-        'timezone': {'offset_STD_seconds': 7200},
-      },
-      'geometry': {
-        'type': 'Point',
-        'coordinates': [lon, lat],
-      },
-      'bbox': [18, -34, 18.5, -33.5],
+      'address': address,
+      'latitude': lat,
+      'longitude': lng,
+      'place_id': placeId,
     };
 
 class _Adapter implements HttpClientAdapter {
@@ -90,20 +81,24 @@ void main() {
 
     void serve(Future<ResponseBody> Function(RequestOptions) reply) {
       adapter = _Adapter(reply);
-      LocationService.createPlaceSearchClient =
-          (options) => Dio(options)..httpClientAdapter = adapter;
+      LocationService.createPlaceSearchClient = () =>
+          Dio(BaseOptions(baseUrl: 'https://api.example.test/api'))
+            ..httpClientAdapter = adapter;
     }
 
     tearDown(() => LocationService.createPlaceSearchClient = original);
 
-    test('returns suggestions with their coordinates', () async {
+    test('asks Laravel, never the provider, and sends no key', () async {
       serve(
         (_) async => _json({
-          'type': 'FeatureCollection',
-          'features': [
-            _feature('12 Long Street, Cape Town, 8001, South Africa'),
-            _feature('12 Loop Street, Cape Town, 8001, South Africa',
-                lat: -33.92, lon: 18.42),
+          'data': [
+            _suggestion('12 Long Street, Cape Town, 8001, South Africa'),
+            _suggestion(
+              '12 Loop Street, Cape Town, 8001, South Africa',
+              lat: -33.92,
+              lng: 18.42,
+              placeId: 'place-loop',
+            ),
           ],
         }),
       );
@@ -116,34 +111,62 @@ void main() {
       ]);
       expect([places.first.lat, places.first.lng], [-33.9, 18.0]);
       expect([places.last.lat, places.last.lng], [-33.92, 18.42]);
+      expect(places.last.placeId, 'place-loop');
 
-      final query = adapter.requests.single.queryParameters;
-      expect(adapter.requests.single.path, '/v1/geocode/autocomplete');
-      expect(query['text'], '12 Lo');
-      expect(query['lang'], 'en');
-      expect(query['filter'], 'countrycode:za');
-      expect(query['apiKey'], isA<String>());
+      final request = adapter.requests.single;
+      expect(request.uri.host, 'api.example.test');
+      expect(request.uri.path, '/api/geocode/autocomplete');
+      expect(request.queryParameters, {'text': '12 Lo'});
+      expect(request.uri.toString(), isNot(contains('apiKey')));
+      expect(request.uri.toString(), isNot(contains('geoapify')));
     });
 
+    for (final query in [
+      '72 orange street capetown',
+      '72 Orange Street, Cape Town',
+    ]) {
+      test('"$query" finds 72 Orange Street with its coordinates', () async {
+        serve(
+          (_) async => _json({
+            'data': [
+              _suggestion(
+                '72 Orange Street, Gardens, Cape Town, 8001, South Africa',
+                lat: -33.931,
+                lng: 18.4155,
+                placeId: 'place-72-orange',
+              ),
+            ],
+          }),
+        );
+
+        final places = await LocationService().placeSearch(query);
+
+        expect(adapter.requests.single.queryParameters['text'], query);
+        expect(places.single.address,
+            '72 Orange Street, Gardens, Cape Town, 8001, South Africa');
+        expect([places.single.lat, places.single.lng], [-33.931, 18.4155]);
+        expect(places.single.placeId, 'place-72-orange');
+        expect(places.single.hasValidCoordinates, isTrue);
+      });
+    }
+
     test('no matches is an empty list, not an error', () async {
-      serve(
-        (_) async => _json({
-          'type': 'FeatureCollection',
-          'features': <Map<String, dynamic>>[],
-        }),
-      );
+      serve((_) async => _json({'data': <Object>[]}));
 
       expect(await LocationService().placeSearch('zzzzqx'), isEmpty);
     });
 
-    test('a malformed suggestion is skipped, not fatal', () async {
+    test('a suggestion without valid coordinates is skipped, not fatal',
+        () async {
       serve(
         (_) async => _json({
-          'features': [
-            {'properties': {'formatted': 'No coordinates'}},
-            {'properties': 'oops'},
-            _feature('7 Kloof Street, Cape Town, South Africa'),
-            _feature('7 Kloof Street, Cape Town, South Africa'),
+          'data': [
+            _suggestion('No coordinates', lat: null, lng: null),
+            _suggestion('Null Island', lat: 0, lng: 0),
+            _suggestion('Out of range', lat: 91, lng: 18),
+            'oops',
+            _suggestion('7 Kloof Street, Cape Town, South Africa'),
+            _suggestion('7 Kloof Street, Cape Town, South Africa'),
           ],
         }),
       );
@@ -153,35 +176,92 @@ void main() {
           ['7 Kloof Street, Cape Town, South Africa']);
     });
 
-    test('fewer than three characters never calls the provider', () async {
-      serve((_) async => _json({'features': [_feature('x')]}));
+    test('fewer than three characters never calls the server', () async {
+      serve((_) async => _json({
+            'data': [_suggestion('x')]
+          }));
 
       expect(await LocationService().placeSearch('12'), isEmpty);
       expect(await LocationService().placeSearch('   '), isEmpty);
       expect(adapter.requests, isEmpty);
     });
 
-    for (final status in [401, 429, 500]) {
-      test('HTTP $status is reported as unavailable', () async {
-        serve((_) async => _json({'message': 'denied'}, status));
+    test('no key on the server is "not configured"', () async {
+      serve(
+        (_) async => _json(
+          {'code': 'geocoding_not_configured', 'message': 'not configured'},
+          503,
+        ),
+      );
+
+      await expectLater(
+        LocationService().placeSearch('12 Long Street'),
+        throwsA(
+          isA<PlaceSearchException>().having(
+            (e) => e.failure,
+            'failure',
+            PlaceSearchFailure.notConfigured,
+          ),
+        ),
+      );
+    });
+
+    for (final (status, body) in [
+      (503, {'code': 'geocoding_unavailable', 'reason': 'provider_auth'}),
+      (503, {'code': 'geocoding_unavailable', 'reason': 'network'}),
+      (429, {'message': 'Too Many Attempts.'}),
+      (500, {'message': 'Server Error'}),
+      (401, {'message': 'Unauthenticated.'}),
+    ]) {
+      test('HTTP $status ${body['reason'] ?? ''} is "unavailable"', () async {
+        serve((_) async => _json(body, status));
 
         await expectLater(
           LocationService().placeSearch('12 Long Street'),
           throwsA(
             isA<PlaceSearchException>()
+                .having(
+                    (e) => e.failure, 'failure', PlaceSearchFailure.unavailable)
                 .having((e) => e.statusCode, 'statusCode', status),
           ),
         );
       });
     }
 
-    test('a timeout is reported as unavailable', () async {
-      serve(
-        (options) async => throw DioException.connectionTimeout(
-          timeout: const Duration(seconds: 10),
-          requestOptions: options,
-        ),
-      );
+    test('a query the server rejects (422) is an empty list', () async {
+      serve((_) async => _json({'message': 'too long'}, 422));
+
+      expect(await LocationService().placeSearch('12 Long Street'), isEmpty);
+    });
+
+    test('a timeout or no connection is "unavailable"', () async {
+      for (final error in [
+        (RequestOptions o) => DioException.connectionTimeout(
+              timeout: const Duration(seconds: 10),
+              requestOptions: o,
+            ),
+        (RequestOptions o) => DioException.connectionError(
+              requestOptions: o,
+              reason: 'offline',
+            ),
+      ]) {
+        serve((options) async => throw error(options));
+
+        await expectLater(
+          LocationService().placeSearch('12 Long Street'),
+          throwsA(
+            isA<PlaceSearchException>().having(
+              (e) => e.failure,
+              'failure',
+              PlaceSearchFailure.unavailable,
+            ),
+          ),
+        );
+      }
+    });
+
+    test('an unexpected body is "unavailable"', () async {
+      serve((_) async => _json({'features': <Object>[]}));
 
       await expectLater(
         LocationService().placeSearch('12 Long Street'),
@@ -189,19 +269,27 @@ void main() {
       );
     });
 
-    test('an unexpected body is reported as unavailable', () async {
-      serve((_) async => _json({'error': 'Bad Request'}));
-
-      await expectLater(
-        LocationService().placeSearch('12 Long Street'),
-        throwsA(isA<PlaceSearchException>()),
-      );
-    });
-
-    test('the error never carries the request (and its API key)', () {
+    test('the app carries no Geoapify key', () {
+      final source =
+          File('lib/core/services/location_service.dart').readAsStringSync();
+      expect(source, isNot(contains('apiKey')));
+      expect(source, isNot(contains('api.geoapify.com')));
+      for (final file in Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))) {
+        expect(
+          file.readAsStringSync(),
+          isNot(contains('api.geoapify.com')),
+          reason: file.path,
+        );
+      }
       expect(
-        const PlaceSearchException(401).toString(),
-        'PlaceSearchException(http: 401)',
+        const PlaceSearchException(
+          PlaceSearchFailure.unavailable,
+          statusCode: 503,
+        ).toString(),
+        'PlaceSearchException(unavailable, http: 503)',
       );
     });
   });
@@ -270,8 +358,17 @@ void main() {
     testWidgets('suggestions appear beneath the field and can be picked',
         (tester) async {
       service.answer = (_) async => [
-            GeoPlace(address: '12 Long Street, Cape Town', lat: -33.9, lng: 18.4),
-            GeoPlace(address: '12 Loop Street, Cape Town', lat: -33.92, lng: 18.42),
+            GeoPlace(
+              address: '12 Long Street, Cape Town',
+              lat: -33.9,
+              lng: 18.4,
+            ),
+            GeoPlace(
+              address: '12 Loop Street, Cape Town',
+              lat: -33.92,
+              lng: 18.42,
+              placeId: 'place-loop',
+            ),
           ];
       await pumpField(tester);
 
@@ -293,6 +390,7 @@ void main() {
 
       expect(selected?.address, '12 Loop Street, Cape Town');
       expect([selected?.lat, selected?.lng], [-33.92, 18.42]);
+      expect(selected?.placeId, 'place-loop');
       expect(selections, 1);
       // Dismissed: the picked address replaces the input and its list.
       expect(find.byType(TextField), findsNothing);
@@ -335,9 +433,12 @@ void main() {
       expect(find.text(placeSearchEmptyMessage), findsOneWidget);
     });
 
-    testWidgets('a provider error shows an error state, not silence',
+    testWidgets('an unavailable service says so, not "no matches"',
         (tester) async {
-      service.answer = (_) async => throw const PlaceSearchException(401);
+      service.answer = (_) async => throw const PlaceSearchException(
+            PlaceSearchFailure.unavailable,
+            statusCode: 503,
+          );
       await pumpField(tester);
       await tester.tap(find.byType(TextField));
 
@@ -345,6 +446,38 @@ void main() {
       await waitForSuggestions(tester);
 
       expect(find.text(placeSearchErrorMessage), findsOneWidget);
+      expect(find.text(placeSearchEmptyMessage), findsNothing);
+      expect(find.textContaining('No Items Found'), findsNothing);
+    });
+
+    testWidgets('an unconfigured service says so, not "no matches"',
+        (tester) async {
+      service.answer = (_) async => throw const PlaceSearchException(
+            PlaceSearchFailure.notConfigured,
+            statusCode: 503,
+          );
+      await pumpField(tester);
+      await tester.tap(find.byType(TextField));
+
+      await type(tester, '12 Long Street');
+      await waitForSuggestions(tester);
+
+      expect(find.text(placeSearchNotConfiguredMessage), findsOneWidget);
+      expect(find.text(placeSearchEmptyMessage), findsNothing);
+      expect(find.text(placeSearchErrorMessage), findsNothing);
+    });
+
+    testWidgets('a network failure is "unavailable", never "no items"',
+        (tester) async {
+      service.answer = (_) async => throw Exception('socket closed');
+      await pumpField(tester);
+      await tester.tap(find.byType(TextField));
+
+      await type(tester, '12 Long Street');
+      await waitForSuggestions(tester);
+
+      expect(find.text(placeSearchErrorMessage), findsOneWidget);
+      expect(find.textContaining('No Items Found'), findsNothing);
     });
 
     testWidgets('a slow response shows progress, then the suggestions',
@@ -359,7 +492,9 @@ void main() {
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      reply.complete([GeoPlace(address: '12 Long Street', lat: -33.9, lng: 18.4)]);
+      reply.complete(
+        [GeoPlace(address: '12 Long Street', lat: -33.9, lng: 18.4)],
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -397,7 +532,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(selected?.address, '5 Unlisted Lane, Paarl');
-      expect([selected?.lat, selected?.lng], [0, 0]);
+      // No made-up (0, 0) coordinates for a typed address.
+      expect([selected?.lat, selected?.lng], [null, null]);
+      expect(selected?.hasValidCoordinates, isFalse);
     });
   });
 
@@ -414,8 +551,12 @@ void main() {
       expect(cubit.state.addressPlace?.lng, 18.42);
 
       // Typed by hand: the address, but no (made-up) coordinates.
-      cubit.onPlaceSelected(GeoPlace(address: '5 Unlisted Lane', lat: 0, lng: 0));
+      cubit.onPlaceSelected(GeoPlace(address: '5 Unlisted Lane'));
       expect(cubit.state.address, '5 Unlisted Lane');
+      expect(cubit.state.addressPlace, isNull);
+
+      // (0, 0) from anywhere is never kept as a location.
+      cubit.onPlaceSelected(GeoPlace(address: 'Null Island', lat: 0, lng: 0));
       expect(cubit.state.addressPlace, isNull);
 
       cubit.onPlaceSelected(null);

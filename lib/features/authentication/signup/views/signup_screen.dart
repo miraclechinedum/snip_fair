@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:auth_buttons/auth_buttons.dart';
 import 'package:auto_route/auto_route.dart';
@@ -316,9 +315,8 @@ class SignupScreen extends BaseStatelessPage<SignupCubit>
                     12.verticalSpace,
                     BlocBuilder<SignupCubit, SignupState>(
                       builder: (context, state) {
-                        if(Platform.isIOS){
-                          return const SizedBox.shrink();
-                        }
+                        // Shown on Android and iOS (iOS is configured in
+                        // Info.plist from GoogleService-Info.plist).
                         return Center(
                           child: GoogleAuthButton(
                             isLoading: state.signUpResult.isLoading,

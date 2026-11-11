@@ -2,6 +2,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:snip_fair/core/utils/distance_format.dart';
 import 'package:snip_fair/core/di/injector.dart';
 import 'package:snip_fair/core/utils/utils.dart';
 import 'package:calendar_view/calendar_view.dart';
@@ -26,6 +27,7 @@ import 'package:snip_fair/features/account/customer/profile_management/cubit/cus
 import 'package:snip_fair/features/appointments/customer_appointments/cubit/customer_appointments_cubit.dart';
 import 'package:snip_fair/features/account/seller/profile_verification/views/seller_profile_verification_screen.dart';
 import 'package:snip_fair/features/appointments/update_create_appointment/cubit/update_create_appointment_cubit.dart';
+import 'package:snip_fair/features/appointments/update_create_appointment/widgets/tip_payment.dart';
 import 'package:snip_fair/core/utils/peach_payment_log.dart';
 import 'package:snip_fair/core/domain/entities/checkout_payment/checkout_payment_data.dart';
 import 'package:snip_fair/features/appointments/update_create_appointment/widgets/appointment_card_payment_notice.dart';
@@ -127,6 +129,14 @@ class _UpdateCreateAppointmentScreenState
     }
   }
 
+  static const _tipOutcomePhases = {
+    TipPaymentPhase.tipped,
+    TipPaymentPhase.creditedToWallet,
+    TipPaymentPhase.notPaid,
+    TipPaymentPhase.pending,
+    TipPaymentPhase.unknown,
+  };
+
   /// Leaves the booking form once a card payment is verified or still being
   /// confirmed, so an already-paid booking is never left on screen to be
   /// submitted again. Pops back to [MainRoute] — removing this route from the
@@ -205,6 +215,24 @@ class _UpdateCreateAppointmentScreenState
                           s.data!,
                         );
                       },
+                    ),
+
+                    // Tip outcomes, once per change of outcome. Refusals while
+                    // the tip sheet is open are shown in the sheet itself.
+                    BlocListener<UpdateCreateAppointmentCubit,
+                        UpdateCreateAppointmentState>(
+                      listenWhen: (p, c) =>
+                          p.tipPayment.phase != c.tipPayment.phase &&
+                          !c.tipPayment.announced &&
+                          (_tipOutcomePhases.contains(c.tipPayment.phase) ||
+                              (c.tipPayment.phase == TipPaymentPhase.failed &&
+                                  p.tipPayment.phase ==
+                                      TipPaymentPhase.verifying)),
+                      listener: (context, state) => TipOutcomePresenter.present(
+                        context,
+                        phase: state.tipPayment.phase,
+                        message: state.tipPayment.message,
+                      ),
                     ),
 
                     BlocListener<UpdateCreateAppointmentCubit,
@@ -433,14 +461,10 @@ class _UpdateCreateAppointmentScreenState
                           ? GeoPlace(
                               address: appointState
                                   .fetchAppointmentState.data!.serviceNotes!,
-                              lat: 0,
-                              lng: 0,
                             )
                           : GeoPlace(
                               address:
                                   state.profileDetails.data!.user!.country!,
-                              lat: 0,
-                              lng: 0,
                             ),
                     );
                   }
@@ -455,8 +479,6 @@ class _UpdateCreateAppointmentScreenState
                             null
                         ? GeoPlace(
                             address: state.profileDetails.data!.user!.country!,
-                            lat: 0,
-                            lng: 0,
                           )
                         : null,
                   );
@@ -585,11 +607,10 @@ class AppointmentHeader extends StatelessWidget {
                 ),
                 8.horizontalSpace,
                 AppText(
-                  text: state.fetchSellerDetailsState.hasSuccess
-                      ? state.fetchSellerDetailsState.data!.distance != null
-                          ? '${state.fetchSellerDetailsState.data!.distance?.round()} km away'
-                          : ''
-                      : '',
+                  text: formatDistanceAway(
+                        state.fetchSellerDetailsState.data?.distance,
+                      ) ??
+                      '',
                   fontSize: 12,
                 ),
               ],
@@ -1179,53 +1200,25 @@ class BookingSummary extends StatelessWidget {
                             _ReviewSuccessDialog(
                               onTipPressed: freshAppointment.hasBeenTipped
                                   ? null
-                                  : () {
-                                      final walletBalance = (context
-                                                  .read<
-                                                      CustomerProfileMgtCubit>()
-                                                  .state
-                                                  .walletState
-                                                  .data
-                                                  ?.balance ??
-                                              0.0)
-                                          .toDouble();
-                                      AppHelper.showCustomModalBottomSheet<
-                                          void>(
-                                        context: context,
-                                        modal: TipBottomSheet(
-                                          walletBalance: walletBalance,
-                                          onSubmit: (amount) async {
-                                            await cubit.tipAppointment(amount);
-                                            final tipState =
-                                                cubit.state.tipAppointmentState;
-                                            if (tipState.hasSuccess) {
-                                              AppHelper.showSnackBar(
-                                                context,
-                                                message: tipState
-                                                        .data?.message ??
-                                                    'Tip sent successfully. Thank you for appreciating your stylist!',
-                                              );
-                                              context
-                                                  .read<
-                                                      CustomerProfileMgtCubit>()
-                                                  .getWallet();
-                                            } else if (tipState.hasError) {
-                                              AppHelper.showSnackBar(
-                                                context,
-                                                message:
-                                                    'Failed to send tip. Please try again.',
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        isDarkMode: false,
-                                      );
-                                    },
+                                  : () => TipFlow.startForBooking(context, cubit),
                             ),
                           );
                         },
                       ),
                       isDarkMode: false,
+                    );
+                  },
+                ),
+                12.verticalSpace,
+                BlocBuilder<UpdateCreateAppointmentCubit,
+                    UpdateCreateAppointmentState>(
+                  buildWhen: (p, c) => p.tipPayment != c.tipPayment,
+                  builder: (context, state) {
+                    final cubit = context.read<UpdateCreateAppointmentCubit>();
+                    return TipPaymentStatusBanner(
+                      progress: state.tipPayment,
+                      onCheckStatus: cubit.checkUnresolvedTip,
+                      onTryAgain: () => TipFlow.startForBooking(context, cubit),
                     );
                   },
                 ),
@@ -2045,125 +2038,6 @@ class _SubmitDisputeBottomSheetState extends State<SubmitDisputeBottomSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class TipBottomSheet extends StatefulWidget {
-  const TipBottomSheet({
-    required this.walletBalance,
-    required this.onSubmit,
-    super.key,
-  });
-
-  final double walletBalance;
-  final Future<void> Function(double amount) onSubmit;
-
-  @override
-  State<TipBottomSheet> createState() => _TipBottomSheetState();
-}
-
-class _TipBottomSheetState extends State<TipBottomSheet> {
-  final _controller = TextEditingController();
-  bool _isSubmitting = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleSubmit() async {
-    final amount = double.tryParse(_controller.text.trim());
-    if (amount == null || amount <= 0) {
-      AppHelper.showSnackBar(context,
-          message: 'Please enter a valid tip amount');
-      return;
-    }
-    if (amount > widget.walletBalance) {
-      AppHelper.showSnackBar(
-        context,
-        message: 'Tip amount exceeds your wallet balance',
-      );
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-    try {
-      await widget.onSubmit(amount);
-      if (mounted) Navigator.of(context).pop();
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            const ModalPill(),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppText(
-                    text: 'Appreciate Your Stylist',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                  8.verticalSpace,
-                  const AppText(
-                    text:
-                        'Send a tip to show your appreciation for the great service!',
-                    color: AppColors.grey3,
-                  ),
-                  16.verticalSpace,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const AppText(text: 'Wallet Balance'),
-                      AppText(
-                        text: widget.walletBalance.formatAmount(),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
-                  12.verticalSpace,
-                  CustomTextField(
-                    label: 'Tip amount (R)',
-                    textController: _controller,
-                    hint: 'e.g. 50',
-                    inputType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                  ),
-                  16.verticalSpace,
-                  CustomButton(
-                    title: 'Send Tip',
-                    isLoading: _isSubmitting,
-                    onPressed: _isSubmitting ? null : _handleSubmit,
-                  ),
-                  12.verticalSpace,
-                  CustomButton(
-                    title: 'Cancel',
-                    onPressed: () => Navigator.of(context).pop(),
-                    gradient: null,
-                    background: const Color(0xff374757),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

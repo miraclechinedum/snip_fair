@@ -169,7 +169,7 @@ class SellerPersonalDetailsScreen extends StatelessWidget implements AutoRouteWr
                       return CustomPlaceSearchField(
                         onSelected: (p0) {
                           if (p0 != null) {
-                            cubit.onAddressChanged(p0.address);
+                            cubit.onAddressChanged(p0.address, place: p0);
                           }
                         },
                         label: 'Location',
@@ -177,8 +177,6 @@ class SellerPersonalDetailsScreen extends StatelessWidget implements AutoRouteWr
                         isError: address.isNotValid,
                         initialPlace: GeoPlace(
                           address: currentProfile.user!.country!,
-                          lat: 0,
-                          lng: 0,
                         ),
                         descriptionText: address.displayError?.message,
                       );

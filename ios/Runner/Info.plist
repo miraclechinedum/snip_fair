@@ -42,9 +42,27 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Google Sign-In (google_sign_in_ios): copied from GoogleService-Info.plist
+	     CLIENT_ID and REVERSED_CLIENT_ID. The URL scheme receives the sign-in
+	     callback; without it the Google SDK throws when sign-in starts. -->
+	<key>GIDClientID</key>
+	<string>93247050443-dof3ctb9ith2vsp2mdvhsri90g9u6lt1.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.93247050443-dof3ctb9ith2vsp2mdvhsri90g9u6lt1</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<!-- DEV ONLY: allow cleartext HTTP to the local Laravel server (php artisan serve). -->
+		<!-- DEV ONLY: allow cleartext HTTP to the local Laravel server (php artisan serve).
+		     Removed from production/staging release and profile builds by the
+		     "Restrict ATS to development" build phase. -->
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 		<key>NSExceptionDomains</key>
